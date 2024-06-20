@@ -33,13 +33,15 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
 
         # Get this galaxy's beginning and ending indices for stars
         s_len = gal_grp["S_Length"][...]
-        start = np.cumsum(s_len)[gal_ind]
-        end = np.cumsum(s_len)[gal_ind + 1]
+        start = np.sum(s_len[:gal_ind])
+        end = np.sum(s_len[: gal_ind + 1])
 
         # Get this galaxy's beginning and ending indices for gas
         g_len = gal_grp["G_Length"][...]
-        start_gas = np.cumsum(g_len)[gal_ind]
-        end_gas = np.cumsum(g_len)[gal_ind + 1]
+        start_gas = np.sum(g_len[:gal_ind])
+        end_gas = np.sum(g_len[: gal_ind + 1])
+
+        print(s_len[gal_ind], start, end)
 
         # Get the star data
         star_pos = part_grp["S_Coordinates"][start:end, :] * Mpc
