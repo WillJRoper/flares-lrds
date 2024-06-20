@@ -44,7 +44,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         print(s_len[gal_ind], start, end)
 
         # Get the star data
-        star_pos = part_grp["S_Coordinates"][start:end, :] * Mpc
+        star_pos = part_grp["S_Coordinates"][:, start:end].T * Mpc
         star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
         star_init_mass = part_grp["S_MassInitial"][start:end] * Msun * 10**10
         star_age = part_grp["S_Age"][start:end] * Gyr
@@ -52,10 +52,14 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_sml = part_grp["S_sml"][start:end] * Mpc
 
         # Get the gas data
-        gas_pos = part_grp["G_Coordinates"][start_gas:end_gas, :] * Mpc
+        gas_pos = part_grp["G_Coordinates"][:, start:end].T * Mpc
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
+
+    # Early exist if there are fewer than 100 baryons
+    if star_mass.size + gas_mass.size < 100:
+        return None
 
     gal = Galaxy(
         name=f"{reg}/{snap}/{gal_ind}",
@@ -123,6 +127,9 @@ def get_flares_galaxies(master_file_path, region, snap, nthreads):
     # Get all the galaxies using multiprocessing
     with mp.Pool(nthreads) as pool:
         galaxies = pool.starmap(_get_galaxy, args)
+
+    # Remove any Nones
+    galaxies = [gal for gal in galaxies if gal is not None]
 
     return galaxies
 
