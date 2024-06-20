@@ -55,7 +55,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
-    return Galaxy(
+    gal = Galaxy(
         name=f"{reg}/{snap}/{gal_ind}",
         redshift=z,
         stars=Stars(
@@ -67,7 +67,6 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             coordinates=star_pos,
             smoothing_lengths=star_sml,
             centre=star_pos.mean(axis=0),
-            young_tau_v=star_met / 0.01,  # for young star BC attenutation
         ),
         gas=Gas(
             masses=gas_mass,
@@ -78,6 +77,12 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             centre=gas_pos.mean(axis=0),
         ),
     )
+
+    # Attach the extra tau_v we need for nebular attenuation around young
+    # stars
+    gal.stars.young_tau_v = star_met / 0.01
+
+    return gal
 
 
 def get_flares_galaxies(master_file_path, region, snap, nthreads):
