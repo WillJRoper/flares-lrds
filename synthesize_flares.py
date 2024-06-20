@@ -7,6 +7,7 @@ import multiprocessing as mp
 import numpy as np
 import h5py
 from unyt import Gyr, Mpc, Msun
+from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -325,7 +326,7 @@ if __name__ == "__main__":
     phot_start = time.time()
     photometry = []
     for gal in galaxies:
-        p = get_photometry(gal, filters, "Intrinsic", grid.cosmo)
+        p = get_photometry(gal, filters, "Intrinsic", cosmo)
         phot.append(p)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
