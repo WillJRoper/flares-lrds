@@ -17,14 +17,72 @@ from synthesizer.kernel_functions import Kernel
 from stellar_emission_model import FLARESLOSEmission
 
 
-def get_flares_galaxies(
-    master_file_path,
-    region,
-    snap,
-    nthreads,
-):
+def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     """
-    Create images of galaxies in FLARES.
+    Get a galaxy from the master file.
+
+    Args:
+        gal_ind (int): The index of the galaxy to get.
+    """
+    # Get the galaxy data we need from the master file
+    with h5py.File(master_file_path, "r") as hdf:
+        reg_grp = hdf[reg]
+        snap_grp = reg_grp[snap]
+        gal_grp = snap_grp["Galaxy"]
+        part_grp = snap_grp["Particle"]
+
+        # Get this galaxy's beginning and ending indices for stars
+        s_len = gal_grp["S_Length"][gal_ind]
+        start = np.cumsum(s_len)[gal_ind]
+        end = np.cumsum(s_len)[gal_ind + 1]
+
+        # Get this galaxy's beginning and ending indices for gas
+        g_len = gal_grp["G_Length"][gal_ind]
+        start_gas = np.cumsum(g_len)[gal_ind]
+        end_gas = np.cumsum(g_len)[gal_ind + 1]
+
+        # Get the star data
+        star_pos = part_grp["S_Coordinates"][start:end, :] * Mpc
+        star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
+        star_init_mass = part_grp["S_MassInitial"][start:end] * Msun * 10**10
+        star_age = part_grp["S_Age"][start:end] * Gyr
+        star_met = part_grp["S_Z_smooth"][start:end]
+        star_sml = part_grp["S_sml"][start:end] * Mpc
+
+        # Get the gas data
+        gas_pos = part_grp["G_Coordinates"][start_gas:end_gas, :] * Mpc
+        gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
+        gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
+        gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
+
+    return Galaxy(
+        name=f"{reg}/{snap}/{gal_ind}",
+        redshift=z,
+        stars=Stars(
+            initial_masses=star_init_mass,
+            current_masses=star_mass,
+            ages=star_age,
+            metallicities=star_met,
+            redshift=z,
+            coordinates=star_pos,
+            smoothing_lengths=star_sml,
+            centre=star_pos.mean(axis=0),
+            young_tau_v=star_met / 0.01,  # for young star BC attenutation
+        ),
+        gas=Gas(
+            masses=gas_mass,
+            metallicities=gas_met,
+            redshift=z,
+            coordinates=gas_pos,
+            smoothing_lengths=gas_sml,
+            centre=gas_pos.mean(axis=0),
+        ),
+    )
+
+
+def get_flares_galaxies(master_file_path, region, snap, nthreads):
+    """
+    Get Galaxy objects for FLARES galaxies.
 
     Args:
         master_file_path (str): The path to the master file.
@@ -50,73 +108,14 @@ def get_flares_galaxies(
     if n_gals == 0:
         return []
 
-    def _get_galaxy(gal_ind):
-        """
-        Get a galaxy from the master file.
+    # Prepare the arguments for each galaxy
+    args = [
+        (gal_ind, master_file_path, reg, snap, z) for gal_ind in range(n_gals)
+    ]
 
-        Args:
-            gal_ind (int): The index of the galaxy to get.
-        """
-        # Get the galaxy data we need from the master file
-        with h5py.File(master_file_path, "r") as hdf:
-            reg_grp = hdf[reg]
-            snap_grp = reg_grp[snap]
-            gal_grp = snap_grp["Galaxy"]
-            part_grp = snap_grp["Particle"]
-
-            # Get this galaxy's beginning and ending indices for stars
-            s_len = gal_grp["S_Length"][gal_ind]
-            start = np.cumsum(s_len)[gal_ind]
-            end = np.cumsum(s_len)[gal_ind + 1]
-
-            # Get this galaxy's beginning and ending indices for gas
-            g_len = gal_grp["G_Length"][gal_ind]
-            start_gas = np.cumsum(g_len)[gal_ind]
-            end_gas = np.cumsum(g_len)[gal_ind + 1]
-
-            # Get the star data
-            star_pos = part_grp["S_Coordinates"][start:end, :] * Mpc
-            star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
-            star_init_mass = (
-                part_grp["S_MassInitial"][start:end] * Msun * 10**10
-            )
-            star_age = part_grp["S_Age"][start:end] * Gyr
-            star_met = part_grp["S_Z_smooth"][start:end]
-            star_sml = part_grp["S_sml"][start:end] * Mpc
-
-            # Get the gas data
-            gas_pos = part_grp["G_Coordinates"][start_gas:end_gas, :] * Mpc
-            gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
-            gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
-            gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
-
-        return Galaxy(
-            name=f"{reg}/{snap}/{gal_ind}",
-            redshift=z,
-            stars=Stars(
-                initial_masses=star_init_mass,
-                current_masses=star_mass,
-                ages=star_age,
-                metallicities=star_met,
-                redshift=z,
-                coordinates=star_pos,
-                smoothing_lengths=star_sml,
-                centre=star_pos.mean(axis=0),
-                young_tau_v=star_met / 0.01,  # for young star BC att
-            ),
-            gas=Gas(
-                masses=gas_mass,
-                metallicities=gas_met,
-                redshift=z,
-                coordinates=gas_pos,
-                smoothing_lengths=gas_sml,
-                centre=gas_pos.mean(axis=0),
-            ),
-        )
-
-    # Get all the galaxies
+    # Get all the galaxies using multiprocessing
     with mp.Pool(nthreads) as pool:
-        galaxies = pool.map(_get_galaxy, range(n_gals))
+        galaxies = pool.starmap(_get_galaxy, args)
 
     return galaxies
 
