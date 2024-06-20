@@ -41,8 +41,6 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         start_gas = np.sum(g_len[:gal_ind])
         end_gas = np.sum(g_len[: gal_ind + 1])
 
-        print(s_len[gal_ind], start, end)
-
         # Get the star data
         star_pos = part_grp["S_Coordinates"][:, start:end].T * Mpc
         star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
