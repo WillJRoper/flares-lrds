@@ -186,9 +186,8 @@ def get_spectra(gal, emission_model, kern, nthreads):
     )
 
     # Get the spectra
-    gal.get_spectra(
+    gal.get_particle_spectra(
         emission_model,
-        per_particle=True,
         nthreads=nthreads,
     )
 
