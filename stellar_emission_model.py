@@ -30,6 +30,7 @@ class FLARESLOSEmission(StellarEmissionModel):
         young_incident = StellarEmissionModel(
             grid=grid,
             label="young_incident",
+            extract="incident",
             mask_attr="ages",
             mask_op="<",
             mask_thresh=10 * Myr,
@@ -37,6 +38,7 @@ class FLARESLOSEmission(StellarEmissionModel):
         old_incident = StellarEmissionModel(
             grid=grid,
             label="old_incident",
+            extract="incident",
             mask_attr="ages",
             mask_op=">=",
             mask_thresh=10 * Myr,
