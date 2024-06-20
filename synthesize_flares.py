@@ -90,29 +90,29 @@ def get_flares_galaxies(
             gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
             gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
-            return Galaxy(
-                name=f"{reg}/{snap}/{gal_ind}",
+        return Galaxy(
+            name=f"{reg}/{snap}/{gal_ind}",
+            redshift=z,
+            stars=Stars(
+                initial_masses=star_init_mass,
+                current_masses=star_mass,
+                ages=star_age,
+                metallicities=star_met,
                 redshift=z,
-                stars=Stars(
-                    initial_masses=star_init_mass,
-                    current_masses=star_mass,
-                    ages=star_age,
-                    metallicities=star_met,
-                    redshift=z,
-                    coordinates=star_pos,
-                    smoothing_lengths=star_sml,
-                    centre=star_pos.mean(axis=0),
-                    young_tau_v=star_met / 0.01,  # for young star BC att
-                ),
-                gas=Gas(
-                    masses=gas_mass,
-                    metallicities=gas_met,
-                    redshift=z,
-                    coordinates=gas_pos,
-                    smoothing_lengths=gas_sml,
-                    centre=gas_pos.mean(axis=0),
-                ),
-            )
+                coordinates=star_pos,
+                smoothing_lengths=star_sml,
+                centre=star_pos.mean(axis=0),
+                young_tau_v=star_met / 0.01,  # for young star BC att
+            ),
+            gas=Gas(
+                masses=gas_mass,
+                metallicities=gas_met,
+                redshift=z,
+                coordinates=gas_pos,
+                smoothing_lengths=gas_sml,
+                centre=gas_pos.mean(axis=0),
+            ),
+        )
 
     # Get all the galaxies
     with mp.Pool(nthreads) as pool:
@@ -306,24 +306,19 @@ if __name__ == "__main__":
     # Get the spectra
     spectra_start = time.time()
     galaxies = [
-        get_spectra(gal, emission_model, kern, nthreads)
-        for gal in galaxies
+        get_spectra(gal, emission_model, kern, nthreads) for gal in galaxies
     ]
     spectra_end = time.time()
-    print(
-        f"Getting spectra took {spectra_end - spectra_start:.2f} seconds."
-    )
+    print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
 
     # Get the photometry
     phot_start = time.time()
     photometry = []
-    for gal in galaxies
+    for gal in galaxies:
         p = get_photometry(gal, filters, "Intrinsic", grid.cosmo)
         phot.append(p)
     phot_end = time.time()
-    print(
-        f"Getting photometry took {phot_end - phot_start:.2f} seconds."
-    )
+    print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
     end = time.time()
     print(f"Total time: {end - start:.2f} seconds.")
