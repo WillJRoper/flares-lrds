@@ -32,12 +32,12 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         part_grp = snap_grp["Particle"]
 
         # Get this galaxy's beginning and ending indices for stars
-        s_len = gal_grp["S_Length"][gal_ind]
+        s_len = gal_grp["S_Length"][...]
         start = np.cumsum(s_len)[gal_ind]
         end = np.cumsum(s_len)[gal_ind + 1]
 
         # Get this galaxy's beginning and ending indices for gas
-        g_len = gal_grp["G_Length"][gal_ind]
+        g_len = gal_grp["G_Length"][...]
         start_gas = np.cumsum(g_len)[gal_ind]
         end_gas = np.cumsum(g_len)[gal_ind + 1]
 
