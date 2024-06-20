@@ -138,7 +138,7 @@ def get_flares_filters(filepath):
         ]
 
         # Create the FilterCollection
-        filters = FilterCollection(filters=filter_codes)
+        filters = FilterCollection(filter_codes=filter_codes)
 
         # Write the filter collection
         filters.write_filters(path=filepath)
