@@ -67,8 +67,9 @@ with h5py.File(master_file_path, "r") as hdf:
             for i, (start, end) in enumerate(zip(bh_start, bh_end)):
                 if end - start == 0:
                     continue
-                mdot[i] = np.max(
-                    hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end]
+                mdot[i] = (
+                    np.max(hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end])
+                    * 10**10
                 )
 
             # Store the data
@@ -381,6 +382,13 @@ for snap in sizes.keys():
 for snap in mdots.keys():
     # Convert mdots to an array
     mdots[snap]["mdot"] = np.array(mdots[snap]["mdot"])
+
+    # Get the normalisation
+    norm = LogNorm(
+        vmin=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+        vmax=np.max(mdots[snap]["mdot"]),
+    )
+
     for i, color in enumerate(colors[snap].keys()):
         # Create the figure
         fig, ax = plt.subplots(1, 2, figsize=(10, 5))
@@ -400,6 +408,7 @@ for snap in mdots.keys():
             linewidth=0.2,
             mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
             yscale="log",
+            norm=norm,
         )
         ax[1].hexbin(
             colors[snap][color],
@@ -411,6 +420,7 @@ for snap in mdots.keys():
             linewidth=0.2,
             mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
             yscale="log",
+            norm=norm,
         )
 
         # Draw a vertical line for the thresholds
