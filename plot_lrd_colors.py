@@ -476,3 +476,4 @@ for snap in mdots.keys():
             dpi=300,
             bbox_inches="tight",
         )
+        plt.close(fig)
