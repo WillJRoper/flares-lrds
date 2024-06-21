@@ -379,6 +379,8 @@ for snap in sizes.keys():
 
 # Plot size vs color coloured by mdot
 for snap in mdots.keys():
+    # Convert mdots to an array
+    mdots[snap]["mdot"] = np.array(mdots[snap]["mdot"])
     for i, color in enumerate(colors[snap].keys()):
         # Create the figure
         fig, ax = plt.subplots(1, 2, figsize=(10, 5))
