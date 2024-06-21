@@ -65,6 +65,8 @@ with h5py.File(master_file_path, "r") as hdf:
             # Get the accretion rates
             mdot = np.zeros_like(size)
             for i, (start, end) in enumerate(zip(bh_start, bh_end)):
+                if end - start == 0:
+                    continue
                 mdot[i] = np.max(
                     hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end]
                 )
