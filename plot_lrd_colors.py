@@ -392,7 +392,7 @@ for snap in mdots.keys():
 
     for i, color in enumerate(colors[snap].keys()):
         # Create the figure
-        fig, ax = plt.subplots(1, 2, figsize=(10, 10))
+        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
         # Logscale both plots
         ax[0].set_yscale("log")
