@@ -57,8 +57,17 @@ with h5py.File(master_file_path, "r") as hdf:
             # Get the sizes we need
             size = hdf[f"{reg}/{snap}/Galaxy/HalfMassRad"][:, 4] * 1000
 
+            # Get the black holes slices for each galaxy
+            bh_len = hdf[f"{reg}/{snap}/Galaxy/BH_Length"]
+            bh_start = np.concatenate(([0], np.cumsum(bh_len)))
+            bh_end = bh_start + bh_len
+
             # Get the accretion rates
-            mdot = hdf[f"{reg}/{snap}/Galaxy/BH_Mdot"][...]
+            mdot = np.zeros_like(size)
+            for i, (start, end) in enumerate(zip(bh_start, bh_end)):
+                mdot[i] = np.max(
+                    hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end]
+                )
 
             # Store the data
             fluxes[snap].setdefault("F115W", []).extend(f115w)
