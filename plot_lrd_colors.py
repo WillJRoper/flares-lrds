@@ -392,7 +392,7 @@ for snap in mdots.keys():
 
     for i, color in enumerate(colors[snap].keys()):
         # Create the figure
-        fig, ax = plt.subplots(2, 2, figsize=(10, 5))
+        fig, ax = plt.subplots(2, 2, figsize=(10, 10))
 
         # Logscale both plots
         ax[0, 0].set_yscale("log")
@@ -451,7 +451,6 @@ for snap in mdots.keys():
         ax[1, 0].set_xlabel(color)
         ax[1, 0].set_ylabel("Half mass radius (pkpc)")
         ax[1, 1].set_xlabel(color)
-        ax[1, 1].set_ylabel("Half mass radius (pkpc)")
 
         # Add text label
         ax[1, 0].text(
