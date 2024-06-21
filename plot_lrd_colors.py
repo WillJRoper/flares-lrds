@@ -395,12 +395,14 @@ for snap in mdots.keys():
         fig, ax = plt.subplots(2, 2, figsize=(10, 5))
 
         # Logscale both plots
-        for axi in ax:
-            axi.set_yscale("log")
+        ax[0, 0].set_yscale("log")
+        ax[1, 0].set_yscale("log")
+        ax[1, 1].set_yscale("log")
 
         # Include a grid
-        for axi in ax:
-            axi.grid(True)
+        ax[0, 0].grid(True)
+        ax[1, 0].grid(True)
+        ax[1, 1].grid(True)
 
         # Remove the axis in the top right corner
         ax[0, 1].axis("off")
