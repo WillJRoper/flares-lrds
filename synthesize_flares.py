@@ -198,10 +198,10 @@ def get_spectra(gal, emission_model, kern, nthreads):
 def get_photometry(gal, filters, spectra_key, cosmo):
     """Get the photometry for a galaxy."""
     # Get the flux
-    gal.particle_spectra[spectra_key].get_fnu(cosmo, gal.redshift)
+    gal.stars.particle_spectra[spectra_key].get_fnu(cosmo, gal.redshift)
 
     # Get the photometry
-    phot = gal.particle_spectra[spectra_key].get_photo_fluxes(filters)
+    phot = gal.stars.particle_spectra[spectra_key].get_photo_fluxes(filters)
 
     return gal, phot
 
@@ -212,18 +212,12 @@ def get_image():
 
 # Define the snapshot tags
 snapshots = [
-    "000_z015p000",
-    "001_z014p000",
-    "002_z013p000",
-    "003_z012p000",
-    "004_z011p000",
     "005_z010p000",
     "006_z009p000",
     "007_z008p000",
     "008_z007p000",
     "009_z006p000",
     "010_z005p000",
-    "011_z004p770",
 ]
 
 if __name__ == "__main__":
@@ -324,9 +318,9 @@ if __name__ == "__main__":
 
     # Get the photometry
     phot_start = time.time()
-    photometry = []
+    phot = []
     for gal in galaxies:
-        p = get_photometry(gal, filters, "Intrinsic", cosmo)
+        p = get_photometry(gal, filters, "intrinsic", cosmo)
         phot.append(p)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
