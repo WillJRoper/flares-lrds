@@ -392,23 +392,18 @@ for snap in mdots.keys():
 
     for i, color in enumerate(colors[snap].keys()):
         # Create the figure
-        fig, ax = plt.subplots(2, 2, figsize=(10, 10))
+        fig, ax = plt.subplots(1, 2, figsize=(10, 10))
 
         # Logscale both plots
-        ax[0, 0].set_yscale("log")
-        ax[1, 0].set_yscale("log")
-        ax[1, 1].set_yscale("log")
+        ax[0].set_yscale("log")
+        ax[1].set_yscale("log")
 
         # Include a grid
-        ax[0, 0].grid(True)
-        ax[1, 0].grid(True)
-        ax[1, 1].grid(True)
-
-        # Remove the axis in the top right corner
-        ax[0, 1].axis("off")
+        ax[0].grid(True)
+        ax[1].grid(True)
 
         # Plot the size-color relation
-        sc = ax[0, 0].hexbin(
+        sc = ax[0].hexbin(
             colors[snap][color],
             sizes[snap]["size"],
             C=mdots[snap]["mdot"],
@@ -421,21 +416,9 @@ for snap in mdots.keys():
             norm=norm,
         )
         ax[1, 0].hexbin(
-            colors[snap][color][red1[snap]],
-            sizes[snap]["size"][red1[snap]],
-            C=mdots[snap]["mdot"][red1[snap]],
-            cmap="viridis",
-            gridsize=gridsize,
-            reduce_C_function=np.mean,
-            linewidth=0.2,
-            mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
-            yscale="log",
-            norm=norm,
-        )
-        ax[1, 1].hexbin(
-            colors[snap][color][red2[snap]],
-            sizes[snap]["size"][red2[snap]],
-            C=mdots[snap]["mdot"][red2[snap]],
+            colors[snap][color][np.logical_or(red1[snap], red2[snap])],
+            sizes[snap]["size"][np.logical_or(red1[snap], red2[snap])],
+            C=mdots[snap]["mdot"][np.logical_or(red1[snap], red2[snap])],
             cmap="viridis",
             gridsize=gridsize,
             reduce_C_function=np.mean,
@@ -446,46 +429,36 @@ for snap in mdots.keys():
         )
 
         # Label the axes
-        ax[0, 0].set_xlabel(color)
-        ax[0, 0].set_ylabel("Half mass radius (pkpc)")
-        ax[1, 0].set_xlabel(color)
-        ax[1, 0].set_ylabel("Half mass radius (pkpc)")
-        ax[1, 1].set_xlabel(color)
+        ax[0].set_xlabel(color)
+        ax[0].set_ylabel("Half mass radius (pkpc)")
+        ax[1].set_xlabel(color)
 
         # Add text label
-        ax[1, 0].text(
+        ax[0].text(
             0.05,
             0.95,
-            "Red 1 (Kokorev+24)",
-            transform=ax[1, 0].transAxes,
+            "All galaxies",
+            transform=ax[0].transAxes,
             fontsize=12,
             verticalalignment="top",
         )
-        ax[1, 1].text(
+        ax[1].text(
             0.05,
             0.95,
-            "Red 2 (Kokorev+24)",
-            transform=ax[1, 1].transAxes,
+            "Red 1 | Red 2 (Kokorev+24)",
+            transform=ax[1].transAxes,
             fontsize=12,
             verticalalignment="top",
         )
 
         # Add an alternative y axis to the right hand plot in arcseconds
-        ax2 = ax[0, 0].secondary_yaxis(
+        ax3 = ax[1].secondary_yaxis(
             "right",
             functions=(
                 lambda x: x * cosmo.arcsec_per_kpc_proper(z).value,
                 lambda x: x / cosmo.arcsec_per_kpc_proper(z).value,
             ),
         )
-        ax3 = ax[1, 1].secondary_yaxis(
-            "right",
-            functions=(
-                lambda x: x * cosmo.arcsec_per_kpc_proper(z).value,
-                lambda x: x / cosmo.arcsec_per_kpc_proper(z).value,
-            ),
-        )
-        ax2.set_ylabel("Half mass radius (arcsecond)")
         ax3.set_ylabel("Half mass radius (arcsecond)")
 
         # Add a colorbar
