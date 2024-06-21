@@ -59,7 +59,7 @@ with h5py.File(master_file_path, "r") as hdf:
 
             # Get the black holes slices for each galaxy
             bh_len = hdf[f"{reg}/{snap}/Galaxy/BH_Length"]
-            bh_start = np.concatenate(([0], np.cumsum(bh_len)))
+            bh_start = np.concatenate(([0], np.cumsum(bh_len)))[:-1]
             bh_end = bh_start + bh_len
 
             # Get the accretion rates
