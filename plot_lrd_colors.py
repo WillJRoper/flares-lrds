@@ -70,7 +70,7 @@ with h5py.File(master_file_path, "r") as hdf:
                 mdot[i] = (
                     np.max(hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end])
                     * 10**10
-                    * 0.6777
+                    / 0.6777
                 )
 
             # Store the data
