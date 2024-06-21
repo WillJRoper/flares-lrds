@@ -399,6 +399,7 @@ for snap in mdots.keys():
             reduce_C_function=np.mean,
             linewidth=0.2,
             mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+            yscale="log",
         )
         ax[1].hexbin(
             colors[snap][color],
@@ -409,6 +410,7 @@ for snap in mdots.keys():
             reduce_C_function=np.mean,
             linewidth=0.2,
             mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+            yscale="log",
         )
 
         # Draw a vertical line for the thresholds
