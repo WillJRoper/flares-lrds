@@ -415,7 +415,7 @@ for snap in mdots.keys():
             yscale="log",
             norm=norm,
         )
-        ax[1, 0].hexbin(
+        ax[1].hexbin(
             colors[snap][color][np.logical_or(red1[snap], red2[snap])],
             sizes[snap]["size"][np.logical_or(red1[snap], red2[snap])],
             C=mdots[snap]["mdot"][np.logical_or(red1[snap], red2[snap])],
