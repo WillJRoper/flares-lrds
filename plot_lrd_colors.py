@@ -386,7 +386,7 @@ for snap in mdots.keys():
 
     # Get the normalisation
     norm = LogNorm(
-        vmin=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+        vmin=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]) * 10,
         vmax=np.max(mdots[snap]["mdot"]),
     )
 
@@ -458,7 +458,7 @@ for snap in mdots.keys():
             0.05,
             0.95,
             "Red 1 (Kokorev+24)",
-            transform=ax[0].transAxes,
+            transform=ax[1, 0].transAxes,
             fontsize=12,
             verticalalignment="top",
         )
@@ -466,7 +466,7 @@ for snap in mdots.keys():
             0.05,
             0.95,
             "Red 2 (Kokorev+24)",
-            transform=ax[1].transAxes,
+            transform=ax[1, 1].transAxes,
             fontsize=12,
             verticalalignment="top",
         )
