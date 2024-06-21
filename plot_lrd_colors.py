@@ -13,6 +13,7 @@ master_file_path = sys.argv[1]
 # Define containers for the data
 fluxes = {}
 sizes = {}
+mdots = {}
 
 # Open the master file
 with h5py.File(master_file_path, "r") as hdf:
@@ -25,6 +26,7 @@ with h5py.File(master_file_path, "r") as hdf:
             # Ensure a key exists for this snapshot
             fluxes.setdefault(snap, {})
             sizes.setdefault(snap, {})
+            mdots.setdefault(snap, {})
 
             # Get the fluxes we need
             f115w = hdf[
@@ -55,6 +57,9 @@ with h5py.File(master_file_path, "r") as hdf:
             # Get the sizes we need
             size = hdf[f"{reg}/{snap}/Galaxy/HalfMassRad"][:, 4] * 1000
 
+            # Get the accretion rates
+            mdot = hdf[f"{reg}/{snap}/Galaxy/BH_Mdot"][...]
+
             # Store the data
             fluxes[snap].setdefault("F115W", []).extend(f115w)
             fluxes[snap].setdefault("F150W", []).extend(f150w)
@@ -63,6 +68,7 @@ with h5py.File(master_file_path, "r") as hdf:
             fluxes[snap].setdefault("F356W", []).extend(f356w)
             fluxes[snap].setdefault("F444W", []).extend(f444w)
             sizes[snap].setdefault("size", []).extend(size)
+            mdots[snap].setdefault("mdot", []).extend(mdot)
 
 # Convert the data to arrays
 for snap in fluxes.keys():
@@ -99,6 +105,16 @@ for snap in fluxes.keys():
 # Define plot props
 gridsize = 50
 norm = LogNorm(vmin=1, vmax=10**4.1)
+
+# Define a dictionary with the Kokorev+24 thresholds
+kokorev24 = {
+    "F115W_F150W": 0.8,
+    "F150W_F200W": 0.8,
+    "F200W_F277W": 0.7,
+    "F200W_F356W": 1.0,
+    "F277W_F356W": 0.6,
+    "F277W_F444W": 0.7,
+}
 
 # Derive the kokorev masks
 red1 = {}
@@ -349,3 +365,89 @@ for snap in sizes.keys():
     # Save the figure
     fig.savefig(f"lrd_kokorev_sizes_{snap}.png", dpi=300, bbox_inches="tight")
     plt.close(fig)
+
+# Plot size vs color coloured by mdot
+for snap in mdots.keys():
+    for i, color in enumerate(colors[snap].keys()):
+        # Create the figure
+        fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+
+        # Logscale both plots
+        ax[0].set_yscale("log")
+        ax[1].set_yscale("log")
+
+        # Plot the size-color relation
+        sc = ax[0].hexbin(
+            colors[snap][color],
+            sizes[snap]["size"],
+            C=mdots[snap]["mdot"],
+            gridsize=gridsize,
+            cmap="viridis",
+            reduce_C_function=np.mean,
+            linewidth=0.2,
+            mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+        )
+        ax[1].hexbin(
+            colors[snap][color],
+            sizes[snap]["size"],
+            C=mdots[snap]["mdot"],
+            cmap="viridis",
+            gridsize=gridsize,
+            reduce_C_function=np.mean,
+            linewidth=0.2,
+            mincnt=np.min(mdots[snap]["mdot"][mdots[snap]["mdot"] > 0]),
+        )
+
+        # Draw a vertical line for the thresholds
+        if color in kokorev24.keys():
+            ax[0].axvline(
+                kokorev24[color],
+                color="red",
+                linestyle="--",
+                label="Kokorev+24 threshold",
+            )
+            ax[1].axvline(
+                kokorev24[color],
+                color="red",
+                linestyle="--",
+                label="Kokorev+24 threshold",
+            )
+
+        # Label the axes
+        ax[0].set_xlabel(color)
+        ax[0].set_ylabel("Half mass radius (pkpc)")
+        ax[1].set_xlabel(color)
+        ax[1].set_ylabel("Half mass radius (pkpc)")
+
+        # Add text label
+        ax[0].text(
+            0.05,
+            0.95,
+            "Red 1 (Kokorev+24)",
+            transform=ax[0].transAxes,
+            fontsize=12,
+            verticalalignment="top",
+        )
+        ax[1].text(
+            0.05,
+            0.95,
+            "Red 2 (Kokorev+24)",
+            transform=ax[1].transAxes,
+            fontsize=12,
+            verticalalignment="top",
+        )
+
+        # Turn on the grid for each axis
+        ax[0].grid(True)
+        ax[1].grid(True)
+
+        # Add a colorbar
+        cbar = fig.colorbar(sc, ax=ax, pad=0.1)
+        cbar.set_label("Mean BH accretion rate (Msun/yr)")
+
+        # Save the figure
+        fig.savefig(
+            f"lrd_kokorev_{color}_mdot_{snap}.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
