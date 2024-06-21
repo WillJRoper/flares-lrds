@@ -456,6 +456,16 @@ for snap in mdots.keys():
         ax[0].grid(True)
         ax[1].grid(True)
 
+        # Add an alternative y axis to the right hand plot in arcseconds
+        ax2 = ax[1].secondary_yaxis(
+            "right",
+            functions=(
+                lambda x: x * cosmo.arcsec_per_kpc_proper(z).value,
+                lambda x: x / cosmo.arcsec_per_kpc_proper(z).value,
+            ),
+        )
+        ax2.set_ylabel("Half mass radius (arcsecond)")
+
         # Add a colorbar
         cbar = fig.colorbar(sc, ax=ax, pad=0.1)
         cbar.set_label("Mean BH accretion rate (Msun/yr)")
