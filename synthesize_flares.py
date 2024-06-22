@@ -57,7 +57,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
     # Early exist if there are fewer than 100 baryons
-    if star_mass.size + gas_mass.size < 100:
+    if star_mass.size < 100:
         return None
 
     gal = Galaxy(
