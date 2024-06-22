@@ -304,7 +304,7 @@ if __name__ == "__main__":
     )
     read_end = time.time()
     print(
-        f"Creating galaxies {len(galaxies)} took "
+        f"Creating {len(galaxies)} galaxies took "
         f"{read_end - read_start:.2f} seconds."
     )
 
@@ -315,6 +315,11 @@ if __name__ == "__main__":
     ]
     spectra_end = time.time()
     print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
+
+    print(
+        galaxies[0].stars.particle_spectra.keys(),
+        galaxies[0].stars.spectra.keys(),
+    )
 
     # Get the photometry
     phot_start = time.time()
