@@ -316,16 +316,12 @@ if __name__ == "__main__":
     spectra_end = time.time()
     print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
 
-    print(
-        galaxies[0].stars.particle_spectra.keys(),
-        galaxies[0].stars.spectra.keys(),
-    )
-
     # Get the photometry
     phot_start = time.time()
     phot = []
     for gal in galaxies:
         p = get_photometry(gal, filters, "reprocessed", cosmo)
+        print(p)
         phot.append(p)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
