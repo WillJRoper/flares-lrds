@@ -334,7 +334,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fluxes.setdefault(key, {})
             for filt, phot_arr in phot.items():
                 fluxes[key].setdefault(filt, []).extend(phot_arr)
-        for key, comps in comp.keys():
+        for key, comps in comp.items():
             compactnesses.setdefault(key, {})
             for filt in filters.filter_codes:
                 compactnesses[key].setdefault(filt, []).extend(comps[filt])
