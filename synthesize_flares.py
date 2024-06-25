@@ -8,6 +8,7 @@ import numpy as np
 import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond
 from astropy.cosmology import Planck15 as cosmo
+import mpi4py
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -114,7 +115,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     return gal
 
 
-def get_flares_galaxies(master_file_path, region, snap, nthreads):
+def get_flares_galaxies(
+    master_file_path, region, snap, nthreads, comm, rank, size
+):
     """
     Get Galaxy objects for FLARES galaxies.
 
@@ -136,15 +139,34 @@ def get_flares_galaxies(master_file_path, region, snap, nthreads):
         reg_grp = hdf[reg]
         snap_grp = reg_grp[snap]
         gal_grp = snap_grp["Galaxy"]
-        n_gals = len(gal_grp["S_Length"])
+        s_lens = gal_grp["S_Length"][:]
+        n_gals = len(s_lens)
+        nparts = np.sum(s_lens)
 
     # Early exist if there are no galaxies
     if n_gals == 0:
         return []
 
-    # Prepare the arguments for each galaxy
+    # Randomize the order of galaxies
+    np.random.seed(42)
+    order = np.random.permutation(n_gals)
+
+    # Distribute galaxies by number of particles
+    n_parts_per_rank = nparts // size
+    parts_per_rank = np.zeros(size, dtype=int)
+    rank_start = np.zeros(size + 1, dtype=int)
+    rank_start[-1] = n_gals
+    select = 0
+    for i in order:
+        parts_per_rank[select] += s_lens[i]
+        if parts_per_rank[select] > n_parts_per_rank:
+            select += 1
+            rank_start[select] = i
+
+    # Prepare the arguments for each galaxy on this rank
     args = [
-        (gal_ind, master_file_path, reg, snap, z) for gal_ind in range(n_gals)
+        (gal_ind, master_file_path, reg, snap, z)
+        for gal_ind in order[rank_start[rank] : rank_start[rank + 1]]
     ]
 
     # Get all the galaxies using multiprocessing
@@ -244,8 +266,17 @@ def get_image():
     pass
 
 
-def write_results(galaxies, path, grid_name, filters):
+def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
+    # Collect all galaxies onto rank 0
+    galaxies = comm.gather(galaxies, root=0)
+
+    if rank != 0:
+        return
+
+    # Flatten the list of galaxies
+    galaxies = [gal for sublist in galaxies for gal in sublist]
+
     # Loop over galaxies and unpacking all the data we'll write out
     fluxes = {}
     fnus = {}
@@ -274,8 +305,8 @@ def write_results(galaxies, path, grid_name, filters):
             compactnesses.setdefault(key, {})
             for filt in filters.filter_codes:
                 compactnesses[key].setdefault(filt, []).append(
-                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"][filt]
-                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt]
+                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"][filt].value
+                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt].value
                 )
 
     # Get the units for each dataset
@@ -375,6 +406,11 @@ if __name__ == "__main__":
         type=int,
         help="The number of threads to use.",
     )
+
+    # Get MPI info
+    comm = mpi4py.MPI.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
 
     # Parse the arguments
     args = parser.parse_args()
