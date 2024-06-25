@@ -213,7 +213,7 @@ def get_photometry(gal, filters):
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
 
-    return galaxies
+    return gal
 
 
 def get_integrated_spectra(gal):
