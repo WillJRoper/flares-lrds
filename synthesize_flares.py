@@ -285,7 +285,7 @@ def write_results(galaxies, path, grid_name):
                 dset = filt_grp.create_dataset(
                     filt,
                     data=np.array(phot),
-                    f)
+                )
                 dset.attrs["Units"] = units["flux"]
 
 
@@ -421,7 +421,7 @@ if __name__ == "__main__":
 
     for gal in galaxies:
         fig, ax = gal.plot_observed_spectra(show=False)
-        fig.savefig(f"{gal.name}.png".replace("/", "_"))
+        fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
 
     # Write out the results
     write_start = time.time()
