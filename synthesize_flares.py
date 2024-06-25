@@ -334,10 +334,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fluxes.setdefault(key, {})
             for filt, phot_arr in phot.items():
                 fluxes[key].setdefault(filt, []).extend(phot_arr)
-        for key, comp_arr in comp.items():
+        for key, comps in comp.keys():
             compactnesses.setdefault(key, {})
-            for filt, comp_arr in comp.items():
-                compactnesses[key].setdefault(filt, []).extend(comp_arr)
+            for filt in filters.filter_codes:
+                compactnesses[key].setdefault(filt, []).extend(comps[filt])
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -385,7 +385,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for key, comp in compactnesses.items():
             filt_grp = comp_grp.create_group(key)
             for filt, comp_arr in comp.items():
-                print(comp_arr)
                 dset = filt_grp.create_dataset(
                     filt,
                     data=np.array(comp_arr),
