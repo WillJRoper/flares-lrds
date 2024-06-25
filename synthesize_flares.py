@@ -268,14 +268,6 @@ def get_image():
 
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
-    # Collect all galaxies onto rank 0
-    galaxies = comm.gather(galaxies, root=0)
-
-    if rank != 0:
-        return
-
-    # Flatten the list of galaxies
-    galaxies = [gal for sublist in galaxies for gal in sublist]
 
     # Loop over galaxies and unpacking all the data we'll write out
     fluxes = {}
@@ -308,6 +300,47 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     gal.stars.photo_fluxes[f"0p4_aperture_{key}"][filt].value
                     / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt].value
                 )
+
+    # Collect output data onto rank 0
+    fnu_per_rank = comm.gather(fnus, root=0)
+    flux_per_rank = comm.gather(fluxes, root=0)
+    comp_per_rank = comm.gather(compactnesses, root=0)
+    group_per_rank = comm.gather(group_ids, root=0)
+    subgroup_per_rank = comm.gather(subgroup_ids, root=0)
+    index_per_rank = comm.gather(indices, root=0)
+
+    # Early exit if we're not rank 0
+    if rank != 0:
+        return
+
+    # Concatenate the data
+    fnus = {}
+    fluxes = {}
+    compactnesses = {}
+    group_ids = []
+    subgroup_ids = []
+    indices = []
+    for fnu, flux, comp, group, subgroup, index in zip(
+        fnu_per_rank,
+        flux_per_rank,
+        comp_per_rank,
+        group_per_rank,
+        subgroup_per_rank,
+        index_per_rank,
+    ):
+        for key, spec in fnu.items():
+            fnus.setdefault(key, []).extend(spec)
+        for key, phot in flux.items():
+            fluxes.setdefault(key, {})
+            for filt, phot_arr in phot.items():
+                fluxes[key].setdefault(filt, []).extend(phot_arr)
+        for key, comp_arr in comp.items():
+            compactnesses.setdefault(key, {})
+            for filt, comp_arr in comp.items():
+                compactnesses[key].setdefault(filt, []).extend(comp_arr)
+        group_ids.extend(group)
+        subgroup_ids.extend(subgroup)
+        indices.extend(index)
 
     # Get the units for each dataset
     units = {
@@ -504,6 +537,8 @@ if __name__ == "__main__":
         rank,
         size,
     )
+
+    comm.barrier()
 
     end = time.time()
     print(f"Total time: {end - start:.2f} seconds.")
