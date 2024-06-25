@@ -109,9 +109,6 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # stars
     gal.stars.young_tau_v = star_met / 0.01
 
-    print("Nstar within 0.2'':", np.sum(star_ang_rad < 0.2))
-    print("Nstar within 0.4'':", np.sum(star_ang_rad < 0.4))
-
     return gal
 
 
