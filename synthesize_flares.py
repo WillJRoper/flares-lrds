@@ -111,6 +111,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # stars
     gal.stars.young_tau_v = star_met / 0.01
 
+    print("Nstar within 0.2'':", np.sum(star_ang_rad < 0.2))
+    print("Nstar within 0.4'':", np.sum(star_ang_rad < 0.4))
+
     return gal
 
 
@@ -244,6 +247,9 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
+
+    for key in gal.stars.spectra:
+        print("At Output", key, np.sum(gal.stars.spectra[key].fnu))
 
     return gal
 
@@ -454,6 +460,8 @@ if __name__ == "__main__":
     )
 
     for gal in galaxies:
+        for key in gal.stars.spectra:
+            print("At plot", key, np.sum(gal.stars.spectra[key].fnu))
         try:
             fig, ax = gal.plot_observed_spectra(show=False)
             fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
