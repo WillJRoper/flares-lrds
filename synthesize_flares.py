@@ -316,29 +316,15 @@ if __name__ == "__main__":
     spectra_end = time.time()
     print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
 
+    # Get the photometry
+    phot_start = time.time()
+    phot = []
     for gal in galaxies:
-        gal.stars.particle_spectra["reprocessed"].get_fnu(cosmo, gal.redshift)
-        gal.stars.spectra["reprocessed"] = gal.stars.particle_spectra[
-            "reprocessed"
-        ].sum()
-        fig, ax = gal.stars.plot_spectra(
-            spectra_to_plot="reprocessed", quantity_to_plot="fnu", show=False
-        )
-        fig.savefig(
-            f"{gal.name}_spectra.png".replace("/", "-"),
-            dpi=300,
-            bbox_inches="tight",
-        )
+        p = get_photometry(gal, filters, "reprocessed", cosmo)
+        print(p)
+        phot.append(p)
+    phot_end = time.time()
+    print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
-    # # Get the photometry
-    # phot_start = time.time()
-    # phot = []
-    # for gal in galaxies:
-    #     p = get_photometry(gal, filters, "reprocessed", cosmo)
-    #     print(p)
-    #     phot.append(p)
-    # phot_end = time.time()
-    # print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
-
-    # end = time.time()
-    # print(f"Total time: {end - start:.2f} seconds.")
+    end = time.time()
+    print(f"Total time: {end - start:.2f} seconds.")
