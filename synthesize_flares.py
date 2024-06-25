@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, Mpc, Msun
+from unyt import Gyr, Mpc, Msun, arcsecond
 from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.particle import Stars, Gas
@@ -48,7 +48,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         end_gas = np.sum(g_len[: gal_ind + 1])
 
         # Get the star data
-        star_pos = part_grp["S_Coordinates"][:, start:end].T * Mpc
+        star_pos = part_grp["S_Coordinates"][:, start:end].T / (1 + z) * Mpc
         star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
         star_init_mass = part_grp["S_MassInitial"][start:end] * Msun * 10**10
         star_age = part_grp["S_Age"][start:end] * Gyr
@@ -56,19 +56,24 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_sml = part_grp["S_sml"][start:end] * Mpc
 
         # Get the gas data
-        gas_pos = part_grp["G_Coordinates"][:, start_gas:end_gas].T * Mpc
+        gas_pos = (
+            part_grp["G_Coordinates"][:, start_gas:end_gas].T / (1 + z) * Mpc
+        )
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
         # Get the centre of potential
-        centre = gal_grp["COP"][:].T[gal_ind, :] * Mpc
+        centre = gal_grp["COP"][:].T[gal_ind, :] / (1 + z) * Mpc
 
         # Compute the angular radii of each star in arcseconds
-        radii = np.linalg.norm(star_pos - centre, axis=1)
-        star_ang_rad = np.arctan(
-            radii / cosmo.angular_diameter_distance(z)
-        ).to("arcsec")
+        radii = (np.linalg.norm(star_pos - centre, axis=1) * 1000).to(
+            "kpc"
+        ) / (1 + z)
+        star_ang_rad = (
+            np.arctan(radii.value * cosmo.arcsec_per_kpc_proper(z).value)
+            * arcsecond
+        )
 
     # Early exist if there are fewer than 100 baryons
     if star_mass.size < 100:
