@@ -572,18 +572,6 @@ if __name__ == "__main__":
         f"{gal_end - gal_start:.2f} seconds."
     )
 
-    for gal in galaxies:
-        try:
-            fig, ax = gal.plot_observed_spectra(
-                show=False,
-                combined_spectra=False,
-                stellar_spectra=True,
-                figsize=(10, 5),
-            )
-            fig.savefig(f"plots/{gal.name}.png", dpi=300, bbox_inches="tight")
-        except ValueError as e:
-            _print(f"Failed to plot {gal.name}: {e}")
-
     # Write out the results
     write_start = time.time()
     write_results(
