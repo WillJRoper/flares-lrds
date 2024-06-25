@@ -117,6 +117,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # stars
     gal.stars.young_tau_v = star_met / 0.01
 
+    # Calculate the DTM, we'll need it later
+    gal.dust_to_metal_vijayan19()
+
     return gal
 
 
@@ -268,7 +271,6 @@ def get_image():
 
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
-
     # Loop over galaxies and unpacking all the data we'll write out
     fluxes = {}
     fnus = {}
