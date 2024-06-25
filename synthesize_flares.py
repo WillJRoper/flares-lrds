@@ -195,13 +195,18 @@ def get_spectra(gal, emission_model, kern, nthreads):
     return gal
 
 
-def get_photometry(gal, filters, spectra_key, cosmo):
-    """Get the photometry for a galaxy."""
-    # Get the flux
-    gal.stars.particle_spectra[spectra_key].get_fnu(cosmo, gal.redshift)
+def get_observed_spectra(gal, cosmo):
+    """Get the observed spectra for a galaxy."""
+    # Get the observed spectra
+    gal.stars.get_observed_spectra(cosmo)
 
+    return gal
+
+
+def get_photometry(gal, filters):
+    """Get the photometry for a galaxy."""
     # Get the photometry
-    phot = gal.stars.particle_spectra[spectra_key].get_photo_fluxes(filters)
+    phot = gal.get_photo_fluxes(filters, verbose=False)
 
     return phot
 
@@ -316,13 +321,22 @@ if __name__ == "__main__":
     spectra_end = time.time()
     print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
 
+    # Get the observed spectra
+    spectra_start = time.time()
+    args = [(gal, cosmo) for gal in galaxies]
+    with mp.Pool(nthreads) as pool:
+        galaxies = pool.starmap(get_observed_spectra, args)
+    spectra_end = time.time()
+    print(
+        f"Getting observed spectra took "
+        f"{spectra_end - spectra_start:.2f} seconds."
+    )
+
     # Get the photometry
     phot_start = time.time()
-    phot = []
-    for gal in galaxies:
-        p = get_photometry(gal, filters, "reprocessed", cosmo)
-        print(p)
-        phot.append(p)
+    args = [(gal, filters) for gal in galaxies]
+    with mp.Pool(nthreads) as pool:
+        phot = pool.starmap(get_photometry, args)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
