@@ -455,6 +455,9 @@ if __name__ == "__main__":
         region,
         snap,
         nthreads,
+        comm,
+        rank,
+        size,
     )
     read_end = time.time()
     print(
@@ -497,6 +500,9 @@ if __name__ == "__main__":
         f"data/pure_stellar_{region}_{snap}.hdf5",
         grid_name,
         filters,
+        comm,
+        rank,
+        size,
     )
 
     end = time.time()
