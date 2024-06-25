@@ -198,7 +198,7 @@ def get_spectra(gal, emission_model, kern, nthreads):
 def get_observed_spectra(gal, cosmo):
     """Get the observed spectra for a galaxy."""
     # Get the observed spectra
-    gal.stars.get_observed_spectra(cosmo)
+    gal.get_observed_spectra(cosmo)
 
     return gal
 
@@ -206,9 +206,17 @@ def get_observed_spectra(gal, cosmo):
 def get_photometry(gal, filters):
     """Get the photometry for a galaxy."""
     # Get the photometry
-    phot = gal.get_photo_fluxes(filters, verbose=False)
+    gal.get_photo_fluxes(filters, verbose=False)
 
-    return phot
+    return galaxies
+
+
+def get_integrated_spectra(gal):
+    """Get the integrated spectra for a galaxy."""
+    # Get the integrated spectra
+    gal.integrate_particle_spectra()
+
+    return gal
 
 
 def get_image():
@@ -332,11 +340,20 @@ if __name__ == "__main__":
         f"{spectra_end - spectra_start:.2f} seconds."
     )
 
+    # Get the integrated spectra
+    integrated_start = time.time()
+    galaxies = [get_integrated_spectra(gal) for gal in galaxies]
+    integrated_end = time.time()
+    print(
+        f"Getting integrated spectra took "
+        f"{integrated_end - integrated_start:.2f} seconds."
+    )
+
     # Get the photometry
     phot_start = time.time()
     args = [(gal, filters) for gal in galaxies]
     with mp.Pool(nthreads) as pool:
-        phot = pool.starmap(get_photometry, args)
+        galaxies = pool.starmap(get_photometry, args)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
