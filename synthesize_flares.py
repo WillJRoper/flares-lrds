@@ -71,12 +71,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         centre = gal_grp["COP"][:].T[gal_ind, :] / (1 + z) * Mpc
 
         # Compute the angular radii of each star in arcseconds
-        radii = (np.linalg.norm(star_pos - centre, axis=1) * 1000).to(
-            "kpc"
-        ) / (1 + z)
+        radii = (np.linalg.norm(star_pos - centre, axis=1)).to("kpc") / (1 + z)
         star_ang_rad = (
-            np.arctan(radii.value * cosmo.arcsec_per_kpc_proper(z).value)
-            * arcsecond
+            radii.value * cosmo.arcsec_per_kpc_proper(z).value * arcsecond
         )
 
     # Early exist if there are fewer than 100 baryons
