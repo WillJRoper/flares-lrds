@@ -324,7 +324,11 @@ if __name__ == "__main__":
         fig, ax = gal.stars.plot_spectra(
             spectra_to_plot="reprocessed", quantity_to_plot="fnu", show=False
         )
-        fig.savefig(f"{gal.name}_spectra.png", dpi=300, bbox_inches="tight")
+        fig.savefig(
+            f"{gal.name}_spectra.png".replace("/", "-"),
+            dpi=300,
+            bbox_inches="tight",
+        )
 
     # # Get the photometry
     # phot_start = time.time()
