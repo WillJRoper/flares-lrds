@@ -512,7 +512,7 @@ if __name__ == "__main__":
     nthreads = args.nthreads
 
     # Define the output path
-    outpath = (f"data/pure_stellar_{region}_{snap}.hdf5",)
+    outpath = f"data/pure_stellar_{str(region).zfill(2)}_{snap}.hdf5"
 
     # If the output already exists just exit
     if os.path.exists(outpath):
