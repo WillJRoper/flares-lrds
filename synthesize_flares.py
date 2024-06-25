@@ -8,7 +8,7 @@ import numpy as np
 import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond
 from astropy.cosmology import Planck15 as cosmo
-import mpi4py
+from mpi4py import MPI as mpi
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -408,7 +408,7 @@ if __name__ == "__main__":
     )
 
     # Get MPI info
-    comm = mpi4py.MPI.COMM_WORLD
+    comm = mpi.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
 
