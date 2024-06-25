@@ -14,6 +14,7 @@ from synthesizer.particle import Galaxy
 from synthesizer.filters import FilterCollection
 from synthesizer import Grid
 from synthesizer.kernel_functions import Kernel
+from synthesizer import __version__
 
 from stellar_emission_model import FLARESLOSEmission
 
@@ -31,6 +32,10 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         snap_grp = reg_grp[snap]
         gal_grp = snap_grp["Galaxy"]
         part_grp = snap_grp["Particle"]
+
+        # Get the group and subgrp ids
+        group_id = gal_grp["GroupNumber"][gal_ind]
+        subgrp_id = gal_grp["SubGroupNumber"][gal_ind]
 
         # Get this galaxy's beginning and ending indices for stars
         s_len = gal_grp["S_Length"][...]
@@ -61,7 +66,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         return None
 
     gal = Galaxy(
-        name=f"{reg}/{snap}/{gal_ind}",
+        name=f"{reg}/{snap}/{group_id}_{subgrp_id}",
         redshift=z,
         stars=Stars(
             initial_masses=star_init_mass,
@@ -223,6 +228,69 @@ def get_image():
     pass
 
 
+def write_results(galaxies, path, grid_name):
+    """Write the results to a file."""
+    # Loop over galaxies and unpacking all the data we'll write out
+    fluxes = {}
+    fnus = {}
+    group_ids = []
+    subgroup_ids = []
+    for gal in galaxies:
+        # Get the group and subgroup ids
+        group_ids.append(int(gal.name.split("/")[-1].split("_")[0]))
+        subgroup_ids.append(int(gal.name.split("/")[-1].split("_")[1]))
+
+        # Get the integrated observed spectra
+        for key, spec in gal.stars.spectra.items():
+            fnus.setdefault(key, []).append(spec._fnu)
+
+        # Get the photometry
+        for key, photcol in gal.stars.photo_fluxes.items():
+            fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                fluxes[filt].setdefault(filt, []).append(phot)
+
+    # Get the units for each dataset
+    units = {
+        "fnu": "erg/s/cm^2/Hz",
+        "flux": "erg/s/cm^2",
+    }
+
+    # Write output out to file
+    with h5py.File(path, "w") as hdf:
+        # Write the group and subgroup ids
+        hdf.create_dataset("GroupNumber", data=group_ids)
+        hdf.create_dataset("SubGroupNumber", data=subgroup_ids)
+
+        # Store the grid used and the Synthesizer version
+        hdf.attrs["Grid"] = grid_name
+        hdf.attrs["SynthesizerVersion"] = __version__
+
+        # Create groups for the data
+        fnu_grp = hdf.create_group("ObservedSpectra")
+        flux_grp = hdf.create_group("ObservedPhotometry")
+
+        # Write the integrated observed spectra
+        for key, fnu in fnus.items():
+            dset = fnu_grp.create_dataset(
+                key,
+                data=np.array(fnu),
+                units=units["fnu"],
+            )
+            dset.attrs["Units"] = units["fnu"]
+
+        # Write the photometry
+        for key, flux in fluxes.items():
+            filt_grp = flux_grp.create_group(key)
+            for filt, phot in flux.items():
+                dset = filt_grp.create_dataset(
+                    filt,
+                    data=np.array(phot),
+                    units=units["flux"],
+                )
+                dset.attrs["Units"] = units["flux"]
+
+
 # Define the snapshot tags
 snapshots = [
     "005_z010p000",
@@ -352,6 +420,12 @@ if __name__ == "__main__":
     galaxies = [get_photometry(gal, filters) for gal in galaxies]
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
+
+    # Write out the results
+    write_start = time.time()
+    write_results(
+        galaxies, f"data/pure_stellar_{region}_{snap}.hdf5", grid_name
+    )
 
     end = time.time()
     print(f"Total time: {end - start:.2f} seconds.")
