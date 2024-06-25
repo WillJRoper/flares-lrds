@@ -200,7 +200,14 @@ def get_photometry(gal, filters, spectra_key, cosmo):
     # Get the flux
     gal.stars.particle_spectra[spectra_key].get_fnu(cosmo, gal.redshift)
 
+    print("Got flux")
+
     # Get the photometry
+    print(
+        gal.stars.pareticle_spectra[spectra_key].get_photo_luminosities(
+            filters
+        )
+    )
     phot = gal.stars.particle_spectra[spectra_key].get_photo_fluxes(filters)
 
     return gal, phot
