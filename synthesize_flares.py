@@ -248,7 +248,7 @@ def write_results(galaxies, path, grid_name):
         for key, photcol in gal.stars.photo_fluxes.items():
             fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[filt].setdefault(filt, []).append(phot)
+                fluxes[key].setdefault(filt, []).append(phot)
 
     # Get the units for each dataset
     units = {
