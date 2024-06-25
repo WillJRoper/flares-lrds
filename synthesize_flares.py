@@ -146,7 +146,6 @@ def get_flares_galaxies(
         gal_grp = snap_grp["Galaxy"]
         s_lens = gal_grp["S_Length"][:]
         n_gals = len(s_lens)
-        nparts = np.sum(s_lens)
 
     # Early exist if there are no galaxies
     if n_gals == 0:
@@ -281,9 +280,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     indices = []
     for gal in galaxies:
         # Get the group and subgroup ids
-        indices.append(int(gal.name.split("/")[-1].split("_")[0]))
-        group_ids.append(int(gal.name.split("/")[-1].split("_")[1]))
-        subgroup_ids.append(int(gal.name.split("/")[-1].split("_")[2]))
+        indices.append(int(gal.name.split("_")[2]))
+        group_ids.append(int(gal.name.split("_")[3]))
+        subgroup_ids.append(int(gal.name.split("_")[4]))
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
