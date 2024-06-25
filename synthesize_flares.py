@@ -227,26 +227,15 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
         emission_model,
         nthreads=nthreads,
     )
-    for key in gal.stars.particle_spectra:
-        print("Lnu", key, np.sum(gal.stars.particle_spectra[key].lnu))
 
     # Get the integrated spectra
     gal.integrate_particle_spectra()
 
-    for key in gal.stars.spectra:
-        print("Integrated Lnu", key, np.sum(gal.stars.spectra[key].lnu))
-
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
 
-    for key in gal.stars.spectra:
-        print("Observed Fnu", key, np.sum(gal.stars.spectra[key].fnu))
-
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
-
-    for key in gal.stars.spectra:
-        print("At Output", key, np.sum(gal.stars.spectra[key].fnu))
 
     return gal
 
@@ -457,10 +446,10 @@ if __name__ == "__main__":
     )
 
     for gal in galaxies:
-        for key in gal.stars.spectra:
-            print("At plot", key, np.sum(gal.stars.spectra[key].fnu))
         try:
-            fig, ax = gal.plot_observed_spectra(show=False)
+            fig, ax = gal.plot_observed_spectra(
+                show=False, combined_spectra=False, stellar_spectra=True
+            )
             fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
         except ValueError as e:
             print(f"Failed to plot {gal.name}: {e}")
