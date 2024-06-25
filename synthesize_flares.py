@@ -420,8 +420,11 @@ if __name__ == "__main__":
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
     for gal in galaxies:
-        fig, ax = gal.plot_observed_spectra(show=False)
-        fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
+        try:
+            fig, ax = gal.plot_observed_spectra(show=False)
+            fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
+        except ValueError as e:
+            print(f"Failed to plot {gal.name}: {e}")
 
     # Write out the results
     write_start = time.time()
