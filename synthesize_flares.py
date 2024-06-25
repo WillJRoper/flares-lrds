@@ -511,6 +511,14 @@ if __name__ == "__main__":
     snap = snapshots[args.snap]
     nthreads = args.nthreads
 
+    # Define the output path
+    outpath = (f"data/pure_stellar_{region}_{snap}.hdf5",)
+
+    # If the output already exists just exit
+    if os.path.exists(outpath):
+        _print(f"Output file {outpath} already exists.")
+        exit(0)
+
     start = time.time()
 
     # Get the filters
@@ -578,7 +586,7 @@ if __name__ == "__main__":
     write_start = time.time()
     write_results(
         galaxies,
-        f"data/pure_stellar_{region}_{snap}.hdf5",
+        outpath,
         grid_name,
         filters,
         comm,
