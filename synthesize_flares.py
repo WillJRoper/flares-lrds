@@ -325,7 +325,7 @@ if __name__ == "__main__":
     phot_start = time.time()
     phot = []
     for gal in galaxies:
-        p = get_photometry(gal, filters, "intrinsic", cosmo)
+        p = get_photometry(gal, filters, "reprocessed", cosmo)
         phot.append(p)
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
