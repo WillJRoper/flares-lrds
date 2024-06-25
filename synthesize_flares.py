@@ -385,6 +385,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for key, comp in compactnesses.items():
             filt_grp = comp_grp.create_group(key)
             for filt, comp_arr in comp.items():
+                print(comp_arr)
                 dset = filt_grp.create_dataset(
                     filt,
                     data=np.array(comp_arr),
