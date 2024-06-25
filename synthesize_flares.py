@@ -61,12 +61,15 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
+        # Get the centre of potential
+        centre = gal_grp["COP"][:].T[gal_ind, :] * Mpc
+
     # Early exist if there are fewer than 100 baryons
     if star_mass.size < 100:
         return None
 
     gal = Galaxy(
-        name=f"{reg}/{snap}/{group_id}_{subgrp_id}",
+        name=f"{reg}/{snap}/{gal_ind}_{group_id}_{subgrp_id}",
         redshift=z,
         stars=Stars(
             initial_masses=star_init_mass,
@@ -76,7 +79,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             redshift=z,
             coordinates=star_pos,
             smoothing_lengths=star_sml,
-            centre=star_pos.mean(axis=0),
+            centre=centre,
         ),
         gas=Gas(
             masses=gas_mass,
@@ -84,7 +87,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             redshift=z,
             coordinates=gas_pos,
             smoothing_lengths=gas_sml,
-            centre=gas_pos.mean(axis=0),
+            centre=centre,
         ),
     )
 
@@ -182,14 +185,26 @@ def get_kernel():
     return Kernel()
 
 
-def get_spectra(gal, emission_model, kern, nthreads):
-    """Get the spectra for a galaxy."""
+def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
+    """
+    Analyse a galaxy.
+
+    This will generate all spectra and photometry for a galaxy.
+
+    Args:
+        gal (Galaxy): The galaxy to analyse.
+        emission_model (StellarEmissionModel): The emission model to use.
+        kern (Kernel): The kernel to use.
+        filters (FilterCollection): The filter collection to use.
+        cosmo (astropy.cosmology): The cosmology to use.
+    """
     # Get the los tau_v
-    gal.calculate_los_tau_v(
-        kappa=0.0795,
-        kernel=kern.get_kernel(),
-        force_loop=False,
-    )
+    if gal.tau_v is None:
+        gal.calculate_los_tau_v(
+            kappa=0.0795,
+            kernel=kern.get_kernel(),
+            force_loop=False,
+        )
 
     # Get the spectra
     gal.stars.get_particle_spectra(
@@ -197,29 +212,14 @@ def get_spectra(gal, emission_model, kern, nthreads):
         nthreads=nthreads,
     )
 
-    return gal
+    # Get the integrated spectra
+    gal.integrate_particle_spectra()
 
-
-def get_observed_spectra(gal, cosmo):
-    """Get the observed spectra for a galaxy."""
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
 
-    return gal
-
-
-def get_photometry(gal, filters):
-    """Get the photometry for a galaxy."""
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
-
-    return gal
-
-
-def get_integrated_spectra(gal):
-    """Get the integrated spectra for a galaxy."""
-    # Get the integrated spectra
-    gal.integrate_particle_spectra()
 
     return gal
 
@@ -235,10 +235,12 @@ def write_results(galaxies, path, grid_name):
     fnus = {}
     group_ids = []
     subgroup_ids = []
+    indices = []
     for gal in galaxies:
         # Get the group and subgroup ids
-        group_ids.append(int(gal.name.split("/")[-1].split("_")[0]))
-        subgroup_ids.append(int(gal.name.split("/")[-1].split("_")[1]))
+        indices.append(int(gal.name.split("/")[-1].split("_")[0]))
+        group_ids.append(int(gal.name.split("/")[-1].split("_")[1]))
+        subgroup_ids.append(int(gal.name.split("/")[-1].split("_")[2]))
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
@@ -387,37 +389,24 @@ if __name__ == "__main__":
         f"{read_end - read_start:.2f} seconds."
     )
 
-    # Get the spectra
-    spectra_start = time.time()
+    # Analyse the galaxy
+    gal_start = time.time()
     galaxies = [
-        get_spectra(gal, emission_model, kern, nthreads) for gal in galaxies
+        analyse_galaxy(
+            gal,
+            emission_model,
+            kern,
+            nthreads,
+            filters,
+            cosmo,
+        )
+        for gal in galaxies
     ]
-    spectra_end = time.time()
-    print(f"Getting spectra took {spectra_end - spectra_start:.2f} seconds.")
-
-    # Get the observed spectra
-    spectra_start = time.time()
-    galaxies = [get_observed_spectra(gal, cosmo) for gal in galaxies]
-    spectra_end = time.time()
+    gal_end = time.time()
     print(
-        f"Getting observed spectra took "
-        f"{spectra_end - spectra_start:.2f} seconds."
+        f"Analysing {len(galaxies)} galaxies took "
+        f"{gal_end - gal_start:.2f} seconds."
     )
-
-    # Get the integrated spectra
-    integrated_start = time.time()
-    galaxies = [get_integrated_spectra(gal) for gal in galaxies]
-    integrated_end = time.time()
-    print(
-        f"Getting integrated spectra took "
-        f"{integrated_end - integrated_start:.2f} seconds."
-    )
-
-    # Get the photometry
-    phot_start = time.time()
-    galaxies = [get_photometry(gal, filters) for gal in galaxies]
-    phot_end = time.time()
-    print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
     for gal in galaxies:
         try:
