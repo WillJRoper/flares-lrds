@@ -90,7 +90,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         return None
 
     gal = Galaxy(
-        name=f"{reg}/{snap}/{gal_ind}_{group_id}_{subgrp_id}",
+        name=f"{reg}_{snap}_{gal_ind}_{group_id}_{subgrp_id}",
         redshift=z,
         stars=Stars(
             initial_masses=star_init_mass,
@@ -157,21 +157,17 @@ def get_flares_galaxies(
     order = np.random.permutation(n_gals)
 
     # Distribute galaxies by number of particles
-    n_parts_per_rank = nparts // size
     parts_per_rank = np.zeros(size, dtype=int)
-    rank_start = np.zeros(size + 1, dtype=int)
-    rank_start[-1] = n_gals
-    select = 0
+    gals_on_rank = {rank: [] for rank in range(size)}
     for i in order:
+        select = np.argmin(parts_per_rank)
+        gals_on_rank[select].append(i)
         parts_per_rank[select] += s_lens[i]
-        if parts_per_rank[select] > n_parts_per_rank:
-            select += 1
-            rank_start[select] = i
 
     # Prepare the arguments for each galaxy on this rank
     args = [
         (gal_ind, master_file_path, reg, snap, z)
-        for gal_ind in order[rank_start[rank] : rank_start[rank + 1]]
+        for gal_ind in gals_on_rank[rank]
     ]
 
     # Get all the galaxies using multiprocessing
@@ -580,9 +576,12 @@ if __name__ == "__main__":
     for gal in galaxies:
         try:
             fig, ax = gal.plot_observed_spectra(
-                show=False, combined_spectra=False, stellar_spectra=True
+                show=False,
+                combined_spectra=False,
+                stellar_spectra=True,
+                figsize=(10, 5),
             )
-            fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
+            fig.savefig(f"plots/{gal.name}.png", dpi=300, bbox_inches="tight")
         except ValueError as e:
             _print(f"Failed to plot {gal.name}: {e}")
 
