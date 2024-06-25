@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, Mpc, Msun, arcsecond
+from unyt import Gyr, Mpc, Msun, arcsecond, angstrom
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 
@@ -278,6 +278,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     fluxes = {}
     fnus = {}
     compactnesses = {}
+    uv_slopes = {}
+    ir_slopes = {}
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -306,6 +308,15 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt].value
                 )
 
+        # Get slopes
+        for key, spectra in gal.stars.spectra.items():
+            uv_slopes.setdefault(key, []).append(
+                spectra.measure_beta(window=(1500 * angstrom, 3000 * angstrom))
+            )
+            ir_slopes.setdefault(key, []).append(
+                spectra.measure_beta(window=(4400 * angstrom, 7500 * angstrom))
+            )
+
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
@@ -313,6 +324,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     group_per_rank = comm.gather(group_ids, root=0)
     subgroup_per_rank = comm.gather(subgroup_ids, root=0)
     index_per_rank = comm.gather(indices, root=0)
+    uv_slope_per_rank = comm.gather(uv_slopes, root=0)
+    ir_slope_per_rank = comm.gather(ir_slopes, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -325,13 +338,17 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     group_ids = []
     subgroup_ids = []
     indices = []
-    for fnu, flux, comp, group, subgroup, index in zip(
+    uv_slopes = {}
+    ir_slopes = {}
+    for fnu, flux, comp, group, subgroup, index, uv_slope, ir_slope in zip(
         fnu_per_rank,
         flux_per_rank,
         comp_per_rank,
         group_per_rank,
         subgroup_per_rank,
         index_per_rank,
+        uv_slope_per_rank,
+        ir_slope_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -343,6 +360,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             compactnesses.setdefault(key, {})
             for filt in filters.filter_codes:
                 compactnesses[key].setdefault(filt, []).extend(comps[filt])
+        for key, slopes in uv_slope.items():
+            uv_slopes.setdefault(key, []).extend(slopes)
+        for key, slopes in ir_slope.items():
+            ir_slopes.setdefault(key, []).extend(slopes)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -411,6 +432,24 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     data=np.array(comp_arr),
                 )
                 dset.attrs["Units"] = "dimensionless"
+
+        # Write the UV slopes
+        uv_grp = hdf.create_group("UVSlopes")
+        for key, slopes in uv_slopes.items():
+            dset = uv_grp.create_dataset(
+                key,
+                data=np.array(slopes),
+            )
+            dset.attrs["Units"] = "dimensionless"
+
+        # Write the IR slopes
+        ir_grp = hdf.create_group("IRSlopes")
+        for key, slopes in ir_slopes.items():
+            dset = ir_grp.create_dataset(
+                key,
+                data=np.array(slopes),
+            )
+            dset.attrs["Units"] = "dimensionless"
 
 
 # Define the snapshot tags
