@@ -348,6 +348,22 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         "flux": "erg/s/cm^2",
     }
 
+    # Sort the data by galaxy index
+    sort_indices = np.argsort(indices)
+    for key, spec in fnus.items():
+        fnus[key] = [spec[i] for i in sort_indices]
+    for key, phot in fluxes.items():
+        fluxes[key] = {
+            filt: [phot[filt][i] for i in sort_indices] for filt in phot
+        }
+    for key, comp in compactnesses.items():
+        compactnesses[key] = {
+            filt: [comp[filt][i] for i in sort_indices] for filt in comp
+        }
+    group_ids = [group_ids[i] for i in sort_indices]
+    subgroup_ids = [subgroup_ids[i] for i in sort_indices]
+    indices = [indices[i] for i in sort_indices]
+
     # Write output out to file
     with h5py.File(path, "w") as hdf:
         # Write the group and subgroup ids
