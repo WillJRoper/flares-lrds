@@ -163,7 +163,7 @@ def get_grid(grid_name, grid_dir, filters):
     return Grid(
         grid_name,
         grid_dir,
-        filters=filters,
+        # filters=filters,
     )
 
 
