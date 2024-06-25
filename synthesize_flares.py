@@ -275,7 +275,6 @@ def write_results(galaxies, path, grid_name):
             dset = fnu_grp.create_dataset(
                 key,
                 data=np.array(fnu),
-                units=units["fnu"],
             )
             dset.attrs["Units"] = units["fnu"]
 
@@ -286,7 +285,6 @@ def write_results(galaxies, path, grid_name):
                 dset = filt_grp.create_dataset(
                     filt,
                     data=np.array(phot),
-                    units=units["flux"],
                 )
                 dset.attrs["Units"] = units["flux"]
 
