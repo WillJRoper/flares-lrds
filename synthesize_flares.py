@@ -288,8 +288,8 @@ def write_results(galaxies, path, grid_name, filters):
             compactnesses.setdefault(key, {})
             for filt in filters.filter_codes:
                 compactnesses[key].setdefault(filt, []).append(
-                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"]
-                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"]
+                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"][filt]
+                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt]
                 )
 
     # Get the units for each dataset
