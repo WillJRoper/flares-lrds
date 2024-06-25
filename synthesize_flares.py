@@ -331,9 +331,7 @@ if __name__ == "__main__":
 
     # Get the observed spectra
     spectra_start = time.time()
-    args = [(gal, cosmo) for gal in galaxies]
-    with mp.Pool(nthreads) as pool:
-        galaxies = pool.starmap(get_observed_spectra, args)
+    galaxies = [get_observed_spectra(gal, cosmo) for gal in galaxies]
     spectra_end = time.time()
     print(
         f"Getting observed spectra took "
@@ -351,9 +349,7 @@ if __name__ == "__main__":
 
     # Get the photometry
     phot_start = time.time()
-    args = [(gal, filters) for gal in galaxies]
-    with mp.Pool(nthreads) as pool:
-        galaxies = pool.starmap(get_photometry, args)
+    galaxies = [get_photometry(gal, filters) for gal in galaxies]
     phot_end = time.time()
     print(f"Getting photometry took {phot_end - phot_start:.2f} seconds.")
 
