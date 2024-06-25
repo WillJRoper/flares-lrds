@@ -203,7 +203,7 @@ def get_photometry(gal, filters, spectra_key, cosmo):
     # Get the photometry
     phot = gal.stars.particle_spectra[spectra_key].get_photo_fluxes(filters)
 
-    return gal, phot
+    return phot
 
 
 def get_image():
