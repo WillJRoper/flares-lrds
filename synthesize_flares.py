@@ -20,6 +20,14 @@ from synthesizer._version import __version__
 from stellar_emission_model import FLARESLRDsEmission
 
 
+def _print(*args, **kwargs):
+    """Overload print with rank info."""
+    comm = mpi.COMM_WORLD
+    rank = comm.Get_rank()
+    print(f"[{rank}]: ", end="")
+    print(*args, **kwargs)
+
+
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     """
     Get a galaxy from the master file.
@@ -473,7 +481,7 @@ if __name__ == "__main__":
     filt_start = time.time()
     filters = get_flares_filters("lrd_filters.hdf5")
     filt_end = time.time()
-    print(f"Getting filters took {filt_end - filt_start:.2f} seconds.")
+    _print(f"Getting filters took {filt_end - filt_start:.2f} seconds.")
 
     # Get the grid
     grid_start = time.time()
@@ -484,7 +492,7 @@ if __name__ == "__main__":
     start_emission = time.time()
     emission_model = get_emission_model(grid)
     end_emission = time.time()
-    print(
+    _print(
         f"Getting the emission model took "
         f"{end_emission - start_emission:.2f} seconds."
     )
@@ -506,7 +514,7 @@ if __name__ == "__main__":
         size,
     )
     read_end = time.time()
-    print(
+    _print(
         f"Creating {len(galaxies)} galaxies took "
         f"{read_end - read_start:.2f} seconds."
     )
@@ -525,7 +533,7 @@ if __name__ == "__main__":
         for gal in galaxies
     ]
     gal_end = time.time()
-    print(
+    _print(
         f"Analysing {len(galaxies)} galaxies took "
         f"{gal_end - gal_start:.2f} seconds."
     )
@@ -537,7 +545,7 @@ if __name__ == "__main__":
             )
             fig.savefig(f"plots/{gal.name}.png".replace("/", "_"))
         except ValueError as e:
-            print(f"Failed to plot {gal.name}: {e}")
+            _print(f"Failed to plot {gal.name}: {e}")
 
     # Write out the results
     write_start = time.time()
@@ -554,4 +562,4 @@ if __name__ == "__main__":
     comm.barrier()
 
     end = time.time()
-    print(f"Total time: {end - start:.2f} seconds.")
+    _print(f"Total time: {end - start:.2f} seconds.")
