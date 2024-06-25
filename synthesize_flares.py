@@ -227,12 +227,20 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
         emission_model,
         nthreads=nthreads,
     )
+    for key in gal.stars.particle_spectra:
+        print("Lnu", key, np.sum(gal.stars.particle_spectra[key].lnu))
 
     # Get the integrated spectra
     gal.integrate_particle_spectra()
 
+    for key in gal.stars.spectra:
+        print("Integrated Lnu", key, np.sum(gal.stars.spectra[key].lnu))
+
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
+
+    for key in gal.stars.spectra:
+        print("Observed Fnu", key, np.sum(gal.stars.spectra[key].fnu))
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
@@ -274,8 +282,8 @@ def write_results(galaxies, path, grid_name, filters):
             compactnesses.setdefault(key, {})
             for filt in filters.filter_codes:
                 compactnesses[key].setdefault(filt, []).append(
-                    gal.stars.photo_fluxes[f"angular_large_{key}"]
-                    / gal.stars.photo_fluxes[f"angular_small_{key}"]
+                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"]
+                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"]
                 )
 
     # Get the units for each dataset
