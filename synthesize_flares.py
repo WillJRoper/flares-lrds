@@ -14,7 +14,7 @@ from synthesizer.particle import Galaxy
 from synthesizer.filters import FilterCollection
 from synthesizer import Grid
 from synthesizer.kernel_functions import Kernel
-from synthesizer import __version__
+from synthesizer._version import __version__
 
 from stellar_emission_model import FLARESLOSEmission
 
