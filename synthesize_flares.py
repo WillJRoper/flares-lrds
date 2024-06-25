@@ -16,7 +16,7 @@ from synthesizer import Grid
 from synthesizer.kernel_functions import Kernel
 from synthesizer._version import __version__
 
-from stellar_emission_model import FLARESLOSEmission
+from stellar_emission_model import FLARESLRDsEmission
 
 
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
@@ -64,6 +64,12 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         # Get the centre of potential
         centre = gal_grp["COP"][:].T[gal_ind, :] * Mpc
 
+        # Compute the angular radii of each star in arcseconds
+        radii = np.linalg.norm(star_pos - centre, axis=1)
+        star_ang_rad = np.arctan(
+            radii / cosmo.angular_diameter_distance(z)
+        ).to("arcsec")
+
     # Early exist if there are fewer than 100 baryons
     if star_mass.size < 100:
         return None
@@ -80,6 +86,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             coordinates=star_pos,
             smoothing_lengths=star_sml,
             centre=centre,
+            angular_radii=star_ang_rad,
         ),
         gas=Gas(
             masses=gas_mass,
@@ -177,7 +184,7 @@ def get_grid(grid_name, grid_dir, filters):
 
 def get_emission_model(grid, fesc=0.0, fesc_ly_alpha=1.0):
     """Get a StellarEmissionModel."""
-    return FLARESLOSEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
+    return FLARESLRDsEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
 
 
 def get_kernel():
@@ -199,7 +206,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
         cosmo (astropy.cosmology): The cosmology to use.
     """
     # Get the los tau_v
-    if gal.tau_v is None:
+    if gal.stars.tau_v is None:
         gal.calculate_los_tau_v(
             kappa=0.0795,
             kernel=kern.get_kernel(),
@@ -228,11 +235,12 @@ def get_image():
     pass
 
 
-def write_results(galaxies, path, grid_name):
+def write_results(galaxies, path, grid_name, filters):
     """Write the results to a file."""
     # Loop over galaxies and unpacking all the data we'll write out
     fluxes = {}
     fnus = {}
+    compactnesses = {}
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -251,6 +259,15 @@ def write_results(galaxies, path, grid_name):
             fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
                 fluxes[key].setdefault(filt, []).append(phot)
+
+        # Get the compactness
+        for key in ["reprocessed", "attenuated"]:
+            compactnesses.setdefault(key, {})
+            for filt in filters.filter_codes:
+                compactnesses[key].setdefault(filt, []).append(
+                    gal.stars.photo_fluxes[f"angular_large_{key}"]
+                    / gal.stars.photo_fluxes[f"angular_small_{key}"]
+                )
 
     # Get the units for each dataset
     units = {
@@ -271,6 +288,7 @@ def write_results(galaxies, path, grid_name):
         # Create groups for the data
         fnu_grp = hdf.create_group("ObservedSpectra")
         flux_grp = hdf.create_group("ObservedPhotometry")
+        comp_grp = hdf.create_group("Compactness")
 
         # Write the integrated observed spectra
         for key, fnu in fnus.items():
@@ -289,6 +307,16 @@ def write_results(galaxies, path, grid_name):
                     data=np.array(phot),
                 )
                 dset.attrs["Units"] = units["flux"]
+
+        # Write the compactness
+        for key, comp in compactnesses.items():
+            filt_grp = comp_grp.create_group(key)
+            for filt, comp_arr in comp.items():
+                dset = filt_grp.create_dataset(
+                    filt,
+                    data=np.array(comp_arr),
+                )
+                dset.attrs["Units"] = "dimensionless"
 
 
 # Define the snapshot tags
