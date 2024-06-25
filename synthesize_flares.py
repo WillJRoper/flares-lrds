@@ -25,6 +25,10 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
 
     Args:
         gal_ind (int): The index of the galaxy to get.
+        master_file_path (str): The path to the master file.
+        reg (str): The region to use.
+        snap (str): The snapshot to use.
+        z (float): The redshift of the snapshot.
     """
     # Get the galaxy data we need from the master file
     with h5py.File(master_file_path, "r") as hdf:
@@ -451,7 +455,10 @@ if __name__ == "__main__":
     # Write out the results
     write_start = time.time()
     write_results(
-        galaxies, f"data/pure_stellar_{region}_{snap}.hdf5", grid_name
+        galaxies,
+        f"data/pure_stellar_{region}_{snap}.hdf5",
+        grid_name,
+        filters,
     )
 
     end = time.time()
