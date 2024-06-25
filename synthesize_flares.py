@@ -280,9 +280,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     indices = []
     for gal in galaxies:
         # Get the group and subgroup ids
-        indices.append(int(gal.name.split("_")[2]))
-        group_ids.append(int(gal.name.split("_")[3]))
-        subgroup_ids.append(int(gal.name.split("_")[4]))
+        indices.append(int(gal.name.split("_")[3]))
+        group_ids.append(int(gal.name.split("_")[4]))
+        subgroup_ids.append(int(gal.name.split("_")[5]))
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
