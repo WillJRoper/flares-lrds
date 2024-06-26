@@ -19,6 +19,11 @@ from synthesizer._version import __version__
 
 from stellar_emission_model import FLARESLRDsEmission
 
+# Silence warnings (only because we now what we're doing)
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 def _print(*args, **kwargs):
     """Overload print with rank info."""
