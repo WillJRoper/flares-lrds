@@ -29,7 +29,8 @@ def _print(*args, **kwargs):
     """Overload print with rank info."""
     comm = mpi.COMM_WORLD
     rank = comm.Get_rank()
-    print(f"[{rank}]: ", end="")
+    size = comm.Get_size()
+    print(f"[{str(rank).zfill(len(str(size)) + 1)}]: ", end="")
     print(*args, **kwargs)
 
 
