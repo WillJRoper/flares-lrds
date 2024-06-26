@@ -162,6 +162,8 @@ def get_flares_galaxies(
     parts_per_rank = np.zeros(size, dtype=int)
     gals_on_rank = {rank: [] for rank in range(size)}
     for i in order:
+        if s_lens[i] < 100:
+            continue
         select = np.argmin(parts_per_rank)
         gals_on_rank[select].append(i)
         parts_per_rank[select] += s_lens[i]
