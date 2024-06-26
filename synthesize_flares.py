@@ -129,7 +129,13 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
 
 
 def get_flares_galaxies(
-    master_file_path, region, snap, nthreads, comm, rank, size
+    master_file_path,
+    region,
+    snap,
+    nthreads,
+    comm,
+    rank,
+    size,
 ):
     """
     Get Galaxy objects for FLARES galaxies.

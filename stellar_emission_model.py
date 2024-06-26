@@ -1,4 +1,5 @@
 """A script defining the pure stellar emission model used for LRDs in FLARES."""
+
 from unyt import Myr, arcsecond
 
 from synthesizer.dust.attenuation import PowerLaw
