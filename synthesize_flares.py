@@ -296,6 +296,28 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
                 np.argmin(np.abs(cum_fluxes - half_flux))
             ]
 
+    # Get the 95% light radius
+    gal.stars.light_radii_95 = {}
+    for spec in gal.stars.particle_photo_fluxes.keys():
+        gal.stars.light_radii_95[spec] = {}
+        for filt in filters.filter_codes:
+            # Sort radii
+            rs = gal.stars.radii
+            sinds = np.argsort(rs)
+            rs = rs[sinds]
+
+            # Get the cumalitive flux and half the total
+            cum_fluxes = np.cumsum(
+                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
+            )
+            light_flux = 0.95 * cum_fluxes[-1]
+
+            # Get the half light radius (using the closest particle to
+            # the half flux)
+            gal.stars.light_radii_95[spec][filt] = rs[
+                np.argmin(np.abs(cum_fluxes - light_flux))
+            ]
+
     return gal
 
 
@@ -312,6 +334,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     uv_slopes = {}
     ir_slopes = {}
     sizes = {}
+    sizes_95 = {}
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -355,6 +378,11 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 sizes.setdefault(spec, {}).setdefault(filt, []).append(
                     gal.stars.half_light_radii[spec][filt]
                 )
+        for spec in gal.stars.light_radii_95.keys():
+            for filt in gal.stars.light_radii_95[spec].keys():
+                sizes_95.setdefault(spec, {}).setdefault(filt, []).append(
+                    gal.stars.light_radii_95[spec][filt]
+                )
 
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
@@ -366,6 +394,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     uv_slope_per_rank = comm.gather(uv_slopes, root=0)
     ir_slope_per_rank = comm.gather(ir_slopes, root=0)
     size_per_rank = comm.gather(sizes, root=0)
+    size_95_per_rank = comm.gather(sizes_95, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -381,6 +410,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     uv_slopes = {}
     ir_slopes = {}
     sizes = {}
+    sizes_95 = {}
     for (
         fnu,
         flux,
@@ -391,6 +421,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         uv_slope,
         ir_slope,
         size,
+        size_95,
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
@@ -401,6 +432,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         uv_slope_per_rank,
         ir_slope_per_rank,
         size_per_rank,
+        size_95_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -420,6 +452,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             sizes.setdefault(key, {})
             for filt, size_arr in d.items():
                 sizes[key].setdefault(filt, []).extend(size_arr)
+        for key, d in size_95.items():
+            sizes_95.setdefault(key, {})
+            for filt, size_arr in d.items():
+                sizes_95[key].setdefault(filt, []).extend(size_arr)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -445,6 +481,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         ir_slopes[key] = [slopes[i] for i in sort_indices]
     for key, d in sizes.items():
         sizes[key] = {filt: [d[filt][i] for i in sort_indices] for filt in d}
+    for key, d in sizes_95.items():
+        sizes_95[key] = {
+            filt: [d[filt][i] for i in sort_indices] for filt in d
+        }
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
@@ -520,6 +560,20 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     data=np.array(size_arr),
                 )
                 dset.attrs["Units"] = units["hlr"]
+
+        # Write the 95% light radii
+        hlr95_grp = hdf.create_group("LightRadii95")
+        for key, d in sizes_95.items():
+            filt_grp = hlr95_grp.create_group(key)
+            for filt, size_arr in d.items():
+                dset = filt_grp.create_dataset(
+                    filt,
+                    data=np.array(size_arr),
+                )
+                dset.attrs["Units"] = units["hlr"]
+
+        # Write out the indices
+        hdf.create_dataset("Indices", data=np.array(indices))
 
 
 # Define the snapshot tags
