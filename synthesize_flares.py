@@ -300,6 +300,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
             # Sort radii
             rs = gal.stars.radii
             sinds = np.argsort(rs)
+            rs = rs[sinds]
 
             # Get the cumalitive flux and half the total
             cum_fluxes = np.cumsum(
@@ -307,16 +308,11 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
             )
             half_flux = 0.5 * cum_fluxes[-1]
 
-            # Find the index closest to the half flux
-            half_index = np.argmin(np.abs(cum_fluxes - half_flux))
-
-            # Interpolate around the half index to get a more accurate
-            # measurement
-            f = interp1d(
-                cum_fluxes[half_index - 10 : half_index + 10],
-                rs[sinds][half_index - 10 : half_index + 10],
-            )
-            gal.stars.half_light_radii[spec][filt] = f(half_flux)
+            # Get the half light radius (using the closest particle to
+            # the half flux)
+            gal.stars.half_light_radii[spec][filt] = rs[
+                np.argmin(np.abs(cum_fluxes - half_flux))
+            ]
 
     return gal
 
