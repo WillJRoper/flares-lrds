@@ -80,15 +80,24 @@ for spec in spectra_keys:
 
 # Define plotting parameters
 gridsize = 50
-norm = mcolors.LogNorm(1, 10**4)
+norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 extent = (-2.7, 0, -2.7, 0)
 
 # Loop over the snapshots
 for snap in snaps:
     if len(uv_slopes["attenuated"][snap]) == 0:
         continue
+
+    print(f"At {snap} have {np.sum(att_red[snap])} LRDs")
+
     # Plot hexbins of slope vs slope for all galaxies and the red sample
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    # Turn on a grid and make sure it is behind everything
+    axs[0].grid(True)
+    axs[0].set_axisbelow(True)
+    axs[1].grid(True)
+    axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
         optical_slopes["attenuated"][snap],
@@ -107,7 +116,7 @@ for snap in snaps:
         ha="right",
         va="bottom",
         transform=axs[0].transAxes,
-        fontsize=12,
+        fontsize=8,
         color="k",
     )
 
@@ -128,7 +137,7 @@ for snap in snaps:
         ha="right",
         va="bottom",
         transform=axs[1].transAxes,
-        fontsize=12,
+        fontsize=8,
         color="k",
     )
 
@@ -151,6 +160,12 @@ for snap in snaps:
     # Plot hexbins of slope vs slope for all galaxies and the red sample
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
 
+    # Turn on a grid and make sure it is behind everything
+    axs[0].grid(True)
+    axs[0].set_axisbelow(True)
+    axs[1].grid(True)
+    axs[1].set_axisbelow(True)
+
     axs[0].hexbin(
         optical_slopes["reprocessed"][snap],
         uv_slopes["reprocessed"][snap],
@@ -168,7 +183,7 @@ for snap in snaps:
         ha="right",
         va="bottom",
         transform=axs[0].transAxes,
-        fontsize=12,
+        fontsize=8,
         color="k",
     )
 
@@ -185,11 +200,11 @@ for snap in snaps:
     axs[1].text(
         0.95,
         0.05,
-        "(Red 1 | Red 2) (Kokorev+24)",
+        "Red 1 | Red 2 (Kokorev+24)",
         ha="right",
         va="bottom",
         transform=axs[1].transAxes,
-        fontsize=12,
+        fontsize=8,
         color="k",
     )
 
