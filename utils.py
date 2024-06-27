@@ -163,10 +163,8 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
-                        sizes[snap].setdefault(filt, []).extend(
-                            hdf[
-                                f"HalfLightRadii/{spec}/{filt.split('.')[-1]}"
-                            ][...]
+                        sizes[snap].setdefault(filt.split(".")[-1], []).extend(
+                            hdf[f"HalfLightRadii/{spec}/{filt}"][...]
                         )
 
                 except KeyError as e:
