@@ -51,13 +51,13 @@ for reg in regions:
             for spec in spectra_keys:
                 try:
                     uv_slopes.setdefault(spec, {}).setdefault(snap, []).append(
-                        hdf[f"{reg}/{snap}/UVSlopes"][...]
+                        hdf["UVSlopes"][...]
                     )
-                    optical_slopes.setdefault(spec, {}).setdefault(
-                        snap, []
-                    ).append(hdf[f"{reg}/{snap}/IRSlopes"][...])
+                    optical_slopes.setdefault(spec, {}).setdefault(snap, []).append(
+                        hdf["IRSlopes"][...]
+                    )
                     compacts.setdefault(spec, {}).setdefault(snap, []).append(
-                        hdf[f"{reg}/{snap}/Compactness"][...]
+                        hdf["Compactness"][...]
                     )
                 except KeyError as e:
                     print(e)
@@ -70,19 +70,18 @@ fig, ax = plt.subplots(2, 1, figsize=(6, 8))
 # Loop over the spectra
 for spec in spectra_keys:
     for snap in snaps:
-        for i, reg in enumerate(regions):
-            ax[0].scatter(
-                uv_slopes[spec][snap][i],
-                optical_slopes[spec][snap][i],
-                c=compacts[spec][snap][i],
-                cmap="viridis",
-            )
-            ax[1].scatter(
-                uv_slopes[spec][snap][i],
-                optical_slopes[spec][snap][i],
-                c=compacts[spec][snap][i],
-                cmap="viridis",
-            )
+        ax[0].scatter(
+            uv_slopes[spec][snap],
+            optical_slopes[spec][snap],
+            c=compacts[spec][snap],
+            cmap="viridis",
+        )
+        ax[1].scatter(
+            uv_slopes[spec][snap],
+            optical_slopes[spec][snap],
+            c=compacts[spec][snap],
+            cmap="viridis",
+        )
 
 
 # Add colourbars
