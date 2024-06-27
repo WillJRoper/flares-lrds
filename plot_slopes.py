@@ -56,7 +56,7 @@ for reg in regions:
                     )
                     optical_slopes.setdefault(spec, {}).setdefault(
                         snap, []
-                    ).extend(hdf["IRSlopes"][spec][...])
+                    ).extend(hdf["OpticalSlopes"][spec][...])
                     compacts.setdefault(spec, {}).setdefault(snap, []).extend(
                         hdf["Compactness"][spec]["JWST/NIRCam.F444W"][...]
                     )
