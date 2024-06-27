@@ -82,6 +82,7 @@ for spec in spectra_keys:
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 extent = (-2.7, 0, -2.7, 0)
+extent2 = ()
 
 # Loop over the snapshots
 for snap in snaps:
@@ -118,6 +119,8 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     axs[1].hexbin(
@@ -139,6 +142,8 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     # Turn off the second y axis
@@ -188,6 +193,8 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     axs[1].hexbin(
@@ -209,6 +216,8 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     # Turn off the second y axis
@@ -230,6 +239,8 @@ for snap in snaps:
     )
     plt.close(fig)
 
+    okinds = att_fluxes[snap]["F444W"] > 0
+
     # Plot the ratio between slopes against the F444W flux
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
 
@@ -240,45 +251,54 @@ for snap in snaps:
     axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
-        att_fluxes[snap]["F444W"],
-        optical_slopes["attenuated"][snap] / uv_slopes["attenuated"][snap],
+        att_fluxes[snap]["F444W"][okinds],
+        optical_slopes["attenuated"][snap][okinds]
+        / uv_slopes["attenuated"][snap][okinds],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
         mincnt=1,
         linewidth=0.2,
+        xscale="log",
     )
     axs[0].text(
         0.95,
-        0.05,
+        0.95,
         "All Galaxies",
         ha="right",
         va="bottom",
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     axs[1].hexbin(
-        att_fluxes[snap]["F444W"][att_red[snap]],
-        optical_slopes["attenuated"][snap][att_red[snap]]
-        / uv_slopes["attenuated"][snap][att_red[snap]],
+        att_fluxes[snap]["F444W"][np.logical_and(att_red[snap], okinds)],
+        optical_slopes["attenuated"][snap][
+            np.logical_and(att_red[snap], okinds)
+        ]
+        / uv_slopes["attenuated"][snap][np.logical_and(att_red[snap], okinds)],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
         mincnt=1,
         linewidth=0.2,
+        xscale="log",
     )
 
     axs[1].text(
         0.95,
-        0.05,
+        0.95,
         "Red 1 | Red 2 (Kokorev+24)",
         ha="right",
         va="bottom",
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     # Turn off the second y axis
@@ -300,6 +320,7 @@ for snap in snaps:
         dpi=100,
         bbox_inches="tight",
     )
+    plt.close(fig)
 
     # Plot the ratio between slopes against the F444W flux
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
@@ -311,45 +332,56 @@ for snap in snaps:
     axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
-        att_fluxes[snap]["F444W"],
-        optical_slopes["reprocessed"][snap] / uv_slopes["reprocessed"][snap],
+        att_fluxes[snap]["F444W"][okinds],
+        optical_slopes["reprocessed"][snap][okinds]
+        / uv_slopes["reprocessed"][snap][okinds],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
         mincnt=1,
         linewidth=0.2,
+        xscale="log",
     )
     axs[0].text(
         0.95,
-        0.05,
+        0.95,
         "All Galaxies",
         ha="right",
         va="bottom",
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     axs[1].hexbin(
-        att_fluxes[snap]["F444W"][att_red[snap]],
-        optical_slopes["reprocessed"][snap][att_red[snap]]
-        / uv_slopes["reprocessed"][snap][att_red[snap]],
+        att_fluxes[snap]["F444W"][np.logical_and(att_red[snap], okinds)],
+        optical_slopes["reprocessed"][snap][
+            np.logical_and(att_red[snap], okinds)
+        ]
+        / uv_slopes["reprocessed"][snap][
+            np.logical_and(att_red[snap], okinds)
+        ],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
         mincnt=1,
         linewidth=0.2,
+        xscale="log",
     )
 
     axs[1].text(
         0.95,
-        0.05,
+        0.95,
         "Red 1 | Red 2 (Kokorev+24)",
         ha="right",
         va="bottom",
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
+        fancybox=True,
+        bbox=dict(facecolor="white", edgecolor="black"),
     )
 
     # Turn off the second y axis
@@ -371,3 +403,4 @@ for snap in snaps:
         dpi=100,
         bbox_inches="tight",
     )
+    plt.close(fig)
