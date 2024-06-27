@@ -117,50 +117,39 @@ def get_fluxes_colors(synth_data_path, spec):
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
                     f150w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
                     f200w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
                     f277w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
                     f356w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
                     f444w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
                             ...
                         ],
-                        hdf[
-                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"
-                        ].attrs["Units"],
+                        "erg s**-1 cm**-2 Hz**-1",
                     ).to("nJy")
+
                 except KeyError as e:
                     print(f"KeyError: {e}")
                     continue
