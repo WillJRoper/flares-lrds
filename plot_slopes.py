@@ -41,6 +41,7 @@ spectra_keys = ["attenuated", "reprocessed"]
     att_red2,
     att_sizes,
     att_masks,
+    _,
 ) = get_synth_data(data_file, "attenuated")
 (
     rep_fluxes,
@@ -49,6 +50,7 @@ spectra_keys = ["attenuated", "reprocessed"]
     rep_red2,
     rep_sizes,
     rep_masks,
+    _,
 ) = get_synth_data(data_file, "reprocessed")
 
 # Get the slopes
