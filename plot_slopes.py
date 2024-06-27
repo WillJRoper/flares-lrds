@@ -240,7 +240,7 @@ for snap in snaps:
     axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
-        att_fluxes[snap],
+        att_fluxes[snap]["F444W"],
         optical_slopes["attenuated"][snap] / uv_slopes["attenuated"][snap],
         gridsize=gridsize,
         cmap="viridis",
@@ -260,7 +260,7 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        att_fluxes[snap][att_red[snap]],
+        att_fluxes[snap]["F444W"][att_red[snap]],
         optical_slopes["attenuated"][snap][att_red[snap]]
         / uv_slopes["attenuated"][snap][att_red[snap]],
         gridsize=gridsize,
@@ -311,7 +311,7 @@ for snap in snaps:
     axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
-        att_fluxes[snap],
+        att_fluxes[snap]["F444W"],
         optical_slopes["reprocessed"][snap] / uv_slopes["reprocessed"][snap],
         gridsize=gridsize,
         cmap="viridis",
@@ -331,7 +331,7 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        att_fluxes[snap][att_red[snap]],
+        att_fluxes[snap]["F444W"][att_red[snap]],
         optical_slopes["reprocessed"][snap][att_red[snap]]
         / uv_slopes["reprocessed"][snap][att_red[snap]],
         gridsize=gridsize,
