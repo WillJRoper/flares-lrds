@@ -9,6 +9,7 @@ import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond, angstrom
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
+from scipy.interpolate import interp1d
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -67,7 +68,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         end_gas = np.sum(g_len[: gal_ind + 1])
 
         # Get the star data
-        star_pos = part_grp["S_Coordinates"][:, start:end].T / (1 + z) * Mpc
+        star_pos = part_grp["S_Coordinates"].T[start:end, :] / (1 + z) * Mpc
         star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
         star_init_mass = part_grp["S_MassInitial"][start:end] * Msun * 10**10
         star_age = part_grp["S_Age"][start:end] * Gyr
@@ -75,9 +76,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_sml = part_grp["S_sml"][start:end] * Mpc
 
         # Get the gas data
-        gas_pos = (
-            part_grp["G_Coordinates"][:, start_gas:end_gas].T / (1 + z) * Mpc
-        )
+        gas_pos = part_grp["G_Coordinates"].T[start:end, :] / (1 + z) * Mpc
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
@@ -95,6 +94,17 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     if star_mass.size < 100:
         return None
 
+    # Plot a histogram of angular galaxies
+    if gal_ind == 0:
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.hist(star_ang_rad.value, bins=100, histtype="step")
+        ax.set_xlabel("Angular Radius (arcseconds)")
+        ax.set_ylabel("Number of Stars")
+        fig.savefig(f"angular_radius_histogram_{reg}_{snap}.png", dpi=300)
+        plt.close(fig)
+
     gal = Galaxy(
         name=f"{reg}_{snap}_{gal_ind}_{group_id}_{subgrp_id}",
         redshift=z,
@@ -108,6 +118,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             smoothing_lengths=star_sml,
             centre=centre,
             angular_radii=star_ang_rad,
+            radii=radii.value,
         ),
         gas=Gas(
             masses=gas_mass,
@@ -279,6 +290,32 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
 
+    # Compute the half-light radius on each filter
+    gal.stars.half_light_radii = {}
+    for spec in gal.stars.particle_photo_fluxes.values():
+        gal.stars.half_light_radii[spec] = {}
+        for filt in filters.filter_codes:
+            # Sort radii
+            rs = gal.stars.radii
+            sinds = np.argsort(rs)
+
+            # Get the cumalitive flux and half the total
+            cum_fluxes = np.cumsum(
+                gal.stars.particle_photo_fluxes[filt][sinds].value
+            )
+            half_flux = 0.5 * cum_fluxes[-1]
+
+            # Find the index closest to the half flux
+            half_index = np.argmin(np.abs(cum_fluxes - half_flux))
+
+            # Interpolate around the half index to get a more accurate
+            # measurement
+            f = interp1d(
+                cum_fluxes[half_index - 2 : half_index + 2],
+                rs[sinds][half_index - 2 : half_index + 2],
+            )
+            gal.stars.half_light_radii[spec][filt] = f(half_flux)
+
     return gal
 
 
@@ -294,6 +331,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     compactnesses = {}
     uv_slopes = {}
     ir_slopes = {}
+    sizes = {}
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -331,6 +369,13 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 spectra.measure_beta(window=(4400 * angstrom, 7500 * angstrom))
             )
 
+        # Get the sizes
+        for spec in gal.stars.half_light_radii.keys():
+            for filt in gal.stars.half_light_radii[spec].keys():
+                sizes.setdefault(spec, {}).setdefault(filt, []).append(
+                    gal.stars.half_light_radii[spec][filt]
+                )
+
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
@@ -340,6 +385,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     index_per_rank = comm.gather(indices, root=0)
     uv_slope_per_rank = comm.gather(uv_slopes, root=0)
     ir_slope_per_rank = comm.gather(ir_slopes, root=0)
+    size_per_rank = comm.gather(sizes, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -354,7 +400,18 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     indices = []
     uv_slopes = {}
     ir_slopes = {}
-    for fnu, flux, comp, group, subgroup, index, uv_slope, ir_slope in zip(
+    sizes = {}
+    for (
+        fnu,
+        flux,
+        comp,
+        group,
+        subgroup,
+        index,
+        uv_slope,
+        ir_slope,
+        size,
+    ) in zip(
         fnu_per_rank,
         flux_per_rank,
         comp_per_rank,
@@ -363,6 +420,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         index_per_rank,
         uv_slope_per_rank,
         ir_slope_per_rank,
+        size_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -378,15 +436,16 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             uv_slopes.setdefault(key, []).extend(slopes)
         for key, slopes in ir_slope.items():
             ir_slopes.setdefault(key, []).extend(slopes)
+        for key, d in size.items():
+            sizes.setdefault(key, {})
+            for filt, size_arr in d.items():
+                sizes[key].setdefault(filt, []).extend(size_arr)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
 
     # Get the units for each dataset
-    units = {
-        "fnu": "erg/s/cm^2/Hz",
-        "flux": "erg/s/cm^2",
-    }
+    units = {"fnu": "erg/s/cm**2/Hz", "flux": "erg/s/cm^**2", "hlr": "kpc"}
 
     # Sort the data by galaxy index
     sort_indices = np.argsort(indices)
@@ -400,6 +459,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         compactnesses[key] = {
             filt: [comp[filt][i] for i in sort_indices] for filt in comp
         }
+    for key, slopes in uv_slopes.items():
+        uv_slopes[key] = [slopes[i] for i in sort_indices]
+    for key, slopes in ir_slopes.items():
+        ir_slopes[key] = [slopes[i] for i in sort_indices]
+    for key, d in sizes.items():
+        sizes[key] = {filt: [d[filt][i] for i in sort_indices] for filt in d}
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
@@ -464,6 +529,17 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 data=np.array(slopes),
             )
             dset.attrs["Units"] = "dimensionless"
+
+        # Write the half light radii
+        hlr_grp = hdf.create_group("HalfLightRadii")
+        for key, d in sizes.items():
+            filt_grp = hlr_grp.create_group(key)
+            for filt, size_arr in d.items():
+                dset = filt_grp.create_dataset(
+                    filt,
+                    data=np.array(size_arr),
+                )
+                dset.attrs["Units"] = units["hlr"]
 
 
 # Define the snapshot tags
