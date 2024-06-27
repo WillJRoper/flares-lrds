@@ -143,7 +143,9 @@ for snap in snaps:
     )
     cbar.set_label("$N$")
 
-    fig.savefig(f"slopes_attenuated_{snap}", dpi=100, bbox_inches="tight")
+    fig.savefig(
+        f"plots/slopes_attenuated_{snap}", dpi=100, bbox_inches="tight"
+    )
     plt.close(fig)
 
     # Plot hexbins of slope vs slope for all galaxies and the red sample
@@ -202,5 +204,7 @@ for snap in snaps:
     )
     cbar.set_label("$N$")
 
-    fig.savefig(f"slopes_reprocessed_{snap}", dpi=100, bbox_inches="tight")
+    fig.savefig(
+        f"plots/slopes_reprocessed_{snap}", dpi=100, bbox_inches="tight"
+    )
     plt.close(fig)
