@@ -57,7 +57,7 @@ spectra_keys = ["attenuated", "reprocessed"]
 # Define plotting parameters
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
-extent = (-1.1, 1.3, 0, 10)
+extent = (-1.1, 1.3, 0, 20)
 
 # Get the data
 att_hlrs = get_masked_synth_data(
