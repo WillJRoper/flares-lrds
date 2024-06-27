@@ -420,3 +420,90 @@ for snap in snaps:
         bbox_inches="tight",
     )
     plt.close(fig)
+
+    # Plot the ratio between slopes against the F444W flux
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    # Turn on a grid and make sure it is behind everything
+    axs[0].grid(True)
+    axs[0].set_axisbelow(True)
+    axs[1].grid(True)
+    axs[1].set_axisbelow(True)
+
+    axs[0].hexbin(
+        att_sizes[snap]["F444W"][okinds],
+        optical_slopes["attenuated"][snap][okinds]
+        / uv_slopes["attenuated"][snap][okinds],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+        xscale="log",
+        extent=extent2,
+    )
+    axs[0].text(
+        0.95,
+        0.95,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=8,
+        color="k",
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
+    )
+
+    axs[1].hexbin(
+        att_sizes[snap]["F444W"][np.logical_and(att_masks[snap], okinds)],
+        optical_slopes["attenuated"][snap][
+            np.logical_and(att_masks[snap], okinds)
+        ]
+        / uv_slopes["attenuated"][snap][
+            np.logical_and(att_masks[snap], okinds)
+        ],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+        xscale="log",
+        extent=extent2,
+    )
+
+    axs[1].text(
+        0.95,
+        0.95,
+        "LRDs",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=8,
+        color="k",
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
+    )
+
+    # Turn off the second y axis
+    axs[1].set_yticklabels([])
+
+    # Label the axes
+    axs[0].set_xlabel("$R_{1/2}$ / [kpc]")
+    axs[0].set_ylabel("Optical Slope / UV Slope")
+    axs[1].set_xlabel("$R_{1/2}$ / [kpc]")
+
+    # Draw a colorbar on the right
+    cbar = fig.colorbar(
+        mappable=axs[1].collections[0], ax=axs, orientation="vertical"
+    )
+    cbar.set_label("$N$")
+
+    fig.savefig(
+        f"plots/slopes_ratio_attenuated_size_{snap}",
+        dpi=100,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
