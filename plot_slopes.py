@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import h5py
 import argparse
-from utils import REGIONS, SNAPSHOTS, get_fluxes_colors
+from utils import REGIONS, SNAPSHOTS, get_synth_data
 
 # Define the command line arguments
 parser = argparse.ArgumentParser()
@@ -34,20 +34,22 @@ snaps = SNAPSHOTS
 spectra_keys = ["attenuated", "reprocessed"]
 
 # Get the fluxes, colors and masks
-att_fluxes, att_colors, att_red1, att_red2 = get_fluxes_colors(
-    data_file, "attenuated"
-)
-rep_fluxes, rep_colors, rep_red1, rep_red2 = get_fluxes_colors(
-    data_file, "reprocessed"
-)
-
-# Combine masks
-att_red = {
-    snap: np.logical_or(att_red1[snap], att_red2[snap]) for snap in snaps
-}
-rep_red = {
-    snap: np.logical_or(rep_red1[snap], rep_red2[snap]) for snap in snaps
-}
+(
+    att_fluxes,
+    att_colors,
+    att_red1,
+    att_red2,
+    att_sizes,
+    att_masks,
+) = get_synth_data(data_file, "attenuated")
+(
+    rep_fluxes,
+    rep_colors,
+    rep_red1,
+    rep_red2,
+    rep_sizes,
+    rep_masks,
+) = get_synth_data(data_file, "reprocessed")
 
 # Get the slopes
 uv_slopes = {}
@@ -89,7 +91,7 @@ for snap in snaps:
     if len(uv_slopes["attenuated"][snap]) == 0:
         continue
 
-    print(f"At {snap} have {np.sum(att_red[snap])} LRDs")
+    print(f"At {snap} have {np.sum(att_masks[snap])} LRDs")
 
     # Plot hexbins of slope vs slope for all galaxies and the red sample
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
@@ -125,8 +127,8 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        optical_slopes["attenuated"][snap][att_red[snap]],
-        uv_slopes["attenuated"][snap][att_red[snap]],
+        optical_slopes["attenuated"][snap][att_masks[snap]],
+        uv_slopes["attenuated"][snap][att_masks[snap]],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
@@ -201,8 +203,8 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        optical_slopes["reprocessed"][snap][rep_red[snap]],
-        uv_slopes["reprocessed"][snap][rep_red[snap]],
+        optical_slopes["reprocessed"][snap][rep_masks[snap]],
+        uv_slopes["reprocessed"][snap][rep_masks[snap]],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
@@ -281,11 +283,13 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        att_fluxes[snap]["F444W"][np.logical_and(att_red[snap], okinds)],
+        att_fluxes[snap]["F444W"][np.logical_and(att_masks[snap], okinds)],
         optical_slopes["attenuated"][snap][
-            np.logical_and(att_red[snap], okinds)
+            np.logical_and(att_masks[snap], okinds)
         ]
-        / uv_slopes["attenuated"][snap][np.logical_and(att_red[snap], okinds)],
+        / uv_slopes["attenuated"][snap][
+            np.logical_and(att_masks[snap], okinds)
+        ],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
@@ -366,12 +370,12 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        att_fluxes[snap]["F444W"][np.logical_and(att_red[snap], okinds)],
+        att_fluxes[snap]["F444W"][np.logical_and(rep_masks[snap], okinds)],
         optical_slopes["reprocessed"][snap][
-            np.logical_and(att_red[snap], okinds)
+            np.logical_and(rep_masks[snap], okinds)
         ]
         / uv_slopes["reprocessed"][snap][
-            np.logical_and(att_red[snap], okinds)
+            np.logical_and(rep_masks[snap], okinds)
         ],
         gridsize=gridsize,
         cmap="viridis",
