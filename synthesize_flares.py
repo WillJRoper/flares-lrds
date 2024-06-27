@@ -68,7 +68,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         end_gas = np.sum(g_len[: gal_ind + 1])
 
         # Get the star data
-        star_pos = part_grp["S_Coordinates"].T[start:end, :] / (1 + z) * Mpc
+        star_pos = part_grp["S_Coordinates"][:].T[start:end, :] / (1 + z) * Mpc
         star_mass = part_grp["S_Mass"][start:end] * Msun * 10**10
         star_init_mass = part_grp["S_MassInitial"][start:end] * Msun * 10**10
         star_age = part_grp["S_Age"][start:end] * Gyr
@@ -76,7 +76,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_sml = part_grp["S_sml"][start:end] * Mpc
 
         # Get the gas data
-        gas_pos = part_grp["G_Coordinates"].T[start:end, :] / (1 + z) * Mpc
+        gas_pos = part_grp["G_Coordinates"][:].T[start:end, :] / (1 + z) * Mpc
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
