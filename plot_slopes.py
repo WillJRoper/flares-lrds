@@ -344,7 +344,7 @@ for snap in snaps:
     axs[1].set_axisbelow(True)
 
     axs[0].hexbin(
-        att_fluxes[snap]["F444W"][okinds],
+        rep_fluxes[snap]["F444W"][okinds],
         optical_slopes["reprocessed"][snap][okinds]
         / uv_slopes["reprocessed"][snap][okinds],
         gridsize=gridsize,
@@ -370,7 +370,7 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        att_fluxes[snap]["F444W"][np.logical_and(rep_masks[snap], okinds)],
+        rep_fluxes[snap]["F444W"][np.logical_and(rep_masks[snap], okinds)],
         optical_slopes["reprocessed"][snap][
             np.logical_and(rep_masks[snap], okinds)
         ]
