@@ -291,6 +291,11 @@ def get_master_data(master_file_path, indices, key):
 def get_masked_synth_data(synth_path, key, masks):
     """
     Get synthesizer galaxy data including a mask.
+
+    Args:
+        synth_path (str): The path to the synthetic data.
+        key (str): The key of the data to extract.
+        masks (dict): The masks to apply.
     """
     # Define containers for the data
     data = {}
@@ -309,6 +314,7 @@ def get_masked_synth_data(synth_path, key, masks):
             ) as hdf:
                 try:
                     data[snap].extend(hdf[key][...])
+                    print(f"reading data {reg} {snap}")
                 except KeyError as e:
                     print(f"KeyError: {e}")
                     continue
