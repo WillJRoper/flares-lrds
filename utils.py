@@ -26,6 +26,16 @@ KOKOREV24 = {
     "F277W_F444W": 0.7,
 }
 
+# Define the list of filter IDs
+FILTER_CODES = [
+    "JWST/NIRCam.F115W",
+    "JWST/NIRCam.F150W",
+    "JWST/NIRCam.F200W",
+    "JWST/NIRCam.F277W",
+    "JWST/NIRCam.F356W",
+    "JWST/NIRCam.F444W",
+]
+
 
 def get_sizes_mdot(master_file_path):
     """
@@ -81,14 +91,13 @@ def get_sizes_mdot(master_file_path):
     return sizes, mdots
 
 
-def get_synth_data(synth_data_path, spec, filters, size_thresh=1):
+def get_synth_data(synth_data_path, spec, size_thresh=1):
     """
     Get the fluxes and colors of the galaxies in the simulation.
 
     Args:
         synth_data_path (str): The path to the synthetic data.
         spec (str): The spectral synthesis model to use.
-        filters (list): The filters to use.
         size_thresh (float): The size threshold to apply for LRDs.
 
     Returns:
@@ -153,7 +162,7 @@ def get_synth_data(synth_data_path, spec, filters, size_thresh=1):
                         ],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
-                    for filt in filters.filter_codes:
+                    for filt in FILTER_CODES:
                         sizes[snap].setdefault(filt, []).extend(
                             hdf[
                                 f"HalfLightRadii/{spec}/{filt.split('.')[-1]}"

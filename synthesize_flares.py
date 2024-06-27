@@ -9,7 +9,7 @@ import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond, angstrom
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
-from scipy.interpolate import interp1d
+from utils import FILTER_CODES
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -215,18 +215,8 @@ def get_flares_filters(filepath):
     if os.path.exists(filepath):
         filters = FilterCollection(path=filepath)
     else:
-        # Define the list of filter IDs
-        filter_codes = [
-            "JWST/NIRCam.F115W",
-            "JWST/NIRCam.F150W",
-            "JWST/NIRCam.F200W",
-            "JWST/NIRCam.F277W",
-            "JWST/NIRCam.F356W",
-            "JWST/NIRCam.F444W",
-        ]
-
         # Create the FilterCollection
-        filters = FilterCollection(filter_codes=filter_codes)
+        filters = FilterCollection(filter_codes=FILTER_CODES)
 
         # Write the filter collection
         filters.write_filters(path=filepath)
