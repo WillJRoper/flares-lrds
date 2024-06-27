@@ -233,7 +233,9 @@ def get_grid(grid_name, grid_dir, filters):
 
 def get_emission_model(grid, fesc=0.0, fesc_ly_alpha=1.0):
     """Get a StellarEmissionModel."""
-    return FLARESLRDsEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
+    model = FLARESLRDsEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
+
+    return model
 
 
 def get_kernel():
@@ -555,6 +557,13 @@ if __name__ == "__main__":
         f"Getting the emission model took "
         f"{end_emission - start_emission:.2f} seconds."
     )
+
+    # If we're on rank 0 and the first region and snapshot plot the model
+    comm = mpi.COMM_WORLD
+    rank = comm.Get_rank()
+    if rank == 0 and region == 0 and snap == snapshots[0]:
+        fig, ax = emission_model.plot_emission_tree(fontsize=8)
+        fig.savefig("emission_tree.png", dpi=300, bbox_inches="tight")
 
     # Get the kernel
     start_kernel = time.time()
