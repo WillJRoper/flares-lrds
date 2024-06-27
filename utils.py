@@ -109,6 +109,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
     # Define containers for the data
     fluxes = {}
     sizes = {}
+    indices = {}
 
     # Loop over regions
     for reg in REGIONS:
@@ -117,6 +118,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
             # Ensure a key exists for this snapshot
             fluxes.setdefault(snap, {})
             sizes.setdefault(snap, {})
+            indices.setdefault(snap, {})
 
             # Get the fluxes we need
             with h5py.File(
@@ -126,6 +128,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
                 "r",
             ) as hdf:
                 try:
+                    inds = hdf["Indices"][...]
                     f115w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
                             ...
@@ -184,12 +187,15 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
                 fluxes[snap].setdefault("F277W", []).extend(f277w)
                 fluxes[snap].setdefault("F356W", []).extend(f356w)
                 fluxes[snap].setdefault("F444W", []).extend(f444w)
+                indices[snap].setdefault(reg, []).extend(inds)
 
     # Convert the data to arrays
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
             fluxes[snap][key] = np.array(fluxes[snap][key])
             sizes[snap][key] = np.array(sizes[snap][key])
+            for ref in REGIONS:
+                indices[snap][reg] = np.array(indices[snap][reg])
 
     # Compute the colors
     colors = {}
@@ -241,4 +247,36 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
         )
         masks[snap] = mask
 
-    return fluxes, colors, red1, red2, sizes, masks
+    return fluxes, colors, red1, red2, sizes, masks, indices
+
+
+def get_master_data(master_file_path, indices, key):
+    """
+    Get the data from the master file for the given indices.
+
+    Args:
+        master_file_path (str): The path to the master file.
+        indices (list): The indices of the galaxies to extract.
+        key (str): The key of the data to extract.
+
+    Returns:
+        dict: A dictionary containing the data for the galaxies.
+    """
+    # Open the file
+    with h5py.File(master_file_path, "r") as hdf:
+        # Define the data dictionary
+        data = {}
+
+        # Loop over regions
+        for reg in REGIONS:
+            # Loop over snapshots
+            for snap in SNAPSHOTS:
+                # Ensure a key exists for this snapshot
+                data.setdefault(snap, [])
+
+                # Get the data we need
+                data[snap].extend(
+                    hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
+                )
+
+    return data
