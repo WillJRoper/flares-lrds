@@ -455,7 +455,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             dset.attrs["Units"] = "dimensionless"
 
         # Write the IR slopes
-        ir_grp = hdf.create_group("IRSlopes")
+        ir_grp = hdf.create_group("OpticalSlopes")
         for key, slopes in ir_slopes.items():
             dset = ir_grp.create_dataset(
                 key,
