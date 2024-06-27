@@ -68,6 +68,12 @@ for reg in regions:
                 except TypeError as e:
                     print(e)
 
+# Convert slopes to arrays
+for spec in spectra_keys:
+    for snap in snaps:
+        uv_slopes[spec][snap] = np.array(uv_slopes[spec][snap])
+        optical_slopes[spec][snap] = np.array(optical_slopes[spec][snap])
+
 # Define plotting parameters
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**4)
