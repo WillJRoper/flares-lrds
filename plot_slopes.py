@@ -421,6 +421,8 @@ for snap in snaps:
     )
     plt.close(fig)
 
+    extent2 = (-1.1, 1.3, 0.7, 2)
+
     # Plot the ratio between slopes against the F444W flux
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
 
