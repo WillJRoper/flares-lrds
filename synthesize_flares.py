@@ -111,6 +111,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             coordinates=star_pos[mask, :],
             smoothing_lengths=star_sml[mask],
             centre=centre,
+            young_tau_v=star_met[mask] / 0.01,
             angular_radii=star_ang_rad[mask],
             radii=radii[mask].value,
         ),
@@ -123,10 +124,6 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             centre=centre,
         ),
     )
-
-    # Attach the extra tau_v we need for nebular attenuation around young
-    # stars
-    gal.stars.young_tau_v = star_met / 0.01
 
     # Calculate the DTM, we'll need it later
     gal.dust_to_metal_vijayan19()
