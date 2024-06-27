@@ -27,7 +27,7 @@ KOKOREV24 = {
 }
 
 
-def get_sizes_and_mdot(master_file_path):
+def get_sizes_mdot(master_file_path):
     """
     Get the sizes and accretion rates of the black holes in the simulation.
 
@@ -81,13 +81,15 @@ def get_sizes_and_mdot(master_file_path):
     return sizes, mdots
 
 
-def get_fluxes_colors(synth_data_path, spec):
+def get_synth_data(synth_data_path, spec, filters, size_thresh=1):
     """
     Get the fluxes and colors of the galaxies in the simulation.
 
     Args:
         synth_data_path (str): The path to the synthetic data.
         spec (str): The spectral synthesis model to use.
+        filters (list): The filters to use.
+        size_thresh (float): The size threshold to apply for LRDs.
 
     Returns:
         dict: A dictionary containing the fluxes of the galaxies.
@@ -97,6 +99,7 @@ def get_fluxes_colors(synth_data_path, spec):
     """
     # Define containers for the data
     fluxes = {}
+    sizes = {}
 
     # Loop over regions
     for reg in REGIONS:
@@ -104,6 +107,7 @@ def get_fluxes_colors(synth_data_path, spec):
         for snap in SNAPSHOTS:
             # Ensure a key exists for this snapshot
             fluxes.setdefault(snap, {})
+            sizes.setdefault(snap, {})
 
             # Get the fluxes we need
             with h5py.File(
@@ -149,6 +153,12 @@ def get_fluxes_colors(synth_data_path, spec):
                         ],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
+                    for filt in filters.filter_codes:
+                        sizes[snap].setdefault(filt, []).extend(
+                            hdf[
+                                f"HalfLightRadii/{spec}/{filt.split('.')[-1]}"
+                            ][...]
+                        )
 
                 except KeyError as e:
                     print(f"KeyError: {e}")
@@ -214,4 +224,13 @@ def get_fluxes_colors(synth_data_path, spec):
         )
         red2[snap] = np.logical_and(mask, colors[snap]["F277W_F444W"] > 0.7)
 
-    return fluxes, colors, red1, red2
+    # Combine the masks with a size threshold
+    masks = {}
+    for snap in sizes.keys():
+        masks.setdefault(snap, {})
+        mask = np.logical_and(
+            np.logical_or(red1[snap], red2[snap]),
+            sizes[snap]["F444W"] < size_thresh,
+        )
+
+    return fluxes, colors, red1, red2, sizes, masks
