@@ -42,8 +42,12 @@ rep_fluxes, rep_colors, rep_red1, rep_red2 = get_fluxes_colors(
 )
 
 # Combine masks
-att_red = np.logical_or(att_red1, att_red2)
-rep_red = np.logical_or(rep_red1, rep_red2)
+att_red = {
+    snap: np.logical_or(att_red1[snap], att_red2[snap]) for snap in snaps
+}
+rep_red = {
+    snap: np.logical_or(rep_red1[snap], rep_red2[snap]) for snap in snaps
+}
 
 # Get the slopes
 uv_slopes = {}
@@ -108,8 +112,8 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        optical_slopes["attenuated"][snap][att_red],
-        uv_slopes["attenuated"][snap][att_red],
+        optical_slopes["attenuated"][snap][att_red[snap]],
+        uv_slopes["attenuated"][snap][att_red[snap]],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
@@ -167,8 +171,8 @@ for snap in snaps:
     )
 
     axs[1].hexbin(
-        optical_slopes["reprocessed"][snap][rep_red],
-        uv_slopes["reprocessed"][snap][rep_red],
+        optical_slopes["reprocessed"][snap][rep_red[snap]],
+        uv_slopes["reprocessed"][snap][rep_red[snap]],
         gridsize=gridsize,
         cmap="viridis",
         norm=norm,
