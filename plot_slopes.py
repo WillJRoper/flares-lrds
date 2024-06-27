@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import h5py
 import argparse
+from utils import REGIONS, SNAPSHOTS, get_fluxes_colors
 
 # Define the command line arguments
 parser = argparse.ArgumentParser()
@@ -26,18 +27,23 @@ else:
     data_file = "data/combined_<region>_<snap>.hdf5"
 
 # Get regions and snapshots
-regions = [str(reg).zfill(2) for reg in range(40)]
-snaps = [
-    "005_z010p000",
-    "006_z009p000",
-    "007_z008p000",
-    "008_z007p000",
-    "009_z006p000",
-    "010_z005p000",
-]
+regions = REGIONS
+snaps = SNAPSHOTS
 
 # Define the spectra keys we'll read
 spectra_keys = ["attenuated", "reprocessed"]
+
+# Get the fluxes, colors and masks
+att_fluxes, att_colors, att_red1, att_red2 = get_fluxes_colors(
+    data_file, "attenuated"
+)
+rep_fluxes, rep_colors, rep_red1, rep_red2 = get_fluxes_colors(
+    data_file, "reprocessed"
+)
+
+# Combine masks
+att_red = np.logical_or(att_red1, att_red2)
+rep_red = np.logical_or(rep_red1, rep_red2)
 
 # Get the slopes
 uv_slopes = {}
@@ -57,49 +63,132 @@ for reg in regions:
                     optical_slopes.setdefault(spec, {}).setdefault(
                         snap, []
                     ).extend(hdf["OpticalSlopes"][spec][...])
-                    compacts.setdefault(spec, {}).setdefault(snap, []).extend(
-                        hdf["Compactness"][spec]["JWST/NIRCam.F444W"][...]
-                    )
                 except KeyError as e:
                     print(e)
                 except TypeError as e:
                     print(e)
 
-# Plot slopes coloured by compactness
-fig, ax = plt.subplots(2, 1, figsize=(6, 8))
+# Define plotting parameters
+gridsize = 50
+norm = mcolors.LogNorm(1, 10**4)
+extent = (-2.7, 0, -2.7, 0)
 
-# Loop over the spectra
-for spec in spectra_keys:
-    if spec not in uv_slopes:
-        continue
-    for snap in snaps:
-        ax[0].scatter(
-            uv_slopes[spec][snap],
-            optical_slopes[spec][snap],
-            c=compacts[spec][snap],
-            cmap="viridis",
-            norm=mcolors.LogNorm(),
-        )
-        ax[1].scatter(
-            uv_slopes[spec][snap],
-            optical_slopes[spec][snap],
-            c=compacts[spec][snap],
-            cmap="viridis",
-            norm=mcolors.LogNorm(),
-        )
+# Loop over the snapshots
+for snap in snaps:
+    # Plot hexbins of slope vs slope for all galaxies and the red sample
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
 
+    axs[0].hexbin(
+        optical_slopes["attenuated"][snap],
+        uv_slopes["attenuated"][snap],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        extent=extent,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[0].text(
+        0.95,
+        0.05,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=12,
+        color="k",
+    )
 
-# Add colourbars
-cbar = fig.colorbar(ax[0].collections[0], ax=ax[0])
-cbar.set_label("Compactness")
-cbar = fig.colorbar(ax[1].collections[0], ax=ax[1])
-cbar.set_label("Compactness")
+    axs[1].hexbin(
+        optical_slopes["attenuated"][snap][att_red],
+        uv_slopes["attenuated"][snap][att_red],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        extent=extent,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[1].text(
+        0.95,
+        0.05,
+        "(Red 1 | Red 2) (Kokorev+24)",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=12,
+        color="k",
+    )
 
-# Add labels
-ax[0].set_xlabel("UV Slope")
-ax[0].set_ylabel("Optical Slope")
+    # Label the axes
+    axs[0].set_xlabel("Optical Slope")
+    axs[0].set_ylabel("UV Slope")
+    axs[1].set_xlabel("Optical Slope")
 
-ax[1].set_xlabel("UV Slope")
-ax[1].set_ylabel("Optical Slope")
+    # Draw a colorbar on the right
+    cbar = fig.colorbar(
+        mappable=axs[1].collections[0], ax=axs, orientation="vertical"
+    )
+    cbar.set_label("$N$")
 
-fig.savefig(f"plots/slopes_{args.type}.png")
+    fig.savefig(f"slopes_attenuated_{snap}", dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+    # Plot hexbins of slope vs slope for all galaxies and the red sample
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    axs[0].hexbin(
+        optical_slopes["reprocessed"][snap],
+        uv_slopes["reprocessed"][snap],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        extent=extent,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[0].text(
+        0.95,
+        0.05,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=12,
+        color="k",
+    )
+
+    axs[1].hexbin(
+        optical_slopes["reprocessed"][snap][rep_red],
+        uv_slopes["reprocessed"][snap][rep_red],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        extent=extent,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[1].text(
+        0.95,
+        0.05,
+        "(Red 1 | Red 2) (Kokorev+24)",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=12,
+        color="k",
+    )
+
+    # Label the axes
+    axs[0].set_xlabel("Optical Slope")
+    axs[0].set_ylabel("UV Slope")
+    axs[1].set_xlabel("Optical Slope")
+
+    # Draw a colorbar on the right
+    cbar = fig.colorbar(
+        mappable=axs[1].collections[0], ax=axs, orientation="vertical"
+    )
+    cbar.set_label("$N$")
+
+    fig.savefig(f"slopes_reprocessed_{snap}", dpi=100, bbox_inches="tight")
+    plt.close(fig)
