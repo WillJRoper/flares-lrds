@@ -1,6 +1,7 @@
 """A module containing the definition of helpful functions."""
 import h5py
 import numpy as np
+import matplotlib.pyplot as plt
 
 from unyt import unyt_array
 
@@ -285,3 +286,162 @@ def get_master_data(master_file_path, indices, key):
                 )
 
     return data
+
+
+def get_masked_synth_data(synth_path, key, masks):
+    """
+    Get synthesizer galaxy data including a mask.
+    """
+    # Define containers for the data
+    data = {}
+
+    # Loop over regions
+    for reg in REGIONS:
+        # Loop over snapshots
+        for snap in SNAPSHOTS:
+            # Ensure a key exists for this snapshot
+            data.setdefault(snap, [])
+
+            # Get the data we need
+            with h5py.File(
+                synth_path.replace("<region>", reg).replace("<snap>", snap),
+                "r",
+            ) as hdf:
+                try:
+                    data[snap].extend(hdf[key][...])
+                except KeyError as e:
+                    print(f"KeyError: {e}")
+                    continue
+                except OSError as e:
+                    print(f"OSError: {e}")
+                    continue
+                except TypeError as e:
+                    print(f"TypeError: {e}")
+                    continue
+
+    # Apply the mask
+    for snap in data.keys():
+        data[snap] = np.array(data[snap])[masks[snap]]
+
+    return data
+
+
+def plot_masked_unmasked_hexbins(
+    xs,
+    ys,
+    mask,
+    extent,
+    norm,
+    xlabel,
+    ylabel,
+    basename,
+    gridsize=50,
+    cmap="viridis",
+    xscale="log",
+    yscale="log",
+):
+    """
+    Plot the masked and unmasked hexbins.
+
+    Args:
+        xs (array): The x-values to plot.
+        ys (array): The y-values to plot.
+        mask (array): The mask to apply.
+        extent (tuple): The extent of the plot.
+        norm (Normalize): The normalization to use.
+        xlabel (str): The x-axis label.
+        ylabel (str): The y-axis label.
+        basename (str): The base name of the plot.
+        gridsize (int): The number of bins to use.
+        cmap (str): The colormap to use.
+        xscale (str): The x-axis scale.
+        yscale (str): The y-axis scale.
+    """
+    # Plot the size-luminosity relation
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    # Draw the grid and make sure its in the background
+    axs[0].set_axisbelow(True)
+    axs[1].set_axisbelow(True)
+    axs[0].grid(True)
+    axs[1].grid(True)
+
+    # Plot the size-luminosity relation with no mask
+    axs[0].hexbin(
+        xs,
+        ys,
+        gridsize=gridsize,
+        norm=norm,
+        extent=extent,
+        cmap=cmap,
+        linewidths=0.2,
+        xscale=xscale,
+        yscale=yscale,
+        mincnt=1,
+    )
+    axs[0].text(
+        0.95,
+        0.05,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=8,
+        color="k",
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
+    )
+
+    # Plot the size-luminosity relation with the mask
+    axs[1].hexbin(
+        xs[mask],
+        ys[mask],
+        gridsize=gridsize,
+        norm=norm,
+        extent=extent,
+        cmap=cmap,
+        linewidths=0.2,
+        xscale=xscale,
+        yscale=yscale,
+        mincnt=1,
+    )
+    axs[1].text(
+        0.95,
+        0.05,
+        "LRDs",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=8,
+        color="k",
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
+    )
+
+    # Set the labels
+    axs[0].set_xlabel(xlabel)
+    axs[0].set_ylabel(ylabel)
+    axs[1].set_xlabel(xlabel)
+
+    # Remove the y-axis label from the right plot
+    axs[1].set_yticklabels([])
+
+    # Draw the colorbar
+    cb = fig.colorbar(
+        plt.cm.ScalarMappable(norm=norm, cmap=cmap),
+        ax=axs,
+        orientation="vertical",
+        pad=0.05,
+        aspect=30,
+    )
+    cb.set_label("$N$")
+
+    # Save the figure
+    fig.savefig(
+        f"plots/{basename}.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+    plt.close()
