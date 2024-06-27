@@ -328,6 +328,10 @@ def get_masked_synth_data(synth_path, key, masks=None):
     if masks is not None:
         for snap in data.keys():
             data[snap] = np.array(data[snap])[masks[snap]]
+    else:
+        # Need to convert to arrays anyway
+        for snap in data.keys():
+            data[snap] = np.array(data[snap])
 
     return data
 
