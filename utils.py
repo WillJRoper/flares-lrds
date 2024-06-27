@@ -196,9 +196,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
             sizes[snap][key] = np.array(sizes[snap][key])
             for reg in REGIONS:
                 if reg in indices[snap]:
-                    indices[snap][reg] = np.array(indices[snap][reg])
+                    indices[snap][reg] = np.array(
+                        indices[snap][reg], dtype=int
+                    )
                 else:
-                    indices[snap][reg] = np.array([])
+                    indices[snap][reg] = np.array([], dtype=int)
 
     # Compute the colors
     colors = {}
