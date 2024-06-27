@@ -76,7 +76,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_sml = part_grp["S_sml"][start:end] * Mpc
 
         # Get the gas data
-        gas_pos = part_grp["G_Coordinates"][:, start:end].T / (1 + z) * Mpc
+        gas_pos = (
+            part_grp["G_Coordinates"][:, start_gas:end_gas].T / (1 + z) * Mpc
+        )
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
