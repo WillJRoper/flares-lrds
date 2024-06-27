@@ -133,13 +133,16 @@ for snap in snaps:
     axs[1].text(
         0.95,
         0.05,
-        "(Red 1 | Red 2) (Kokorev+24)",
+        "Red 1 | Red 2 (Kokorev+24)",
         ha="right",
         va="bottom",
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
     )
+
+    # Turn off the second y axis
+    axs[1].set_yticklabels([])
 
     # Label the axes
     axs[0].set_xlabel("Optical Slope")
@@ -207,6 +210,9 @@ for snap in snaps:
         fontsize=8,
         color="k",
     )
+
+    # Turn off the second y axis
+    axs[1].set_yticklabels([])
 
     # Label the axes
     axs[0].set_xlabel("Optical Slope")
