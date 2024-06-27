@@ -92,12 +92,12 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             radii.value * cosmo.arcsec_per_kpc_proper(z).value * arcsecond
         )
 
-    # Early exist if there are fewer than 100 baryons
-    if star_mass.size < 100:
-        return None
-
     # Define a mask to get a 30 kpc aperture
     mask = radii < 30 * kpc
+
+    # Early exist if there are fewer than 100 baryons
+    if np.sum(mask) < 100:
+        return None
 
     gal = Galaxy(
         name=f"{reg}_{snap}_{gal_ind}_{group_id}_{subgrp_id}",
