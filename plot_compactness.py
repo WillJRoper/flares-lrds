@@ -87,7 +87,7 @@ for snap in SNAPSHOTS:
         norm,
         "$R_{1/2}$ / [kpc]",
         "$R_{95}$ / $R_{1/2}$",
-        f"compactness_attenuated_{snap}.png",
+        f"compactness_attenuated_{snap}",
         yscale="linear",
     )
     plot_masked_unmasked_hexbins(
@@ -98,6 +98,6 @@ for snap in SNAPSHOTS:
         norm,
         "$R_{1/2}$ / [kpc]",
         "$R_{95}$ / $R_{1/2}$",
-        f"compactness_reprocessed_{snap}.png",
+        f"compactness_reprocessed_{snap}",
         yscale="linear",
     )
