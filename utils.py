@@ -110,24 +110,34 @@ def get_fluxes_colors(synth_data_path, spec):
                 ),
                 "r",
             ) as hdf:
-                f115w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
-                    ...
-                ]
-                f150w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
-                    ...
-                ]
-                f200w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
-                    ...
-                ]
-                f277w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
-                    ...
-                ]
-                f356w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
-                    ...
-                ]
-                f444w = hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
-                    ...
-                ]
+                try:
+                    f115w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                    ][...]
+                    f150w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                    ][...]
+                    f200w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                    ][...]
+                    f277w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                    ][...]
+                    f356w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                    ][...]
+                    f444w = hdf[
+                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                    ][...]
+                except KeyError as e:
+                    print(f"KeyError: {e}")
+                    continue
+                except OSError as e:
+                    print(f"OSError: {e}")
+                    continue
+                except TypeError as e:
+                    print(f"TypeError: {e}")
+                    continue
 
                 # Store the data
                 fluxes[snap].setdefault("F115W", []).extend(f115w)
