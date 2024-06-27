@@ -313,8 +313,8 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
             # Interpolate around the half index to get a more accurate
             # measurement
             f = interp1d(
-                cum_fluxes[half_index - 2 : half_index + 2],
-                rs[sinds][half_index - 2 : half_index + 2],
+                cum_fluxes[half_index - 10 : half_index + 10],
+                rs[sinds][half_index - 10 : half_index + 10],
             )
             gal.stars.half_light_radii[spec][filt] = f(half_flux)
 
