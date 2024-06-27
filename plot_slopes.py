@@ -82,7 +82,7 @@ for spec in spectra_keys:
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 extent = (-2.7, 0, -2.7, 0)
-extent2 = ()
+extent2 = (1, 10**4.3, 0, 2)
 
 # Loop over the snapshots
 for snap in snaps:
@@ -264,6 +264,7 @@ for snap in snaps:
         mincnt=1,
         linewidth=0.2,
         xscale="log",
+        extent=extent2,
     )
     axs[0].text(
         0.95,
@@ -291,6 +292,7 @@ for snap in snaps:
         mincnt=1,
         linewidth=0.2,
         xscale="log",
+        extent=extent2,
     )
 
     axs[1].text(
@@ -347,6 +349,7 @@ for snap in snaps:
         mincnt=1,
         linewidth=0.2,
         xscale="log",
+        extent=extent2,
     )
     axs[0].text(
         0.95,
@@ -376,6 +379,7 @@ for snap in snaps:
         mincnt=1,
         linewidth=0.2,
         xscale="log",
+        extent=extent2,
     )
 
     axs[1].text(
