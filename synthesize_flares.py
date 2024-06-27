@@ -294,7 +294,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
 
     # Compute the half-light radius on each filter
     gal.stars.half_light_radii = {}
-    for spec in gal.stars.particle_photo_fluxes.values():
+    for spec in gal.stars.particle_photo_fluxes.keys():
         gal.stars.half_light_radii[spec] = {}
         for filt in filters.filter_codes:
             # Sort radii
