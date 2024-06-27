@@ -235,10 +235,10 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
     # Combine the masks with a size threshold
     masks = {}
     for snap in sizes.keys():
-        masks.setdefault(snap, {})
         mask = np.logical_and(
             np.logical_or(red1[snap], red2[snap]),
             sizes[snap]["F444W"] < size_thresh,
         )
+        masks[snap] = mask
 
     return fluxes, colors, red1, red2, sizes, masks
