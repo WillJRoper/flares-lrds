@@ -56,6 +56,8 @@ extent2 = (0, 4.3, -2, 1)
 # Loop over snapshots
 for snap in SNAPSHOTS:
     for filt in FILTER_CODES:
+        filt = filt.split(".")[-1]
+
         # Plot the size-luminosity relation
         fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
 
