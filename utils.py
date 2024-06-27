@@ -189,6 +189,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
             fluxes[snap][key] = np.array(fluxes[snap][key])
+            sizes[snap][key] = np.array(sizes[snap][key])
 
     # Compute the colors
     colors = {}
