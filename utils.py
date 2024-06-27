@@ -117,37 +117,37 @@ def get_fluxes_colors(synth_data_path, spec):
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
                         hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
                             ...
                         ],
-                        "erg s**-1 cm**-2 Hz**-1",
+                        "erg/s/cm**2/Hz",
                     ).to("nJy")
 
                 except KeyError as e:
