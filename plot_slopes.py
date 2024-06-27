@@ -50,13 +50,13 @@ for reg in regions:
         ) as hdf:
             for spec in spectra_keys:
                 try:
-                    uv_slopes.setdefault(spec, {}).setdefault(snap, []).append(
+                    uv_slopes.setdefault(spec, {}).setdefault(snap, []).extend(
                         hdf["UVSlopes"][spec][...]
                     )
-                    optical_slopes.setdefault(spec, {}).setdefault(
-                        snap, []
-                    ).append(hdf["IRSlopes"][spec][...])
-                    compacts.setdefault(spec, {}).setdefault(snap, []).append(
+                    optical_slopes.setdefault(spec, {}).setdefault(snap, []).extend(
+                        hdf["IRSlopes"][spec][...]
+                    )
+                    compacts.setdefault(spec, {}).setdefault(snap, []).extend(
                         hdf["Compactness"][spec]["JWST/NIRCam.F444W"][...]
                     )
                 except KeyError as e:
