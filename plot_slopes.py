@@ -119,8 +119,9 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     axs[1].hexbin(
@@ -142,8 +143,9 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     # Turn off the second y axis
@@ -193,8 +195,9 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     axs[1].hexbin(
@@ -216,8 +219,9 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     # Turn off the second y axis
@@ -270,8 +274,9 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     axs[1].hexbin(
@@ -297,8 +302,9 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     # Turn off the second y axis
@@ -351,8 +357,9 @@ for snap in snaps:
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     axs[1].hexbin(
@@ -380,8 +387,9 @@ for snap in snaps:
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
-        fancybox=True,
-        bbox=dict(facecolor="white", edgecolor="black"),
+        bbox=dict(
+            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+        ),
     )
 
     # Turn off the second y axis
