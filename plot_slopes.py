@@ -69,6 +69,8 @@ fig, ax = plt.subplots(2, 1, figsize=(6, 8))
 
 # Loop over the spectra
 for spec in spectra_keys:
+    if spec not in uv_slopes:
+        continue
     for snap in snaps:
         ax[0].scatter(
             uv_slopes[spec][snap],
