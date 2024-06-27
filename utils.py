@@ -194,8 +194,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
         for key in fluxes[snap].keys():
             fluxes[snap][key] = np.array(fluxes[snap][key])
             sizes[snap][key] = np.array(sizes[snap][key])
-            for ref in REGIONS:
-                indices[snap][reg] = np.array(indices[snap][reg])
+            for reg in REGIONS:
+                if reg in indices[snap]:
+                    indices[snap][reg] = np.array(indices[snap][reg])
+                else:
+                    indices[snap][reg] = np.array([])
 
     # Compute the colors
     colors = {}
