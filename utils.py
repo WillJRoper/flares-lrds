@@ -2,6 +2,8 @@
 import h5py
 import numpy as np
 
+from unyt import unyt_array
+
 
 # Get regions and snapshots
 REGIONS = [str(reg).zfill(2) for reg in range(40)]
@@ -111,24 +113,54 @@ def get_fluxes_colors(synth_data_path, spec):
                 "r",
             ) as hdf:
                 try:
-                    f115w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                    ][...]
-                    f150w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                    ][...]
-                    f200w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                    ][...]
-                    f277w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                    ][...]
-                    f356w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                    ][...]
-                    f444w = hdf[
-                        f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"
-                    ][...]
+                    f115w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                        ].attrs["Units"],
+                    ).to("nJy")
+                    f150w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                        ].attrs["Units"],
+                    ).to("nJy")
+                    f200w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                        ].attrs["Units"],
+                    ).to("nJy")
+                    f277w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                        ].attrs["Units"],
+                    ).to("nJy")
+                    f356w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                        ].attrs["Units"],
+                    ).to("nJy")
+                    f444w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
+                            ...
+                        ],
+                        hdf[
+                            f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                        ].attrs["Units"],
+                    ).to("nJy")
                 except KeyError as e:
                     print(f"KeyError: {e}")
                     continue
