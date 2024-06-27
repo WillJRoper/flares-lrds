@@ -53,15 +53,15 @@ for reg in regions:
                     uv_slopes.setdefault(spec, {}).setdefault(snap, []).append(
                         hdf["UVSlopes"][...]
                     )
-                    optical_slopes.setdefault(spec, {}).setdefault(snap, []).append(
-                        hdf["IRSlopes"][...]
-                    )
+                    optical_slopes.setdefault(spec, {}).setdefault(
+                        snap, []
+                    ).append(hdf["IRSlopes"][...])
                     compacts.setdefault(spec, {}).setdefault(snap, []).append(
                         hdf["Compactness"][...]
                     )
                 except KeyError as e:
                     print(e)
-                except ValueError as e:
+                except TypeError as e:
                     print(e)
 
 # Plot slopes coloured by compactness
