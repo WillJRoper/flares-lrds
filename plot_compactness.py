@@ -1,8 +1,6 @@
 """A script for plotting the compactness of galaxies."""
 import argparse
-import numpy as np
-import matplotlib.pyplot as plt
-import matplolib.colors as mcolors
+import matplotlib.colors as mcolors
 
 from utils import (
     get_masked_synth_data,
