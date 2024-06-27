@@ -229,3 +229,145 @@ for snap in snaps:
         f"plots/slopes_reprocessed_{snap}", dpi=100, bbox_inches="tight"
     )
     plt.close(fig)
+
+    # Plot the ratio between slopes against the F444W flux
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    # Turn on a grid and make sure it is behind everything
+    axs[0].grid(True)
+    axs[0].set_axisbelow(True)
+    axs[1].grid(True)
+    axs[1].set_axisbelow(True)
+
+    axs[0].hexbin(
+        att_fluxes[snap],
+        optical_slopes["attenuated"][snap] / uv_slopes["attenuated"][snap],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[0].text(
+        0.95,
+        0.05,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=8,
+        color="k",
+    )
+
+    axs[1].hexbin(
+        att_fluxes[snap][att_red[snap]],
+        optical_slopes["attenuated"][snap][att_red[snap]]
+        / uv_slopes["attenuated"][snap][att_red[snap]],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+    )
+
+    axs[1].text(
+        0.95,
+        0.05,
+        "Red 1 | Red 2 (Kokorev+24)",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=8,
+        color="k",
+    )
+
+    # Turn off the second y axis
+    axs[1].set_yticklabels([])
+
+    # Label the axes
+    axs[0].set_xlabel("F444W Flux")
+    axs[0].set_ylabel("Optical Slope / UV Slope")
+    axs[1].set_xlabel("F444W Flux")
+
+    # Draw a colorbar on the right
+    cbar = fig.colorbar(
+        mappable=axs[1].collections[0], ax=axs, orientation="vertical"
+    )
+    cbar.set_label("$N$")
+
+    fig.savefig(
+        f"plots/slopes_ratio_attenuated_{snap}",
+        dpi=100,
+        bbox_inches="tight",
+    )
+
+    # Plot the ratio between slopes against the F444W flux
+    fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
+
+    # Turn on a grid and make sure it is behind everything
+    axs[0].grid(True)
+    axs[0].set_axisbelow(True)
+    axs[1].grid(True)
+    axs[1].set_axisbelow(True)
+
+    axs[0].hexbin(
+        att_fluxes[snap],
+        optical_slopes["reprocessed"][snap] / uv_slopes["reprocessed"][snap],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+    )
+    axs[0].text(
+        0.95,
+        0.05,
+        "All Galaxies",
+        ha="right",
+        va="bottom",
+        transform=axs[0].transAxes,
+        fontsize=8,
+        color="k",
+    )
+
+    axs[1].hexbin(
+        att_fluxes[snap][att_red[snap]],
+        optical_slopes["reprocessed"][snap][att_red[snap]]
+        / uv_slopes["reprocessed"][snap][att_red[snap]],
+        gridsize=gridsize,
+        cmap="viridis",
+        norm=norm,
+        mincnt=1,
+        linewidth=0.2,
+    )
+
+    axs[1].text(
+        0.95,
+        0.05,
+        "Red 1 | Red 2 (Kokorev+24)",
+        ha="right",
+        va="bottom",
+        transform=axs[1].transAxes,
+        fontsize=8,
+        color="k",
+    )
+
+    # Turn off the second y axis
+    axs[1].set_yticklabels([])
+
+    # Label the axes
+    axs[0].set_xlabel("F444W Flux")
+    axs[0].set_ylabel("Optical Slope / UV Slope")
+    axs[1].set_xlabel("F444W Flux")
+
+    # Draw a colorbar on the right
+    cbar = fig.colorbar(
+        mappable=axs[1].collections[0], ax=axs, orientation="vertical"
+    )
+    cbar.set_label("$N$")
+
+    fig.savefig(
+        f"plots/slopes_ratio_reprocessed_{snap}",
+        dpi=100,
+        bbox_inches="tight",
+    )
