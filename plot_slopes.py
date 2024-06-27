@@ -81,7 +81,7 @@ extent = (-2.7, 0, -2.7, 0)
 
 # Loop over the snapshots
 for snap in snaps:
-    if len(att_slopes["attenuated"][snap]) == 0:
+    if len(uv_slopes["attenuated"][snap]) == 0:
         continue
     # Plot hexbins of slope vs slope for all galaxies and the red sample
     fig, axs = plt.subplots(1, 2, figsize=(7, 3.5))
