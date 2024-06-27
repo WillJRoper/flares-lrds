@@ -303,7 +303,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
 
             # Get the cumalitive flux and half the total
             cum_fluxes = np.cumsum(
-                gal.stars.particle_photo_fluxes[filt][sinds].value
+                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
             )
             half_flux = 0.5 * cum_fluxes[-1]
 
