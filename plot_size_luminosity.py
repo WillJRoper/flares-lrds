@@ -51,7 +51,7 @@ spectra_keys = ["attenuated", "reprocessed"]
 # Define plotting parameters
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
-extent2 = (0, 4.3, -2, 1)
+extent2 = (0, 4.3, -1.1, 1.3)
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
@@ -78,6 +78,7 @@ for snap in SNAPSHOTS:
             linewidths=0.2,
             xscale="log",
             yscale="log",
+            mincnt=1,
         )
         axs[0].text(
             0.95,
@@ -104,6 +105,7 @@ for snap in SNAPSHOTS:
             linewidths=0.2,
             xscale="log",
             yscale="log",
+            mincnt=1,
         )
         axs[1].text(
             0.95,
@@ -165,6 +167,7 @@ for snap in SNAPSHOTS:
             linewidths=0.2,
             xscale="log",
             yscale="log",
+            mincnt=1,
         )
         axs[0].text(
             0.95,
@@ -191,6 +194,7 @@ for snap in SNAPSHOTS:
             linewidths=0.2,
             xscale="log",
             yscale="log",
+            mincnt=1,
         )
         axs[1].text(
             0.95,
