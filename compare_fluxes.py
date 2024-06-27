@@ -31,7 +31,7 @@ master_flux = get_master_data(
 # Plot the fluxes
 fig, ax = plt.subplots()
 sc = ax.scatter(
-    master_flux["010_z005p000"]["F444W"],
+    master_flux["010_z005p000"],
     att_fluxes["010_z005p000"]["F444W"],
     c=att_colors["010_z005p000"]["F277W_F444W"],
     cmap="viridis",
