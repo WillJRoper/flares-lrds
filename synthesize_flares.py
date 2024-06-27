@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, Mpc, Msun, arcsecond, angstrom
+from unyt import Gyr, Mpc, Msun, arcsecond, angstrom, kpc
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from utils import FILTER_CODES
@@ -96,31 +96,23 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     if star_mass.size < 100:
         return None
 
-    # Plot a histogram of angular galaxies
-    if gal_ind == 0:
-        import matplotlib.pyplot as plt
-
-        fig, ax = plt.subplots()
-        ax.hist(star_ang_rad.value, bins=100, histtype="step")
-        ax.set_xlabel("Angular Radius (arcseconds)")
-        ax.set_ylabel("Number of Stars")
-        fig.savefig(f"angular_radius_histogram_{reg}_{snap}.png", dpi=300)
-        plt.close(fig)
+    # Define a mask to get a 30 kpc aperture
+    mask = radii < 30 * kpc
 
     gal = Galaxy(
         name=f"{reg}_{snap}_{gal_ind}_{group_id}_{subgrp_id}",
         redshift=z,
         stars=Stars(
-            initial_masses=star_init_mass,
-            current_masses=star_mass,
-            ages=star_age,
-            metallicities=star_met,
+            initial_masses=star_init_mass[mask],
+            current_masses=star_mass[mask],
+            ages=star_age[mask],
+            metallicities=star_met[mask],
             redshift=z,
-            coordinates=star_pos,
-            smoothing_lengths=star_sml,
+            coordinates=star_pos[mask, :],
+            smoothing_lengths=star_sml[mask],
             centre=centre,
-            angular_radii=star_ang_rad,
-            radii=radii.value,
+            angular_radii=star_ang_rad[mask],
+            radii=radii[mask].value,
         ),
         gas=Gas(
             masses=gas_mass,
@@ -627,7 +619,7 @@ if __name__ == "__main__":
     rank = comm.Get_rank()
     if rank == 0 and region == 0 and snap == snapshots[0]:
         fig, ax = emission_model.plot_emission_tree(fontsize=8)
-        fig.savefig("emission_tree.png", dpi=300, bbox_inches="tight")
+        fig.savefig("plots/emission_tree.png", dpi=300, bbox_inches="tight")
 
     # Get the kernel
     start_kernel = time.time()
