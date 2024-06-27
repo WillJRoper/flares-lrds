@@ -1,6 +1,7 @@
 """A script to plot the UV and Optical slopes from FLARES."""
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import h5py
 import argparse
 
@@ -53,9 +54,9 @@ for reg in regions:
                     uv_slopes.setdefault(spec, {}).setdefault(snap, []).extend(
                         hdf["UVSlopes"][spec][...]
                     )
-                    optical_slopes.setdefault(spec, {}).setdefault(snap, []).extend(
-                        hdf["IRSlopes"][spec][...]
-                    )
+                    optical_slopes.setdefault(spec, {}).setdefault(
+                        snap, []
+                    ).extend(hdf["IRSlopes"][spec][...])
                     compacts.setdefault(spec, {}).setdefault(snap, []).extend(
                         hdf["Compactness"][spec]["JWST/NIRCam.F444W"][...]
                     )
@@ -77,12 +78,14 @@ for spec in spectra_keys:
             optical_slopes[spec][snap],
             c=compacts[spec][snap],
             cmap="viridis",
+            norm=mcolors.LogNorm(),
         )
         ax[1].scatter(
             uv_slopes[spec][snap],
             optical_slopes[spec][snap],
             c=compacts[spec][snap],
             cmap="viridis",
+            norm=mcolors.LogNorm(),
         )
 
 
