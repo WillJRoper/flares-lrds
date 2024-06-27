@@ -82,7 +82,7 @@ for spec in spectra_keys:
 gridsize = 50
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 extent = (-2.7, 0, -2.7, 0)
-extent2 = (1, 10**4.3, 0, 2)
+extent2 = (0, 4.3, 0, 2)
 
 # Loop over the snapshots
 for snap in snaps:
