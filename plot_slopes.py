@@ -46,16 +46,16 @@ compacts = {}
 for reg in regions:
     for snap in snaps:
         with h5py.File(
-            data_file.replace("<region", reg).replace("<snap>", snap), "r"
+            data_file.replace("<region>", reg).replace("<snap>", snap), "r"
         ) as hdf:
             for spec in spectra_keys:
                 try:
                     uv_slopes.setdefault(spec, {}).setdefault(snap, []).append(
                         hdf[f"{reg}/{snap}/UVSlopes"][...]
                     )
-                    optical_slopes.setdefault(spec, {}).setdefault(snap, []).append(
-                        hdf[f"{reg}/{snap}/IRSlopes"][...]
-                    )
+                    optical_slopes.setdefault(spec, {}).setdefault(
+                        snap, []
+                    ).append(hdf[f"{reg}/{snap}/IRSlopes"][...])
                     compacts.setdefault(spec, {}).setdefault(snap, []).append(
                         hdf[f"{reg}/{snap}/Compactness"][...]
                     )
