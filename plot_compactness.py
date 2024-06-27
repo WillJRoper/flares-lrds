@@ -63,22 +63,18 @@ extent = (-1.1, 1.3, 0, 10)
 att_hlrs = get_masked_synth_data(
     data_file,
     "HalfLightRadii/attenuated/JWST/NIRCam.F444W",
-    att_masks,
 )
 rep_hlrs = get_masked_synth_data(
     data_file,
     "HalfLightRadii/reprocessed/JWST/NIRCam.F444W",
-    rep_masks,
 )
 att_lr_95s = get_masked_synth_data(
     data_file,
     "LightRadii95/attenuated/JWST/NIRCam.F444W",
-    att_masks,
 )
 rep_lr_95s = get_masked_synth_data(
     data_file,
     "LightRadii95/reprocessed/JWST/NIRCam.F444W",
-    rep_masks,
 )
 
 # Plot the data
