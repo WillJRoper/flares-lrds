@@ -97,13 +97,13 @@ for spec in spectra_keys:
 
         # Compute the luminosity function full
         hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
-        phi = hist / volume / np.diff(bins) / np.sum(weights[snap])
+        phi = hist / volume / np.diff(bins)
 
         # Compute the LRD luminosity function (masked LF)
         hist, _ = np.histogram(
             mags[mask], bins=bins, weights=weights[snap][mask]
         )
-        lrd_phi = hist / volume / np.diff(bins) / np.sum(weights[snap][mask])
+        lrd_phi = hist / volume / np.diff(bins)
 
         # Plot the luminosity function
         fig, ax = plt.subplots()
