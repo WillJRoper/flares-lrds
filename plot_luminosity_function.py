@@ -125,6 +125,9 @@ for spec in spectra_keys:
             marker="o",
         )
 
+        # Reverse the x axis
+        ax.set_xlim(ax.get_xlim()[::-1])
+
         ax.set_yscale("log")
         ax.set_xlabel("$M_{1500}$")
 
