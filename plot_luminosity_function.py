@@ -76,7 +76,7 @@ for spec in spectra_keys:
 
         # Which filter contains the rest frame UV?
         uv_filter = filters.find_filter(
-            1500 * angstrom, redshift=z, method="transmission"
+            1500, redshift=z, method="transmission"
         )
 
         # Get the flux for this filter
