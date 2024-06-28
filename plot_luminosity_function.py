@@ -34,7 +34,7 @@ else:
     data_file = "data/combined_<region>_<snap>.hdf5"
 
 # Define the filters we'll use
-filters = get_flares_filters()
+filters = get_flares_filters("lrd_filters.hdf5")
 
 # Define the spectra keys we'll read
 spectra_keys = ["attenuated", "reprocessed"]
