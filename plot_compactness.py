@@ -68,36 +68,44 @@ rep_hlrs = get_masked_synth_data(
     data_file,
     "HalfLightRadii/reprocessed/JWST/NIRCam.F444W",
 )
-att_lr_95s = get_masked_synth_data(
+att_lr_80s = get_masked_synth_data(
     data_file,
-    "LightRadii95/attenuated/JWST/NIRCam.F444W",
+    "LightRadii80/attenuated/JWST/NIRCam.F444W",
 )
-rep_lr_95s = get_masked_synth_data(
+rep_lr_80s = get_masked_synth_data(
     data_file,
-    "LightRadii95/reprocessed/JWST/NIRCam.F444W",
+    "LightRadii80/reprocessed/JWST/NIRCam.F444W",
+)
+att_lr_20s = get_masked_synth_data(
+    data_file,
+    "LightRadii20/attenuated/JWST/NIRCam.F444W",
+)
+rep_lr_20s = get_masked_synth_data(
+    data_file,
+    "LightRadii20/reprocessed/JWST/NIRCam.F444W",
 )
 
 # Plot the data
 for snap in SNAPSHOTS:
     plot_masked_unmasked_hexbins(
         att_hlrs[snap],
-        att_lr_95s[snap] / att_hlrs[snap],
+        att_lr_80s[snap] / att_lr_20s[snap],
         att_masks[snap],
         extent,
         norm,
         "$R_{1/2}$ / [kpc]",
-        "$R_{95}$ / $R_{1/2}$",
+        "$C_{82}$",
         f"compactness_attenuated_{snap}",
         yscale="linear",
     )
     plot_masked_unmasked_hexbins(
         rep_hlrs[snap],
-        rep_lr_95s[snap] / rep_hlrs[snap],
+        rep_lr_80s[snap] / rep_lr_20s[snap],
         rep_masks[snap],
         extent,
         norm,
         "$R_{1/2}$ / [kpc]",
-        "$R_{95}$ / $R_{1/2}$",
+        "$C_{82}$",
         f"compactness_reprocessed_{snap}",
         yscale="linear",
     )
