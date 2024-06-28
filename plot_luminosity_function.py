@@ -7,6 +7,7 @@ from unyt import angstrom
 from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import lnu_to_absolute_mag, fnu_to_lnu
+from synthesizer.units import default_units
 
 from utils import get_synth_data, SNAPSHOTS
 from synthesize_flares import get_flares_filters
@@ -90,7 +91,9 @@ for spec in spectra_keys:
         mask = att_masks[snap] if spec == "attenuated" else rep_masks[snap]
 
         # Convert flux to absolute magnitude
-        mags = lnu_to_absolute_mag(fnu_to_lnu(fluxes, cosmo, z))
+        mags = lnu_to_absolute_mag(
+            fnu_to_lnu(fluxes * default_units["fnu"], cosmo, z)
+        )
 
         # Compute the luminosity function full
         hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
