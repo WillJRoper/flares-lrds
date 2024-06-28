@@ -92,7 +92,7 @@ def get_sizes_mdot(master_file_path):
     return sizes, mdots
 
 
-def get_synth_data(synth_data_path, spec, size_thresh=1):
+def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     """
     Get the fluxes and colors of the galaxies in the simulation.
 
@@ -100,6 +100,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
         synth_data_path (str): The path to the synthetic data.
         spec (str): The spectral synthesis model to use.
         size_thresh (float): The size threshold to apply for LRDs.
+        get_weights (bool): Whether to get the weights.
 
     Returns:
         dict: A dictionary containing the fluxes of the galaxies.
@@ -112,7 +113,39 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
     sizes = {}
     indices = {}
 
-    # Loop over regions
+    # If requested, get the weights
+    if get_weights:
+        region_weights = np.loadtxt("data/weights.txt", use_cols=9)
+        weights = {}
+
+        # Loop over regions and snapshots
+        for reg in REGIONS:
+            for snap in SNAPSHOTS:
+                weights.setdefault(snap, [])
+
+                # Get the indices so we know how many galaxies we need
+                # weights for
+
+                with h5py.File(
+                    synth_data_path.replace("<region>", reg).replace(
+                        "<snap>", snap
+                    ),
+                    "r",
+                ) as hdf:
+                    try:
+                        ngal = len(hdf["Indices"])
+                    except KeyError as e:
+                        print(f"KeyError: {e}")
+                        continue
+                    except OSError as e:
+                        print(f"OSError: {e}")
+                        continue
+                    except TypeError as e:
+                        print(f"TypeError: {e}")
+                        continue
+                weights[snap].extend(np.full(ngal, region_weights[int(reg)]))
+
+    # Lood over regions
     for reg in REGIONS:
         # Loop over snapshots
         for snap in SNAPSHOTS:
@@ -253,10 +286,16 @@ def get_synth_data(synth_data_path, spec, size_thresh=1):
         )
         masks[snap] = mask
 
-    return fluxes, colors, red1, red2, sizes, masks, indices
+        if get_weights:
+            weights[snap] = np.array(weights[snap])
+
+    if get_weights:
+        return fluxes, colors, red1, red2, sizes, masks, indices, weights
+    else:
+        return fluxes, colors, red1, red2, sizes, masks, indices
 
 
-def get_master_data(master_file_path, indices, key):
+def get_master_data(master_file_path, indices, key, get_weights=False):
     """
     Get the data from the master file for the given indices.
 
@@ -264,28 +303,60 @@ def get_master_data(master_file_path, indices, key):
         master_file_path (str): The path to the master file.
         indices (list): The indices of the galaxies to extract.
         key (str): The key of the data to extract.
+        get_weights (bool): Whether to get the weights.
 
     Returns:
         dict: A dictionary containing the data for the galaxies.
     """
-    # Open the file
-    with h5py.File(master_file_path, "r") as hdf:
-        # Define the data dictionary
-        data = {}
+    if not get_weights:
+        # Open the file
+        with h5py.File(master_file_path, "r") as hdf:
+            # Define the data dictionary
+            data = {}
 
-        # Loop over regions
-        for reg in REGIONS:
-            # Loop over snapshots
-            for snap in SNAPSHOTS:
-                # Ensure a key exists for this snapshot
-                data.setdefault(snap, [])
+            # Loop over regions
+            for reg in REGIONS:
+                # Loop over snapshots
+                for snap in SNAPSHOTS:
+                    # Ensure a key exists for this snapshot
+                    data.setdefault(snap, [])
 
-                # Get the data we need
-                data[snap].extend(
-                    hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
-                )
+                    # Get the data we need
+                    data[snap].extend(
+                        hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
+                    )
 
-    return data
+        return data
+    else:
+        # Load the weights
+        region_weights = np.loadtxt("data/weights.txt", use_cols=9)
+
+        # Open the file
+        with h5py.File(master_file_path, "r") as hdf:
+            # Define the data dictionary
+            data = {}
+            weights = {}
+
+            # Loop over regions
+            for reg in REGIONS:
+                # Loop over snapshots
+                for snap in SNAPSHOTS:
+                    # Ensure a key exists for this snapshot
+                    data.setdefault(snap, [])
+                    weights.setdefault(snap, [])
+
+                    # Get the data we need
+                    reg_data = hdf[f"{reg}/{snap}/Galaxy/{key}"][
+                        indices[snap][reg]
+                    ]
+                    data[snap].extend(reg_data)
+
+                    # Get the weights
+                    weights[snap].extend(
+                        np.full(reg_data.shape[0], region_weights[int(reg)])
+                    )
+
+        return data, weights
 
 
 def get_masked_synth_data(synth_path, key, masks=None):
