@@ -115,7 +115,9 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
     # If requested, get the weights
     if get_weights:
-        region_weights = np.loadtxt("data/weights.txt", usecols=9)
+        region_weights = np.loadtxt(
+            "data/weights.txt", usecols=9, delimiter=","
+        )
         weights = {}
 
         # Loop over regions and snapshots
@@ -329,7 +331,9 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
         return data
     else:
         # Load the weights
-        region_weights = np.loadtxt("data/weights.txt", usecols=9)
+        region_weights = np.loadtxt(
+            "data/weights.txt", usecols=9, delimiter=","
+        )
 
         # Open the file
         with h5py.File(master_file_path, "r") as hdf:
