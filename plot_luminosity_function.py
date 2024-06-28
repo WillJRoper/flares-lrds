@@ -81,9 +81,9 @@ for spec in spectra_keys:
 
         # Get the flux for this filter
         fluxes = (
-            att_fluxes[snap][uv_filter.filter_code]
+            att_fluxes[snap][uv_filter.filter_code.split(".")[-1]]
             if spec == "attenuated"
-            else rep_fluxes[snap][uv_filter.filter_code]
+            else rep_fluxes[snap][uv_filter.filter_code.split(".")[-1]]
         )
 
         # Get the right mask
