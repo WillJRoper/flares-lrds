@@ -8,8 +8,8 @@ from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import lnu_to_absolute_mag, fnu_to_lnu
 
-from utils import get_synth_data
-from synthesize_flares import get_flares_filters, SNAPSHOTS
+from utils import get_synth_data, SNAPSHOTS
+from synthesize_flares import get_flares_filters
 
 # Define the parser
 parser = argparse.ArgumentParser(
