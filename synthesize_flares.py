@@ -128,6 +128,20 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # Calculate the DTM, we'll need it later
     gal.dust_to_metal_vijayan19()
 
+    # Compute what we can compute out the gate and attach it to the galaxy
+    # for later use
+    gal.gas.half_mass_radius = gal.gas.get_half_mass_radius()
+    gal.gas.mass_radii = {
+        0.2: gal.gas.get_attr_radius("masses", frac=0.2),
+        0.8: gal.gas.get_attr_radius("masses", frac=0.8),
+    }
+    gal.gas.half_dust_radius = gal.gas.get_half_mass_radius(attr="dust_masses")
+    gal.stars.half_mass_radius = gal.stars.get_half_mass_radius()
+    gal.stars.mass_radii = {
+        0.2: gal.stars.get_attr_radius("current_masses", frac=0.2),
+        0.8: gal.stars.get_attr_radius("current_masses", frac=0.8),
+    }
+
     return gal
 
 
@@ -276,88 +290,40 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
     for spec in gal.stars.particle_photo_fluxes.keys():
         gal.stars.half_light_radii[spec] = {}
         for filt in filters.filter_codes:
-            # Sort radii
-            rs = gal.stars.radii
-            sinds = np.argsort(rs)
-            rs = rs[sinds]
-
-            # Get the cumalitive flux and half the total
-            cum_fluxes = np.cumsum(
-                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
-            )
-            half_flux = 0.5 * cum_fluxes[-1]
-
-            # Get the half light radius (using the closest particle to
-            # the half flux)
-            gal.stars.half_light_radii[spec][filt] = rs[
-                np.argmin(np.abs(cum_fluxes - half_flux))
-            ]
+            # Get the half light radius
+            gal.stars.half_light_radii[spec][
+                filt
+            ] = gal.stars.get_half_flux_radius(spec, filt)
 
     # Get the 95% light radius
     gal.stars.light_radii_95 = {}
     for spec in gal.stars.particle_photo_fluxes.keys():
         gal.stars.light_radii_95[spec] = {}
         for filt in filters.filter_codes:
-            # Sort radii
-            rs = gal.stars.radii
-            sinds = np.argsort(rs)
-            rs = rs[sinds]
-
-            # Get the cumalitive flux and half the total
-            cum_fluxes = np.cumsum(
-                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
+            # Get the light radius
+            gal.stars.light_radii_95[spec][filt] = gal.stars.get_flux_radius(
+                spec, filt, frac=0.95
             )
-            light_flux = 0.95 * cum_fluxes[-1]
-
-            # Get the half light radius (using the closest particle to
-            # the half flux)
-            gal.stars.light_radii_95[spec][filt] = rs[
-                np.argmin(np.abs(cum_fluxes - light_flux))
-            ]
 
     # Get the 80% light radius
     gal.stars.light_radii_80 = {}
     for spec in gal.stars.particle_photo_fluxes.keys():
         gal.stars.light_radii_80[spec] = {}
         for filt in filters.filter_codes:
-            # Sort radii
-            rs = gal.stars.radii
-            sinds = np.argsort(rs)
-            rs = rs[sinds]
-
-            # Get the cumalitive flux and half the total
-            cum_fluxes = np.cumsum(
-                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
+            # Get the light radius
+            gal.stars.light_radii_80[spec][filt] = gal.stars.get_flux_radius(
+                spec, filt, frac=0.8
             )
-            light_flux = 0.8 * cum_fluxes[-1]
-
-            # Get the half light radius (using the closest particle to
-            # the half flux)
-            gal.stars.light_radii_80[spec][filt] = rs[
-                np.argmin(np.abs(cum_fluxes - light_flux))
-            ]
 
     # Get the 20% light radius
     gal.stars.light_radii_20 = {}
     for spec in gal.stars.particle_photo_fluxes.keys():
         gal.stars.light_radii_20[spec] = {}
         for filt in filters.filter_codes:
-            # Sort radii
-            rs = gal.stars.radii
-            sinds = np.argsort(rs)
-            rs = rs[sinds]
-
-            # Get the cumalitive flux and half the total
-            cum_fluxes = np.cumsum(
-                gal.stars.particle_photo_fluxes[spec][filt][sinds].value
+            # Get the light radius
+            gal.stars.light_radii_20[spec][filt] = gal.stars.get_flux_radius(
+                spec, filt, frac=0.2
             )
-            light_flux = 0.2 * cum_fluxes[-1]
-
-            # Get the half light radius (using the closest particle to
-            # the half flux)
-            gal.stars.light_radii_20[spec][filt] = rs[
-                np.argmin(np.abs(cum_fluxes - light_flux))
-            ]
 
     return gal
 
@@ -378,6 +344,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sizes_95 = {}
     sizes_80 = {}
     sizes_20 = {}
+    gas_sizes = []
+    gas_sizes_80 = []
+    gas_sizes_20 = []
+    dust_sizes = []
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -386,6 +356,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         indices.append(int(gal.name.split("_")[3]))
         group_ids.append(int(gal.name.split("_")[4]))
         subgroup_ids.append(int(gal.name.split("_")[5]))
+
+        # Unpack the gas size information
+        gas_sizes.append(gal.gas.half_mass_radius)
+        gas_sizes_80.append(gal.gas.mass_radii[0.8])
+        gas_sizes_20.append(gal.gas.mass_radii[0.2])
+        dust_sizes.append(gal.gas.half_dust_radius)
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
@@ -450,6 +426,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     size_95_per_rank = comm.gather(sizes_95, root=0)
     size_80_per_rank = comm.gather(sizes_80, root=0)
     size_20_per_rank = comm.gather(sizes_20, root=0)
+    gas_size_per_rank = comm.gather(gas_sizes, root=0)
+    gas_size_80_per_rank = comm.gather(gas_sizes_80, root=0)
+    gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
+    dust_size_per_rank = comm.gather(dust_sizes, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -468,6 +448,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sizes_95 = {}
     sizes_80 = {}
     sizes_20 = {}
+    gas_sizes = []
+    gas_sizes_80 = []
+    gas_sizes_20 = []
+    dust_sizes = []
     for (
         fnu,
         flux,
@@ -481,6 +465,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         size_95,
         size_80,
         size_20,
+        gas_size,
+        gas_size_80,
+        gas_size_20,
+        dust_size,
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
@@ -494,6 +482,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         size_95_per_rank,
         size_80_per_rank,
         size_20_per_rank,
+        gas_size_per_rank,
+        gas_size_80_per_rank,
+        gas_size_20_per_rank,
+        dust_size_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -528,6 +520,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
+        gas_sizes.extend(gas_size)
+        gas_sizes_80.extend(gas_size_80)
+        gas_sizes_20.extend(gas_size_20)
+        dust_sizes.extend(dust_size)
 
     # Get the units for each dataset
     units = {"fnu": "erg/s/cm**2/Hz", "flux": "erg/s/cm^**2", "hlr": "kpc"}
@@ -565,6 +561,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
+    gas_sizes = [gas_sizes[i] for i in sort_indices]
+    gas_sizes_80 = [gas_sizes_80[i] for i in sort_indices]
+    gas_sizes_20 = [gas_sizes_20[i] for i in sort_indices]
+    dust_sizes = [dust_sizes[i] for i in sort_indices]
 
     # Write output out to file
     with h5py.File(path, "w") as hdf:
@@ -673,6 +673,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Write out the indices
         hdf.create_dataset("Indices", data=np.array(indices))
+
+        # Write out the gas sizes
+        hdf.create_dataset("GasHalfMassRadius", data=np.array(gas_sizes))
+        hdf.create_dataset("GasMassRadius80", data=np.array(gas_sizes_80))
+        hdf.create_dataset("GasMassRadius20", data=np.array(gas_sizes_20))
+        hdf.create_dataset("DustHalfMassRadius", data=np.array(dust_sizes))
 
 
 # Define the snapshot tags
