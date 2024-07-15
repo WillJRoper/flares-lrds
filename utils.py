@@ -1,4 +1,5 @@
 """A module containing the definition of helpful functions."""
+import os
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
@@ -36,6 +37,30 @@ FILTER_CODES = [
     "JWST/NIRCam.F356W",
     "JWST/NIRCam.F444W",
 ]
+
+
+def savefig(fig, outname):
+    """
+    Save a figure to the plots directory.
+
+    Args:
+        fig (Figure): The figure to save.
+        outname (str): The name of the output file.
+    """
+    # Split the directory and file name
+    dirname, basename = os.path.split(outname)
+
+    # Create the directory if it doesn't exist
+    if dirname:
+        os.makedirs("plots/" + dirname, exist_ok=True)
+
+    # Save the figure
+    fig.savefig(
+        f"plots/{outname}.png",
+        dpi=300,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
 
 
 def get_sizes_mdot(master_file_path):
@@ -328,6 +353,10 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
                         hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
                     )
 
+        # Convert the data to arrays
+        for snap in data.keys():
+            data[snap] = np.array(data[snap])
+
         return data
     else:
         # Load the weights
@@ -359,6 +388,11 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
                     weights[snap].extend(
                         np.full(reg_data.shape[0], region_weights[int(reg)])
                     )
+
+        # Convert the data to arrays
+        for snap in data.keys():
+            data[snap] = np.array(data[snap])
+            weights[snap] = np.array(weights[snap])
 
         return data, weights
 
@@ -524,9 +558,93 @@ def plot_masked_unmasked_hexbins(
     cb.set_label("$N$")
 
     # Save the figure
-    fig.savefig(
-        f"plots/{basename}.png",
-        dpi=300,
-        bbox_inches="tight",
-    )
-    plt.close()
+    savefig(fig, basename)
+
+
+def plot_step_hist(
+    outname, label, bins=50, normalise=False, weights=None, log=True, **kwargs
+):
+    """
+    Plot a step histogram.
+
+    Args:
+        label (str): The x label of the histogram.
+        bins (int): The number of bins to use.
+        normalise (bool): Whether to normalise the histogram.
+        **kwargs: The data to plot in label=data format.
+    """
+    # Create the figure
+    fig, ax = plt.subplots()
+
+    # Turn on the grid and set the axis below
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Remove all zeros
+    okinds = {}
+    for lab, data in kwargs.items():
+        okinds[lab] = data != 0
+        kwargs[lab] = data[data != 0]
+
+    # If log we need to log the data and remove all 0s
+    if log:
+        for lab, data in kwargs.items():
+            kwargs[lab] = np.log10(data)
+
+    # Get the bins
+    if isinstance(bins, int):
+        # Get the min and max of the data
+        _min = np.inf
+        _max = -np.inf
+        for data in kwargs.values():
+            if len(data) == 0:
+                continue
+            _min = min(_min, np.min(data))
+            _max = max(_max, np.max(data))
+
+        # Exit if there is no data
+        if _min == np.inf or _max == -np.inf:
+            return
+
+        # Set the bins
+        bins = np.linspace(_min, _max, bins)
+
+    # Loop over the data
+    for lab, data in kwargs.items():
+        if weights is None:
+            ws = np.ones_like(data)
+        else:
+            ws = weights[lab][okinds[lab]]
+
+        ax.hist(
+            data,
+            bins=bins,
+            histtype="step",
+            label=lab,
+            linewidth=1.5,
+            density=normalise,
+            weights=ws,
+        )
+
+    # Set the labels
+    ax.set_xlabel(label)
+    if normalise:
+        ax.set_ylabel("PDF")
+    else:
+        ax.set_ylabel("$N$")
+
+    # Add the legend
+    ax.legend()
+
+    # Save the figure
+    if normalise:
+        savefig(
+            fig,
+            f"{outname}_normed",
+        )
+    else:
+        savefig(
+            fig,
+            f"{outname}",
+        )
+    plt.close(fig)
