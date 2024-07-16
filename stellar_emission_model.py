@@ -359,6 +359,8 @@ class FLARESLRDsEmission(StellarEmissionModel):
             mask_attr="ages",
             mask_op="<",
             mask_thresh=10 * Myr,
+            nebular=young_nebular,
+            transmitted=young_transmitted,
         )
         young_angular_small_reprocessed.add_mask(
             attr="angular_radii",
@@ -372,6 +374,8 @@ class FLARESLRDsEmission(StellarEmissionModel):
             mask_attr="ages",
             mask_op=">=",
             mask_thresh=10 * Myr,
+            nebular=old_nebular,
+            transmitted=old_transmitted,
         )
         old_angular_small_reprocessed.add_mask(
             attr="angular_radii",
@@ -393,6 +397,8 @@ class FLARESLRDsEmission(StellarEmissionModel):
             mask_attr="ages",
             mask_op="<",
             mask_thresh=10 * Myr,
+            nebular=young_nebular,
+            transmitted=young_transmitted,
         )
         young_angular_large_reprocessed.add_mask(
             attr="angular_radii",
@@ -406,6 +412,8 @@ class FLARESLRDsEmission(StellarEmissionModel):
             mask_attr="ages",
             mask_op=">=",
             mask_thresh=10 * Myr,
+            nebular=old_nebular,
+            transmitted=old_transmitted,
         )
         old_angular_large_reprocessed.add_mask(
             attr="angular_radii",
