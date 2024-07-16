@@ -135,7 +135,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         0.2: gal.gas.get_attr_radius("masses", frac=0.2),
         0.8: gal.gas.get_attr_radius("masses", frac=0.8),
     }
-    gal.gas.half_dust_radius = gal.gas.get_half_mass_radius(attr="dust_masses")
+    gal.gas.half_dust_radius = gal.gas.get_attr_radius("dust_masses")
     gal.stars.half_mass_radius = gal.stars.get_half_mass_radius()
     gal.stars.mass_radii = {
         0.2: gal.stars.get_attr_radius("current_masses", frac=0.2),
