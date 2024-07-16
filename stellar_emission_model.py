@@ -2,7 +2,7 @@
 
 from unyt import Myr, arcsecond
 
-from synthesizer.dust.attenuation import PowerLaw
+from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.emission_models import (
     StellarEmissionModel,
     NebularEmission,
