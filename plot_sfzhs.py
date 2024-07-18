@@ -100,37 +100,40 @@ for snap in SNAPSHOTS:
     ]
 
     ax[0].pcolormesh(
-        grid.log10ages,
-        grid.log10metallicities,
-        lrd_avg_sfzh,
+        X=grid.log10ages,
+        Y=grid.log10metallicities,
+        C=lrd_avg_sfzh,
         aspect="auto",
         origin="lower",
         norm=norm,
         cmap="plasma",
+        shading="nearest",
     )
     ax[0].set_title("LRD")
     ax[0].set_ylabel(r"$\log_{10}(Z)$")
     ax[0].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     ax[1].pcolormesh(
-        grid.log10ages,
-        grid.log10metallicities,
-        other_avg_sfzh,
+        X=grid.log10ages,
+        Y=grid.log10metallicities,
+        C=other_avg_sfzh,
         aspect="auto",
         origin="lower",
         norm=norm,
         cmap="plasma",
+        shading="nearest",
     )
     ax[1].set_ylabel(r"$\log_{10}(Z)$")
     ax[1].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     resi = ax[2].pcolormesh(
-        grid.log10ages,
-        grid.log10metallicities,
-        lrd_avg_sfzh - other_avg_sfzh,
+        X=grid.log10ages,
+        Y=grid.log10metallicities,
+        C=lrd_avg_sfzh - other_avg_sfzh,
         aspect="auto",
         origin="lower",
         cmap="coolwarm",
+        shading="nearest",
     )
     ax[2].set_ylabel(r"$\log_{10}(Z)$")
     ax[2].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
