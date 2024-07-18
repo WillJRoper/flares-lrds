@@ -27,8 +27,8 @@ else:
     data_file = "data/combined_<region>_<snap>.hdf5"
 
 # Define plotting parameters
-gridsize = 30
-extent = (-2, 2, -2, 2)
+gridsize = 50
+extent = (-2, 3, -2, 3)
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 
 
