@@ -28,8 +28,8 @@ else:
 
 # Define plotting parameters
 gridsize = 50
-extent = (-2, 3, -2, 3)
-norm = mcolors.LogNorm(1, 10**3.5, clip=True)
+extent = (-2, 2, -2, 2)
+norm = mcolors.LogNorm()
 
 
 # Get the synthesizer data
