@@ -48,6 +48,11 @@ norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 gas_hmr = get_masked_synth_data(data_file, "GasHalfMassRadius")
 dust_hmr = get_masked_synth_data(data_file, "DustHalfMassRadius")
 
+# Convert from Mpc to kpc
+for snap in SNAPSHOTS:
+    gas_hmr[snap] *= 1e3
+    dust_hmr[snap] *= 1e3
+
 # Loop over the snapshots
 for snap in SNAPSHOTS:
     # Get the data
