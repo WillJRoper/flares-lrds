@@ -249,7 +249,7 @@ def get_kernel():
     return Kernel()
 
 
-def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
+def analyse_galaxy(gal, emission_model, grid, kern, nthreads, filters, cosmo):
     """
     Analyse a galaxy.
 
@@ -272,7 +272,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
 
     # Get the SFZH
     if gal.stars.sfzh is None:
-        gal.stars.get_sfzh(emission_model.grid)
+        gal.stars.get_sfzh(grid)
 
     # Get the spectra
     gal.stars.get_particle_spectra(
@@ -829,6 +829,7 @@ if __name__ == "__main__":
         analyse_galaxy(
             gal,
             emission_model,
+            grid,
             kern,
             nthreads,
             filters,
