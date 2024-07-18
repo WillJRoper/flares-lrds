@@ -44,8 +44,8 @@ grid = Grid(args.grid, args.grid_dir)
 # Define plotting parameters
 bins = 30
 extent = (
-    grid.log10metallicites[0],
-    grid.log10metallicites[-1],
+    grid.log10metallicities[0],
+    grid.log10metallicities[-1],
     grid.log10ages[0],
     grid.log10ages[-1],
 )
