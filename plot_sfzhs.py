@@ -103,7 +103,6 @@ for snap in SNAPSHOTS:
         grid.log10ages,
         grid.log10metallicities,
         lrd_avg_sfzh.T,
-        origin="lower",
         norm=norm,
         cmap="plasma",
         shading="nearest",
@@ -116,7 +115,6 @@ for snap in SNAPSHOTS:
         grid.log10ages,
         grid.log10metallicities,
         other_avg_sfzh.T,
-        origin="lower",
         norm=norm,
         cmap="plasma",
         shading="nearest",
@@ -128,7 +126,6 @@ for snap in SNAPSHOTS:
         grid.log10ages,
         grid.log10metallicities,
         lrd_avg_sfzh.T - other_avg_sfzh.T,
-        origin="lower",
         cmap="coolwarm",
         shading="nearest",
     )
