@@ -28,7 +28,7 @@ else:
 
 # Define plotting parameters
 gridsize = 30
-extent = (0, 10, 0, 10)
+extent = (-2, 2, -2, 2)
 norm = mcolors.LogNorm(1, 10**3.5, clip=True)
 
 
