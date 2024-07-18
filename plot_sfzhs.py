@@ -92,12 +92,14 @@ for snap in SNAPSHOTS:
 
     # Plot the SFZHs as a pcolormesh with a residual image
     fig = plt.figure(figsize=(3.5 * 3, 3.5 * 1))
-    gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1])
+    gs = fig.add_gridspec(1, 5, width_ratios=[20, 20, 20, 1, 1])
     ax = [
         fig.add_subplot(gs[0]),
         fig.add_subplot(gs[1]),
         fig.add_subplot(gs[2]),
     ]
+    cax1 = fig.add_subplot(gs[3])
+    cax2 = fig.add_subplot(gs[4])
 
     ax[0].pcolormesh(
         grid.log10ages,
@@ -135,12 +137,12 @@ for snap in SNAPSHOTS:
 
     # Add a colorbar
     cbar = fig.colorbar(
-        plt.cm.ScalarMappable(norm=norm, cmap="plasma"), ax=ax[2]
+        plt.cm.ScalarMappable(norm=norm, cmap="plasma"), cax=cax1
     )
     cbar.set_label(r"SFZH / [$M_\odot$]")
 
     # Add a second colorbar for the residuals
-    cbar2 = fig.colorbar(resi, ax=ax[2], pad=0.3)
+    cbar2 = fig.colorbar(resi, cax=cax2)
     cbar2.set_label(r"(LRD - Other) / Other")
 
     # Save the figure
