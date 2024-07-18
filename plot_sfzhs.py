@@ -99,7 +99,7 @@ for snap in SNAPSHOTS:
         fig.add_subplot(gs[2]),
     ]
 
-    ax[0].pcolomesh(
+    ax[0].pcolormesh(
         grid.log10ages,
         grid.log10metallicities,
         lrd_avg_sfzh,
