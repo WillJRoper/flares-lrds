@@ -134,7 +134,7 @@ for snap in SNAPSHOTS:
 
     # Add a colorbar
     cbar = fig.colorbar(
-        plt.cm.ScalarMappable(norm=norm, cmap="plasma"),
+        plt.cm.ScalarMappable(norm=norm, cmap="plasma"), ax=ax[1]
     )
     cbar.set_label(r"SFZH / [$M_\odot$]")
 
