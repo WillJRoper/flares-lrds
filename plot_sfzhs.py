@@ -91,7 +91,7 @@ for snap in SNAPSHOTS:
     )
 
     # Plot the SFZHs as a pcolormesh with a residual image
-    fig = plt.figure(figsize=(3.5 * 3, 3.5 * 1.5))
+    fig = plt.figure(figsize=(3.5 * 3, 3.5 * 1))
     gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1])
     ax = [
         fig.add_subplot(gs[0]),
@@ -119,7 +119,6 @@ for snap in SNAPSHOTS:
         cmap="plasma",
         shading="nearest",
     )
-    ax[1].set_ylabel(r"$\log_{10}(Z)$")
     ax[1].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     resi = ax[2].pcolormesh(
@@ -129,17 +128,16 @@ for snap in SNAPSHOTS:
         cmap="coolwarm",
         shading="nearest",
     )
-    ax[2].set_ylabel(r"$\log_{10}(Z)$")
     ax[2].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     # Add a colorbar
     cbar = fig.colorbar(
-        plt.cm.ScalarMappable(norm=norm, cmap="plasma"), ax=ax[1]
+        plt.cm.ScalarMappable(norm=norm, cmap="plasma"), ax=ax[2]
     )
     cbar.set_label(r"SFZH / [$M_\odot$]")
 
     # Add a second colorbar for the residuals
-    cbar2 = fig.colorbar(resi, ax=ax[2])
+    cbar2 = fig.colorbar(resi, ax=ax[2], pad=0.1)
     cbar2.set_label(r"LRD - Other")
 
     # Save the figure
