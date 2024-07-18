@@ -29,7 +29,6 @@ else:
 # Define plotting parameters
 gridsize = 50
 extent = (-2, 2, -2, 2)
-norm = mcolors.LogNorm()
 
 
 # Get the synthesizer data
@@ -74,7 +73,7 @@ for snap in SNAPSHOTS:
         gas_data[~mask],
         dust_data[~mask],
         gridsize=gridsize,
-        norm=norm,
+        norm=mcolors.LogNorm(),
         extent=extent,
         cmap="viridis",
         linewidths=0.2,
