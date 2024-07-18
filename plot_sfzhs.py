@@ -49,7 +49,7 @@ extent = (
     grid.log10ages[0],
     grid.log10ages[-1],
 )
-norm = mcolors.LogNorm(vmin=10**6, vmax=10**10)
+norm = mcolors.LogNorm(vmin=10**6, vmax=10**8, clip=True)
 
 
 # Get the synthesizer data
