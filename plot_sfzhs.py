@@ -76,15 +76,18 @@ for snap in SNAPSHOTS:
     if np.all(~masks[snap]):
         continue
 
-    # Make the norm
-    norm = mcolors.LogNorm(vmin=10**6, vmax=np.max(sfzhs[snap]))
-
     # Get the weighted average SFZH along the first axis (galaxy per row)
     lrd_avg_sfzh = np.average(
         lrd_sfzh, axis=0, weights=weights[snap][masks[snap]]
     )
     other_avg_sfzh = np.average(
         other_sfzh, axis=0, weights=weights[snap][~masks[snap]]
+    )
+
+    # Make the norm
+    norm = mcolors.LogNorm(
+        vmin=10**6,
+        vmax=np.max((np.max(lrd_avg_sfzh), np.max(other_avg_sfzh))),
     )
 
     # Plot the SFZHs
