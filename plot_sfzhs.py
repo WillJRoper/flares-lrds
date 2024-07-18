@@ -73,6 +73,10 @@ for snap in SNAPSHOTS:
     lrd_sfzh = sfzhs[snap][masks[snap]]
     other_sfzh = sfzhs[snap][~masks[snap]]
 
+    # Skip if there are no LRD galaxies
+    if np.all(~masks[snap]):
+        continue
+
     # Get the weighted average SFZH along the first axis (galaxy per row)
     lrd_avg_sfzh = np.average(
         lrd_sfzh, axis=0, weights=weights[snap][masks[snap]]
