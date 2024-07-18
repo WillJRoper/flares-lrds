@@ -65,7 +65,6 @@ extent = (
     grid.log10ages[0],
     grid.log10ages[-1],
 )
-norm = mcolors.LogNorm(vmin=np.min(sfzhs[sfzhs > 0]), vmax=np.max(sfzhs))
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
@@ -76,6 +75,11 @@ for snap in SNAPSHOTS:
     # Skip if there are no LRD galaxies
     if np.all(~masks[snap]):
         continue
+
+    # Make the norm
+    norm = mcolors.LogNorm(
+        vmin=np.min(sfzhs[snap][sfzhs[snap] > 0]), vmax=np.max(sfzhs[snap])
+    )
 
     # Get the weighted average SFZH along the first axis (galaxy per row)
     lrd_avg_sfzh = np.average(
