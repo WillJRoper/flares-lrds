@@ -141,7 +141,7 @@ for snap in SNAPSHOTS:
 
     # Add a second colorbar for the residuals
     cbar2 = fig.colorbar(resi, ax=ax[2], pad=0.3)
-    cbar2.set_label(r"LRD - Other")
+    cbar2.set_label(r"(LRD - Other) / Other")
 
     # Save the figure
     savefig(fig, f"sfzh_comp_{args.type}_{snap}")
