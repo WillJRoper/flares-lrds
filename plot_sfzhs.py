@@ -121,12 +121,15 @@ for snap in SNAPSHOTS:
     )
     ax[1].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
+    resi_img = (lrd_avg_sfzh.T - other_avg_sfzh.T) / other_avg_sfzh.T
+
     resi = ax[2].pcolormesh(
         grid.log10ages,
         grid.log10metallicities,
-        lrd_avg_sfzh.T - other_avg_sfzh.T,
+        resi_img,
         cmap="coolwarm",
         shading="nearest",
+        norm=mcolors.TwoSlopeNorm(vcenter=0),
     )
     ax[2].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
@@ -137,7 +140,7 @@ for snap in SNAPSHOTS:
     cbar.set_label(r"SFZH / [$M_\odot$]")
 
     # Add a second colorbar for the residuals
-    cbar2 = fig.colorbar(resi, ax=ax[2], pad=0.1)
+    cbar2 = fig.colorbar(resi, ax=ax[2], pad=0.3)
     cbar2.set_label(r"LRD - Other")
 
     # Save the figure
