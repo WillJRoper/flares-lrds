@@ -41,16 +41,6 @@ else:
 # Load the grid
 grid = Grid(args.grid, args.grid_dir)
 
-# Define plotting parameters
-bins = 30
-extent = (
-    grid.log10metallicities[0],
-    grid.log10metallicities[-1],
-    grid.log10ages[0],
-    grid.log10ages[-1],
-)
-norm = mcolors.LogNorm(vmin=10**6, vmax=10**8, clip=True)
-
 
 # Get the synthesizer data
 (
@@ -66,6 +56,16 @@ norm = mcolors.LogNorm(vmin=10**6, vmax=10**8, clip=True)
 
 # Get the sfzhs
 sfzhs = get_masked_synth_data(data_file, "SFZH")
+
+# Define plotting parameters
+bins = 30
+extent = (
+    grid.log10metallicities[0],
+    grid.log10metallicities[-1],
+    grid.log10ages[0],
+    grid.log10ages[-1],
+)
+norm = mcolors.LogNorm(vmin=np.min(sfzhs[sfzhs > 0]), vmax=np.max(sfzhs))
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
