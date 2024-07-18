@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-from synthesizer.grid import Grid
-
 from utils import get_masked_synth_data, get_synth_data, savefig, SNAPSHOTS
 
 # Define the parser
@@ -27,9 +25,6 @@ elif args.type == "agn":
     data_file = "data/pure_agn_<region>_<snap>.hdf5"
 else:
     data_file = "data/combined_<region>_<snap>.hdf5"
-
-# Load the grid
-grid = Grid(args.grid, args.grid_dir)
 
 # Define plotting parameters
 gridsize = 30
