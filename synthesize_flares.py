@@ -272,7 +272,7 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
 
     # Get the SFZH
     if gal.stars.sfzh is None:
-        gal.stars.get_sfzh()
+        gal.stars.get_sfzh(emission_model.grid)
 
     # Get the spectra
     gal.stars.get_particle_spectra(
