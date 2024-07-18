@@ -100,9 +100,9 @@ for snap in SNAPSHOTS:
     ]
 
     ax[0].pcolormesh(
-        X=grid.log10ages,
-        Y=grid.log10metallicities,
-        C=lrd_avg_sfzh,
+        grid.log10ages,
+        grid.log10metallicities,
+        lrd_avg_sfzh,
         aspect="auto",
         origin="lower",
         norm=norm,
@@ -114,9 +114,9 @@ for snap in SNAPSHOTS:
     ax[0].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     ax[1].pcolormesh(
-        X=grid.log10ages,
-        Y=grid.log10metallicities,
-        C=other_avg_sfzh,
+        grid.log10ages,
+        grid.log10metallicities,
+        other_avg_sfzh,
         aspect="auto",
         origin="lower",
         norm=norm,
@@ -127,9 +127,9 @@ for snap in SNAPSHOTS:
     ax[1].set_xlabel(r"$\log_{10}(\tau/\mathrm{yr})$")
 
     resi = ax[2].pcolormesh(
-        X=grid.log10ages,
-        Y=grid.log10metallicities,
-        C=lrd_avg_sfzh - other_avg_sfzh,
+        grid.log10ages,
+        grid.log10metallicities,
+        lrd_avg_sfzh - other_avg_sfzh,
         aspect="auto",
         origin="lower",
         cmap="coolwarm",
