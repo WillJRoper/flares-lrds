@@ -16,16 +16,6 @@ parser.add_argument(
     default="stellar",
     help="The type of data to plot.",
 )
-parser.add_argument(
-    "--grid",
-    type=str,
-    help="The file name of the Synthesizer gird.",
-)
-parser.add_argument(
-    "--grid_dir",
-    type=str,
-    help="The directory of the Synthesizer grid.",
-)
 
 # Parse the arguments
 args = parser.parse_args()
