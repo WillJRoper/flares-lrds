@@ -270,6 +270,10 @@ def analyse_galaxy(gal, emission_model, kern, nthreads, filters, cosmo):
             force_loop=False,
         )
 
+    # Get the SFZH
+    if gal.stars.sfzh is None:
+        gal.stars.get_sfzh()
+
     # Get the spectra
     gal.stars.get_particle_spectra(
         emission_model,
@@ -351,6 +355,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     group_ids = []
     subgroup_ids = []
     indices = []
+    sfzhs = []
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -362,6 +367,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_sizes_80.append(gal.gas.mass_radii[0.8])
         gas_sizes_20.append(gal.gas.mass_radii[0.2])
         dust_sizes.append(gal.gas.half_dust_radius)
+
+        # Get the SFZH arrays
+        sfzhs.append(gal.stars.sfzh)
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
@@ -430,6 +438,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_size_80_per_rank = comm.gather(gas_sizes_80, root=0)
     gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
+    sfzhs_per_rank = comm.gather(sfzhs, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -452,6 +461,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_sizes_80 = []
     gas_sizes_20 = []
     dust_sizes = []
+    sfzhs = []
     for (
         fnu,
         flux,
@@ -469,6 +479,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_size_80,
         gas_size_20,
         dust_size,
+        sfzh,
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
@@ -486,6 +497,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_size_80_per_rank,
         gas_size_20_per_rank,
         dust_size_per_rank,
+        sfzhs_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -524,9 +536,15 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_sizes_80.extend(gas_size_80)
         gas_sizes_20.extend(gas_size_20)
         dust_sizes.extend(dust_size)
+        sfzhs.extend(sfzh)
 
     # Get the units for each dataset
-    units = {"fnu": "erg/s/cm**2/Hz", "flux": "erg/s/cm^**2", "hlr": "kpc"}
+    units = {
+        "fnu": "erg/s/cm**2/Hz",
+        "flux": "erg/s/cm^**2",
+        "hlr": "kpc",
+        "sfzh": "Msun",
+    }
 
     # Sort the data by galaxy index
     sort_indices = np.argsort(indices)
@@ -679,6 +697,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         hdf.create_dataset("GasMassRadius80", data=np.array(gas_sizes_80))
         hdf.create_dataset("GasMassRadius20", data=np.array(gas_sizes_20))
         hdf.create_dataset("DustHalfMassRadius", data=np.array(dust_sizes))
+
+        # Store the sfzhs
+        hdf.create_dataset("SFZH", data=np.array(sfzhs))
 
 
 # Define the snapshot tags
