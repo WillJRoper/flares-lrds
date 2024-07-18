@@ -22,7 +22,7 @@ parser.add_argument(
     help="The file name of the Synthesizer gird.",
 )
 parser.add_argument(
-    "--grid_dir",
+    "--grid-dir",
     type=str,
     help="The directory of the Synthesizer grid.",
 )
@@ -113,7 +113,7 @@ for snap in SNAPSHOTS:
         ax=ax,
         orientation="horizontal",
     )
-    cbar.set_label("SFZH / [$M_\odot$]")
+    cbar.set_label(r"SFZH / [$M_\odot$]")
 
     # Save the figure
     savefig(fig, f"sfzh_comp_{args.type}_{snap}")
