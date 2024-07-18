@@ -80,8 +80,9 @@ for snap in SNAPSHOTS:
         linewidths=0.2,
         xscale="log",
         yscale="log",
-        mincnt=1,
+        mincnt=ws.min(),
         C=ws[~mask],
+        reduce_C_function=np.sum,
     )
 
     # Plot the LRD data as a scatter plot
