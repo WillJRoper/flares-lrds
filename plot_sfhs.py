@@ -68,10 +68,13 @@ grid = Grid(args.grid, args.grid_dir)
 
 # Get the sfzhs
 sfzhs = get_masked_synth_data(data_file, "SFZH")
-star_masses = get_master_data(
-    args.master,
-    indices,
-    "Mstar_aperture/30",
+star_masses = (
+    get_master_data(
+        args.master,
+        indices,
+        "Mstar_aperture/30",
+    )
+    * 10**10
 )
 
 
@@ -100,7 +103,7 @@ for snap in SNAPSHOTS:
     other_sfzh = other_sfzh[other_masses > 10**9]
 
     # Skip if there are no LRD galaxies
-    if np.all(~masks[snap]):
+    if len(lrd_sfzh) == 0 or len(other_sfzh) == 0:
         continue
 
     # Sum over the metallicity axis of the sfzhs to get the SFH
