@@ -133,7 +133,7 @@ for snap in SNAPSHOTS:
         )
 
         # Plot all LRDS with a low alpha
-        for sfh in lrd_sfh[lrd_okinds]:
+        for sfh in lrd_sfh:
             ax.semilogy(grid.log10ages, sfh, color="red", alpha=0.1)
 
         # Plot the median SFHs
@@ -159,7 +159,7 @@ for snap in SNAPSHOTS:
             0.95,
             0.05,
             f"$10^{np.log10(mass_low):.1f} < "
-            f"M/M_\odot < 10^{np.log10(mass_high):.1f}$",
+            f"M/M_\\odot < 10^{np.log10(mass_high):.1f}$",
             transform=ax.transAxes,
         )
 
@@ -171,8 +171,8 @@ for snap in SNAPSHOTS:
         ax.set_xticklabels([])
 
     # Labeled axes
-    ax3.set_xlabel("$\log_{10}(\mathrm{Age} / [\mathrm{yr}]$")
-    ax2.set_ylabel("$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
+    ax3.set_xlabel(r"$\log_{10}(\mathrm{Age} / [\mathrm{yr}]$")
+    ax2.set_ylabel(r"$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
 
     # Add a legend
     ax1.legend()
