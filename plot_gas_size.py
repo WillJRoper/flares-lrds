@@ -57,6 +57,7 @@ for snap in SNAPSHOTS:
     # Get the data
     gas_data = gas_hmr[snap]
     dust_data = dust_hmr[snap]
+    star_data = sizes[snap]["F444W"]
     ws = weights[snap]
     mask = masks[snap]
 
@@ -88,6 +89,54 @@ for snap in SNAPSHOTS:
     ax.scatter(
         gas_data[mask],
         dust_data[mask],
+        c="red",
+        s=1,
+        alpha=0.8,
+        label="LRD",
+    )
+
+    # Add the colorbar
+    cbar = fig.colorbar(hb, ax=ax)
+    cbar.set_label(r"$\sum w_i$")
+
+    # Set the labels
+    ax.set_xlabel(r"$R_{1/2}^{\mathrm{Gas}} /$ [kpc]")
+    ax.set_ylabel(r"$R_{1/2}^{\mathrm{Dust}} /$ [kpc]")
+
+    # Draw the legend
+    ax.legend()
+
+    # Save the figure
+    savefig(fig, f"gas_dust_size_{args.type}_{snap}")
+
+    # Create the figure
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(111)
+
+    # Draw a grid behind everything
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Plot the non-LRD data as a hexbin
+    hb = ax.hexbin(
+        gas_data[~mask],
+        star_data[~mask] / dust_data[~mask],
+        gridsize=gridsize,
+        norm=mcolors.LogNorm(),
+        extent=extent,
+        cmap="viridis",
+        linewidths=0.2,
+        xscale="log",
+        yscale="log",
+        mincnt=ws.min(),
+        C=ws[~mask],
+        reduce_C_function=np.sum,
+    )
+
+    # Plot the LRD data as a scatter plot
+    ax.scatter(
+        gas_data[mask],
+        star_data[mask] / dust_data[mask],
         c="red",
         s=1,
         alpha=0.8,
