@@ -155,19 +155,20 @@ for snap in SNAPSHOTS:
         # Label the axes with the mass bin
         ax.text(
             0.95,
-            0.05,
+            0.9,
             f"$10^{np.log10(mass_low):.1f} < "
             f"M/M_\\odot < 10^{np.log10(mass_high):.1f}$",
             transform=ax.transAxes,
             ha="right",
             va="bottom",
+            fontsize=8,
             bbox=dict(
-                boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+                boxstyle="round,pad=0.3", fc="w", ec="k", lw=1, alpha=0.7
             ),
         )
 
         # Set limtis
-        # ax.set_ylim(10**5.1, 10**10.2)
+        ax.set_ylim(10**-1.5, 10**3.2)
 
     # Turn off the x-axis labels for all but the bottom plot
     for ax in axes[:-1]:
@@ -178,7 +179,7 @@ for snap in SNAPSHOTS:
     ax2.set_ylabel(r"$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
 
     # Add a legend
-    ax1.legend()
+    ax1.legend(loc="lower right")
 
     # Save the figure
     savefig(fig, f"sfh_{snap}_{args.type}.png")
