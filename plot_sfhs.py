@@ -134,12 +134,12 @@ for snap in SNAPSHOTS:
 
         # Plot all LRDS with a low alpha
         for sfh in lrd_sfh:
-            ax.semilogy(grid.log10ages, sfh, color="red", alpha=0.1)
+            ax.semilogy(grid.log10ages[:-1], sfh, color="red", alpha=0.1)
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
             ax.semilogy(
-                grid.log10ages,
+                grid.log10ages[:-1],
                 np.median(lrd_sfh[lrd_okinds], axis=0),
                 label="LRD",
                 color="red",
@@ -148,7 +148,7 @@ for snap in SNAPSHOTS:
         # Plot the median of the other galaxies
         if np.sum(other_okinds) > 0:
             ax.semilogy(
-                grid.log10ages,
+                grid.log10ages[:-1],
                 np.median(other_sfh[other_okinds], axis=0),
                 label="Other",
                 color="blue",
