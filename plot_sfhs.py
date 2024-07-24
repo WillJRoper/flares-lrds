@@ -114,6 +114,12 @@ for snap in SNAPSHOTS:
     ax.grid(True)
     ax.set_axisbelow(True)
 
+    # Plot all LRDS with a low alpha
+    for sfzh in lrd_sfzh:
+        ax.semilogy(
+            grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1
+        )
+
     # Plot the median SFHs
     ax.semilogy(
         grid.log10ages,
@@ -127,12 +133,6 @@ for snap in SNAPSHOTS:
         label="Other",
         color="blue",
     )
-
-    # Plot all LRDS with a low alpha
-    for sfzh in lrd_sfzh:
-        ax.semilogy(
-            grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1
-        )
 
     # Labeled axes
     ax.set_xlabel("log10(Age)")
