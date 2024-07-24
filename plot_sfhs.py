@@ -102,8 +102,6 @@ for snap in SNAPSHOTS:
     # Sum over the metallicity axis of the sfzhs to get the SFH
     lrd_sfh = np.sum(lrd_sfzh, axis=2)
     other_sfh = np.sum(other_sfzh, axis=2)
-    print(lrd_sfh.shape)
-    print(np.median(lrd_sfh, axis=0).shape)
 
     # Create the figure
     fig = plt.figure(figsize=(3.5, 3 * 3.5))
@@ -152,8 +150,17 @@ for snap in SNAPSHOTS:
                 color="blue",
             )
 
+        # Label the axes with the mass bin
+        ax.text(
+            0.95,
+            0.05,
+            f"$10^{np.log10(mass_low):.1f} < "
+            f"M/M_\odot < 10^{np.log10(mass_high):.1f}$",
+            transform=ax.transAxes,
+        )
+
         # Set limtis
-        ax.set_ylim(10**5, 10**10.2)
+        ax.set_ylim(10**5.1, 10**10.2)
 
     # Turn off the x-axis labels for all but the bottom plot
     for ax in axes[:-1]:
