@@ -147,7 +147,7 @@ for snap in SNAPSHOTS:
         if np.sum(other_okinds) > 0:
             ax.semilogy(
                 grid.log10ages[:-1],
-                np.median(othersfh[other_okinds], axis=0),
+                np.median(othersfh, axis=0),
                 label="Other",
                 color="blue",
             )
