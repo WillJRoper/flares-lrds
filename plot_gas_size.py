@@ -155,4 +155,4 @@ for snap in SNAPSHOTS:
     ax.legend()
 
     # Save the figure
-    savefig(fig, f"gas_dust_size_{args.type}_{snap}")
+    savefig(fig, f"gas_stardust_size_{args.type}_{snap}")
