@@ -104,8 +104,8 @@ for snap in SNAPSHOTS:
         continue
 
     # Sum over the metallicity axis of the sfzhs to get the SFH
-    lrd_sfh = np.sum(lrd_sfzh, axis=0)
-    other_sfh = np.sum(other_sfzh, axis=0)
+    lrd_sfh = np.sum(lrd_sfzh, axis=2)
+    other_sfh = np.sum(other_sfzh, axis=2)
     print(lrd_sfh.shape)
     print(np.median(lrd_sfh, axis=0).shape)
 
