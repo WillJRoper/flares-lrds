@@ -115,7 +115,7 @@ for snap in SNAPSHOTS:
         ax.set_axisbelow(True)
 
     # Extract the xs
-    xs = (10 ** grid.log10ages[:-1],)
+    xs = 10 ** grid.log10ages[:-1]
 
     # Loop over axes and mass bins
     for ax, (mass_low, mass_high) in zip(
