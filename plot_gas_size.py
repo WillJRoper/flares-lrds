@@ -149,7 +149,7 @@ for snap in SNAPSHOTS:
 
     # Set the labels
     ax.set_xlabel(r"$R_{1/2}^{\mathrm{Gas}} /$ [kpc]")
-    ax.set_ylabel(r"$R_{1/2}^{\mathrm{Dust}} /$ [kpc]")
+    ax.set_ylabel(r"$R_{1/2}^{\star} / R_{1/2}^{\mathrm{Dust}}$")
 
     # Draw the legend
     ax.legend()
