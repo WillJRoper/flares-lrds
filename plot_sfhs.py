@@ -159,10 +159,13 @@ for snap in SNAPSHOTS:
             f"$10^{np.log10(mass_low):.1f} < "
             f"M/M_\\odot < 10^{np.log10(mass_high):.1f}$",
             transform=ax.transAxes,
+            fancybox=True,
+            bbox=dict(facecolor="white", alpha=0.5),
+            horizontalalignment="right",
         )
 
         # Set limtis
-        ax.set_ylim(10**5.1, 10**10.2)
+        # ax.set_ylim(10**5.1, 10**10.2)
 
     # Turn off the x-axis labels for all but the bottom plot
     for ax in axes[:-1]:
