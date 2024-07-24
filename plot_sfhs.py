@@ -106,7 +106,7 @@ for snap in SNAPSHOTS:
     print(np.median(lrd_sfh, axis=0).shape)
 
     # Create the figure
-    fig = plt.figure(figsize=(3 * 3.5, 3.5))
+    fig = plt.figure(figsize=(3.5, 3 * 3.5))
     gs = fig.add_gridspec(3, 1, hspace=0.0)
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1])
