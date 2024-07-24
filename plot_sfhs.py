@@ -126,11 +126,15 @@ for snap in SNAPSHOTS:
             (other_masses > mass_low) & (other_masses < mass_high)
         )[0]
 
+        # Convert the SFHs to SFRs
+        lrd_sfh = lrd_sfh[lrd_okinds, :-1] / np.diff(10**grid.log10ages)
+        other_sfh = other_sfh[other_okinds, :-1] / np.diff(
+            10**grid.log10ages
+        )
+
         # Plot all LRDS with a low alpha
-        for sfzh in lrd_sfzh[lrd_okinds]:
-            ax.semilogy(
-                grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1
-            )
+        for sfh in lrd_sfh[lrd_okinds]:
+            ax.semilogy(grid.log10ages, sfh, color="red", alpha=0.1)
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
@@ -167,8 +171,8 @@ for snap in SNAPSHOTS:
         ax.set_xticklabels([])
 
     # Labeled axes
-    ax3.set_xlabel("log10(Age)")
-    ax2.set_ylabel("SFH")
+    ax3.set_xlabel("$\log_{10}(\mathrm{Age} / [\mathrm{yr}]$")
+    ax2.set_ylabel("$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
 
     # Add a legend
     ax1.legend()
