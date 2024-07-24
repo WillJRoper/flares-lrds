@@ -104,8 +104,8 @@ for snap in SNAPSHOTS:
         continue
 
     # Sum over the metallicity axis of the sfzhs to get the SFH
-    lrd_sfh = np.sum(lrd_sfzh, axis=1)
-    other_sfh = np.sum(other_sfzh, axis=1)
+    lrd_sfh = np.sum(lrd_sfzh, axis=0)
+    other_sfh = np.sum(other_sfzh, axis=0)
 
     # Create the figure
     fig, ax = plt.subplots()
@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
     # Plot all LRDS with a low alpha
     for sfzh in lrd_sfzh:
-        ax.plot(grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1)
+        ax.plot(grid.log10ages, np.sum(sfzh, axis=0), color="red", alpha=0.1)
 
     # Labeled axes
     ax.set_xlabel("log10(Age)")
