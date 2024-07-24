@@ -159,9 +159,11 @@ for snap in SNAPSHOTS:
             f"$10^{np.log10(mass_low):.1f} < "
             f"M/M_\\odot < 10^{np.log10(mass_high):.1f}$",
             transform=ax.transAxes,
-            fancybox=True,
-            bbox=dict(facecolor="white", alpha=0.5),
-            horizontalalignment="right",
+            ha="right",
+            va="bottom",
+            bbox=dict(
+                boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
+            ),
         )
 
         # Set limtis
