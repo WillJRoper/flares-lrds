@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-from synthesizer.grid import Grid
 
 from utils import (
     get_masked_synth_data,
@@ -23,20 +22,10 @@ parser.add_argument(
     help="The type of data to plot.",
 )
 parser.add_argument(
-    "--grid",
-    type=str,
-    help="The file name of the Synthesizer gird.",
-)
-parser.add_argument(
     "--master",
     type=str,
     required=True,
     help="The master file to use.",
-)
-parser.add_argument(
-    "--grid-dir",
-    type=str,
-    help="The directory of the Synthesizer grid.",
 )
 
 # Parse the arguments
@@ -49,10 +38,6 @@ elif args.type == "agn":
     data_file = "data/pure_agn_<region>_<snap>.hdf5"
 else:
     data_file = "data/combined_<region>_<snap>.hdf5"
-
-# Load the grid
-grid = Grid(args.grid, args.grid_dir)
-
 
 # Get the synthesizer data
 (
