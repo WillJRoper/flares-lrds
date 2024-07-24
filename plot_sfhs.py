@@ -106,6 +106,8 @@ for snap in SNAPSHOTS:
     # Sum over the metallicity axis of the sfzhs to get the SFH
     lrd_sfh = np.sum(lrd_sfzh, axis=0)
     other_sfh = np.sum(other_sfzh, axis=0)
+    print(lrd_sfh.shape)
+    print(np.median(lrd_sfh, axis=0).shape)
 
     # Create the figure
     fig, ax = plt.subplots()
