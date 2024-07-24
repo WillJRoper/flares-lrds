@@ -85,7 +85,7 @@ extent = (
 )
 
 # Define mass bins
-mass_bins = np.logspace(9, 11.5, 4)
+mass_bins = [10**9, 10**9.5, 10**10, 10**11.5]
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
@@ -114,6 +114,9 @@ for snap in SNAPSHOTS:
         ax.grid(True)
         ax.set_axisbelow(True)
 
+    # Extract the xs
+    xs = (10 ** grid.log10ages[:-1],)
+
     # Loop over axes and mass bins
     for ax, (mass_low, mass_high) in zip(
         axes, zip(mass_bins[:-1], mass_bins[1:])
@@ -132,12 +135,12 @@ for snap in SNAPSHOTS:
 
         # Plot all LRDS with a low alpha
         for sfh in lrdsfh:
-            ax.semilogy(grid.log10ages[:-1], sfh, color="red", alpha=0.1)
+            ax.loglog(xs, sfh, color="red", alpha=0.1)
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
-            ax.semilogy(
-                grid.log10ages[:-1],
+            ax.loglog(
+                xs,
                 np.median(lrdsfh, axis=0),
                 label="LRD",
                 color="red",
@@ -145,8 +148,8 @@ for snap in SNAPSHOTS:
 
         # Plot the median of the other galaxies
         if np.sum(other_okinds) > 0:
-            ax.semilogy(
-                grid.log10ages[:-1],
+            ax.loglog(
+                xs,
                 np.median(othersfh, axis=0),
                 label="Other",
                 color="blue",
@@ -156,8 +159,12 @@ for snap in SNAPSHOTS:
         ax.text(
             0.95,
             0.9,
-            f"$10^{np.log10(mass_low):.1f} < "
-            f"M/M_\\odot < 10^{np.log10(mass_high):.1f}$",
+            r"$10^{"
+            f"{np.log10(mass_low):.1f}"
+            r"} < "
+            r"M/M_\odot < 10^{"
+            f"{np.log10(mass_high):.1f}$"
+            r"}",
             transform=ax.transAxes,
             ha="right",
             va="bottom",
@@ -175,11 +182,11 @@ for snap in SNAPSHOTS:
         ax.set_xticklabels([])
 
     # Labeled axes
-    ax3.set_xlabel(r"$\log_{10}(\mathrm{Age} / [\mathrm{yr}]$")
+    ax3.set_xlabel(r"$\mathrm{Age} / [\mathrm{yr}]$")
     ax2.set_ylabel(r"$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
 
     # Add a legend
-    ax1.legend(loc="lower right")
+    ax3.legend(loc="lower right")
 
     # Save the figure
     savefig(fig, f"sfh_{snap}_{args.type}.png")
