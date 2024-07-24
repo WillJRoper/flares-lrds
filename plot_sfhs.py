@@ -163,8 +163,8 @@ for snap in SNAPSHOTS:
             f"{np.log10(mass_low):.1f}"
             r"} < "
             r"M/M_\odot < 10^{"
-            f"{np.log10(mass_high):.1f}$"
-            r"}",
+            f"{np.log10(mass_high):.1f}"
+            r"}$",
             transform=ax.transAxes,
             ha="right",
             va="bottom",
