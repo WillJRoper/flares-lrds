@@ -149,10 +149,58 @@ for snap in SNAPSHOTS:
 
     # Set the labels
     ax.set_xlabel(r"$R_{1/2}^{\mathrm{Gas}} /$ [kpc]")
-    ax.set_ylabel(r"$R_{1/2}^{\star} / R_{1/2}^{\mathrm{Dust}}$")
+    ax.set_ylabel(r"$R_{1/2}^{\star, 444} / R_{1/2}^{\mathrm{Dust}}$")
 
     # Draw the legend
     ax.legend()
 
     # Save the figure
     savefig(fig, f"gas_stardust_size_{args.type}_{snap}")
+
+    # Create the figure
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(111)
+
+    # Draw a grid behind everything
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Plot the non-LRD data as a hexbin
+    hb = ax.hexbin(
+        star_data[~mask],
+        dust_data[~mask],
+        gridsize=gridsize,
+        norm=mcolors.LogNorm(),
+        extent=extent,
+        cmap="viridis",
+        linewidths=0.2,
+        xscale="log",
+        yscale="log",
+        mincnt=ws.min(),
+        C=ws[~mask],
+        reduce_C_function=np.sum,
+    )
+
+    # Plot the LRD data as a scatter plot
+    ax.scatter(
+        star_data[mask],
+        dust_data[mask],
+        c="red",
+        s=1,
+        alpha=0.8,
+        label="LRD",
+    )
+
+    # Add the colorbar
+    cbar = fig.colorbar(hb, ax=ax)
+    cbar.set_label(r"$\sum w_i$")
+
+    # Set the labels
+    ax.set_xlabel(r"$R_{1/2}^{\star, 444} /$ [kpc]")
+    ax.set_ylabel(r"$R_{1/2}^{\mathrm{Dust}} /$ [kpc]")
+
+    # Draw the legend
+    ax.legend()
+
+    # Save the figure
+    savefig(fig, f"star_dust_size_{args.type}_{snap}")
