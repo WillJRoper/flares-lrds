@@ -127,20 +127,18 @@ for snap in SNAPSHOTS:
         )[0]
 
         # Convert the SFHs to SFRs
-        lrd_sfh = lrd_sfh[lrd_okinds, :-1] / np.diff(10**grid.log10ages)
-        other_sfh = other_sfh[other_okinds, :-1] / np.diff(
-            10**grid.log10ages
-        )
+        lrdsfh = lrd_sfh[lrd_okinds, :-1] / np.diff(10**grid.log10ages)
+        othersfh = other_sfh[other_okinds, :-1] / np.diff(10**grid.log10ages)
 
         # Plot all LRDS with a low alpha
-        for sfh in lrd_sfh:
+        for sfh in lrdsfh:
             ax.semilogy(grid.log10ages[:-1], sfh, color="red", alpha=0.1)
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
             ax.semilogy(
                 grid.log10ages[:-1],
-                np.median(lrd_sfh[lrd_okinds], axis=0),
+                np.median(lrdsfh, axis=0),
                 label="LRD",
                 color="red",
             )
@@ -149,7 +147,7 @@ for snap in SNAPSHOTS:
         if np.sum(other_okinds) > 0:
             ax.semilogy(
                 grid.log10ages[:-1],
-                np.median(other_sfh[other_okinds], axis=0),
+                np.median(othersfh[other_okinds], axis=0),
                 label="Other",
                 color="blue",
             )
