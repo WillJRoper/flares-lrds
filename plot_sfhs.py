@@ -130,7 +130,7 @@ for snap in SNAPSHOTS:
 
     # Plot all LRDS with a low alpha
     for sfzh in lrd_sfzh:
-        ax.plot(grid.log10ages, np.sum(sfzh, axis=2), color="red", alpha=0.1)
+        ax.plot(grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1)
 
     # Labeled axes
     ax.set_xlabel("log10(Age)")
