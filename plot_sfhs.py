@@ -85,7 +85,7 @@ extent = (
 )
 
 # Define mass bins
-mass_bins = np.linspace(9, 12, 4)
+mass_bins = np.logspace(9, 11.5, 4)
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
@@ -94,10 +94,6 @@ for snap in SNAPSHOTS:
     other_sfzh = sfzhs[snap][~masks[snap]]
     lrd_masses = star_masses[snap][masks[snap]] * 10**10
     other_masses = star_masses[snap][~masks[snap]] * 10**10
-
-    # Filter out only massive galaxies
-    lrd_sfzh = lrd_sfzh[lrd_masses > 10**9]
-    other_sfzh = other_sfzh[other_masses > 10**9]
 
     # Skip if there are no LRD galaxies
     if len(lrd_sfzh) == 0 or len(other_sfzh) == 0:
@@ -110,36 +106,62 @@ for snap in SNAPSHOTS:
     print(np.median(lrd_sfh, axis=0).shape)
 
     # Create the figure
-    fig, ax = plt.subplots()
-    ax.grid(True)
-    ax.set_axisbelow(True)
+    fig = plt.figure(figsize=(3 * 3.5, 3.5))
+    gs = fig.add_gridspec(3, 1, hspace=0.0)
+    ax1 = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1])
+    ax3 = fig.add_subplot(gs[2])
+    axes = [ax1, ax2, ax3]
+    for ax in axes:
+        ax.grid(True)
+        ax.set_axisbelow(True)
 
-    # Plot all LRDS with a low alpha
-    for sfzh in lrd_sfzh:
-        ax.semilogy(
-            grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1
-        )
+    # Loop over axes and mass bins
+    for ax, (mass_low, mass_high) in zip(
+        axes, zip(mass_bins[:-1], mass_bins[1:])
+    ):
+        # Get the indices of the galaxies in the mass bin
+        lrd_okinds = np.where(
+            (lrd_masses > mass_low) & (lrd_masses < mass_high)
+        )[0]
+        other_okinds = np.where(
+            (other_masses > mass_low) & (other_masses < mass_high)
+        )[0]
 
-    # Plot the median SFHs
-    ax.semilogy(
-        grid.log10ages,
-        np.median(lrd_sfh, axis=0),
-        label="LRD",
-        color="red",
-    )
-    ax.semilogy(
-        grid.log10ages,
-        np.median(other_sfh, axis=0),
-        label="Other",
-        color="blue",
-    )
+        # Plot all LRDS with a low alpha
+        for sfzh in lrd_sfzh[lrd_okinds]:
+            ax.semilogy(
+                grid.log10ages, np.sum(sfzh, axis=1), color="red", alpha=0.1
+            )
+
+        # Plot the median SFHs
+        if np.sum(lrd_okinds) > 0:
+            ax.semilogy(
+                grid.log10ages,
+                np.median(lrd_sfh[lrd_okinds], axis=0),
+                label="LRD",
+                color="red",
+            )
+
+        # Plot the median of the other galaxies
+        if np.sum(other_okinds) > 0:
+            ax.semilogy(
+                grid.log10ages,
+                np.median(other_sfh[other_okinds], axis=0),
+                label="Other",
+                color="blue",
+            )
+
+    # Turn off the x-axis labels for all but the bottom plot
+    for ax in axes[:-1]:
+        ax.set_xticklabels([])
 
     # Labeled axes
-    ax.set_xlabel("log10(Age)")
-    ax.set_ylabel("SFH")
+    ax3.set_xlabel("log10(Age)")
+    ax2.set_ylabel("SFH")
 
     # Add a legend
-    ax.legend()
+    ax1.legend()
 
     # Save the figure
     savefig(fig, f"sfh_{snap}_{args.type}.png")
