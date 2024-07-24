@@ -68,13 +68,10 @@ grid = Grid(args.grid, args.grid_dir)
 
 # Get the sfzhs
 sfzhs = get_masked_synth_data(data_file, "SFZH")
-star_masses = (
-    get_master_data(
-        args.master,
-        indices,
-        "Mstar_aperture/30",
-    )
-    * 10**10
+star_masses = get_master_data(
+    args.master,
+    indices,
+    "Mstar_aperture/30",
 )
 
 
@@ -95,8 +92,8 @@ for snap in SNAPSHOTS:
     # Split the sfzhs into lrds and the rest
     lrd_sfzh = sfzhs[snap][masks[snap]]
     other_sfzh = sfzhs[snap][~masks[snap]]
-    lrd_masses = star_masses[snap][masks[snap]]
-    other_masses = star_masses[snap][~masks[snap]]
+    lrd_masses = star_masses[snap][masks[snap]] * 10**10
+    other_masses = star_masses[snap][~masks[snap]] * 10**10
 
     # Filter out only massive galaxies
     lrd_sfzh = lrd_sfzh[lrd_masses > 10**9]
