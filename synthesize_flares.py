@@ -281,7 +281,9 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     """Get an image of the galaxy in an array of filters."""
     # Setup the image properties
     ang_res = 0.031 * arcsecond
-    kpc_res = (ang_res / cosmo.arcsec_per_kpc_proper(gal.redshift).value) * kpc
+    kpc_res = (
+        ang_res.value / cosmo.arcsec_per_kpc_proper(gal.redshift).value
+    ) * kpc
     fov = 30 * kpc
 
     # Get the image
