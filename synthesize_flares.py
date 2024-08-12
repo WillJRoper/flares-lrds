@@ -659,8 +659,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         sizes_20[key] = {
             filt: [d[filt][i] for i in sort_indices] for filt in d
         }
-    for key, i in imgs.items():
-        imgs[key] = [i[i] for i in sort_indices]
+    for key, img in imgs.items():
+        imgs[key] = [img[i] for i in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
