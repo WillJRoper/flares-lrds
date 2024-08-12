@@ -266,7 +266,7 @@ def get_psfs(filter_codes, filepath):
         for filt in filter_codes:
             nc = webbpsf.NIRCam()
             nc.filter = filt.split(".")[-1]
-            psf = nc.calc_psf(oversample=4)
+            psf = nc.calc_psf(oversample=2)
             psfs[filt] = psf[0].data
 
         # Write out the PSFs for later use
@@ -932,6 +932,7 @@ if __name__ == "__main__":
             nthreads,
             filters,
             cosmo,
+            psfs,
         )
         for gal in galaxies
     ]
