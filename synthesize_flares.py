@@ -285,7 +285,7 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     fov = 30 * kpc
 
     # Get the image
-    imgs = gal.get_image_flux(
+    imgs = gal.get_images_flux(
         resolution=kpc_res,
         fov=fov,
         img_type="smoothed",
