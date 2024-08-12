@@ -10,6 +10,7 @@ from unyt import Gyr, Mpc, Msun, arcsecond, angstrom, kpc
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from utils import FILTER_CODES
+import webbpsf
 
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
@@ -249,7 +250,69 @@ def get_kernel():
     return Kernel()
 
 
-def analyse_galaxy(gal, emission_model, grid, kern, nthreads, filters, cosmo):
+def get_psfs(filter_codes, filepath):
+    """Get the PSFs for each filter."""
+    # Check if we can load a file
+    if os.path.exists(filepath):
+        psfs = {}
+        with h5py.File(filepath, "r") as hdf:
+            for filt in filter_codes:
+                psf = hdf[filt][...]
+                psfs[filt] = psf
+        return psfs
+    else:
+        # Ok we need to make them
+        psfs = {}
+        for filt in filter_codes:
+            nc = webbpsf.NIRCam()
+            nc.filter = filt.split(".")[-1]
+            psf = nc.calc_psf(oversample=4)
+            psfs[filt] = psf[0].data
+
+        # Write out the PSFs for later use
+        with h5py.File(filepath, "w") as hdf:
+            for filt, psf in psfs.items():
+                hdf.create_dataset(filt, data=psf)
+
+        return psfs
+
+
+def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
+    """Get an image of the galaxy in an array of filters."""
+    # Setup the image properties
+    ang_res = 0.031 * arcsecond
+    kpc_res = (ang_res / cosmo.arcsec_per_kpc_proper(gal.redshift).value) * kpc
+    fov = 30 * kpc
+
+    # Get the image
+    imgs = gal.stars.get_image_flux(
+        resolution=kpc_res,
+        fov=fov,
+        img_type="smoothed",
+        stellar_photometry=spec_key,
+        kernel=kernel,
+        nthreads=nthreads,
+    )
+
+    # Apply the PSFs with a super and then down sample to remove any convolution
+    # issues due to the resolution.
+    imgs.supersample(2)
+    psf_imgs = imgs.apply_psfs(psfs)
+    psf_imgs.downsample(0.5)
+
+    return psf_imgs
+
+
+def analyse_galaxy(
+    gal,
+    emission_model,
+    grid,
+    kern,
+    nthreads,
+    filters,
+    cosmo,
+    psfs,
+):
     """
     Analyse a galaxy.
 
@@ -329,11 +392,18 @@ def analyse_galaxy(gal, emission_model, grid, kern, nthreads, filters, cosmo):
                 spec, filt, frac=0.2
             )
 
+    # Get the images
+    imgs = get_images(
+        gal,
+        "attenuated",
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.flux_imgs = imgs
+
     return gal
-
-
-def get_image():
-    pass
 
 
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
@@ -356,6 +426,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     subgroup_ids = []
     indices = []
     sfzhs = []
+    imgs = {}
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -374,6 +445,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
             fnus.setdefault(key, []).append(spec._fnu)
+
+        # Get the images
+        for key in FILTER_CODES:
+            imgs.setdefault(key, []).append(gal.flux_imgs[key].arr)
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
@@ -439,6 +514,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
+    imgs_per_rank = comm.gather(imgs, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -462,6 +538,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_sizes_20 = []
     dust_sizes = []
     sfzhs = []
+    imgs = {}
     for (
         fnu,
         flux,
@@ -480,6 +557,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_size_20,
         dust_size,
         sfzh,
+        img,
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
@@ -498,6 +576,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_size_20_per_rank,
         dust_size_per_rank,
         sfzhs_per_rank,
+        imgs_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -529,6 +608,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             sizes_20.setdefault(key, {})
             for filt, size_arr in d.items():
                 sizes_20[key].setdefault(filt, []).extend(size_arr)
+        for key, i in img.items():
+            imgs.setdefault(key, []).extend(i)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -576,6 +657,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         sizes_20[key] = {
             filt: [d[filt][i] for i in sort_indices] for filt in d
         }
+    for key, i in imgs.items():
+        imgs[key] = [i[i] for i in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
@@ -689,6 +772,15 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 )
                 dset.attrs["Units"] = units["hlr"]
 
+        # Write the images
+        img_grp = hdf.create_group("Images")
+        for key, img in imgs.items():
+            dset = img_grp.create_dataset(
+                key,
+                data=np.array(img),
+            )
+            dset.attrs["Units"] = units["flux"]
+
         # Write out the indices
         hdf.create_dataset("Indices", data=np.array(indices))
 
@@ -784,6 +876,11 @@ if __name__ == "__main__":
     grid_start = time.time()
     grid = get_grid(grid_name, grid_dir, filters)
     grid_end = time.time()
+
+    # Get the PSFs
+    psf_start = time.time()
+    psfs = get_psfs(FILTER_CODES, "webb_psfs.hdf5")
+    psf_end = time.time()
 
     # Get the emission model
     start_emission = time.time()
