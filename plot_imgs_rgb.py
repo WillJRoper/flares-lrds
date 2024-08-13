@@ -81,6 +81,9 @@ for snap in images:
         rgb[:, :, 1] = green_flux + 0.4 * orange_flux
         rgb[:, :, 2] = blue_flux
 
+        # Normalise the rgb image
+        rgb = (rgb - np.min(rgb)) / (np.max(rgb) - np.min(rgb))
+
         # Plot the images
         im = ax.imshow(rgb)
         ax.axis("off")
