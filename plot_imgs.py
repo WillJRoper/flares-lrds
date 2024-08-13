@@ -52,6 +52,8 @@ for snap in images:
     if len(images[snap]["F115W"]) == 0:
         continue
 
+    print(f"Plotting images for {snap} ({len(images[snap]['F115W'])} images)")
+
     # Loop over images
     for i in range(len(images[snap]["F115W"])):
         # Setup the plot with a row of panels per filter
