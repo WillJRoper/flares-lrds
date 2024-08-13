@@ -57,7 +57,7 @@ for snap in images:
     # Loop over images
     for i in range(len(images[snap]["F115W"])):
         # Setup the plot with a row of panels per filter
-        fig = plt.figure(figsize=(nfilt * 3.5, 3.5))
+        fig = plt.figure(figsize=(nfilt * 3.5 + 0.2, 3.5))
         gs = fig.add_gridspec(
             1, nfilt + 1, wspace=0.0, width_ratios=[10] * nfilt + [1]
         )
