@@ -68,7 +68,11 @@ for snap in images:
 
         # Create the RGB image
         rgb = np.zeros(
-            (images[snap][red[0]].shape[1], images[snap][red[0]].shape[2], 3)
+            (
+                images[snap][red[0][1]].shape[1],
+                images[snap][red[0][1]].shape[2],
+                3,
+            )
         )
         red_flux = np.sum(
             [images[snap][filt[1]][i] * filt[0] for filt in red], axis=0
