@@ -73,6 +73,8 @@ for snap in images:
             )
             vmax = max(vmax, images[snap][filt][i].max())
 
+        print(vmin, vmax)
+
         # Create the norm
         norm = mcolors.LogNorm(vmin=vmin, vmax=vmax, clip=True)
 
