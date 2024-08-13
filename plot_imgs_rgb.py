@@ -43,10 +43,9 @@ else:
 nfilt = len(images["010_z005p000"].keys())
 
 # Define the ROGB filters
-red = ["F444W"]
-orange = ["F356W"]
-green = ["F200W", "F277W"]
-blue = ["F115W", "F150W"]
+red = [(0.5, "F444W"), (0.5, "F356W")]
+green = [(0.5, "F200W"), (0.5, "F277W")]
+blue = [(0.5, "F115W"), (0.5, "F150W")]
 
 # Apply masks to the images
 for snap in images:
@@ -71,14 +70,17 @@ for snap in images:
         rgb = np.zeros(
             (images[snap][red[0]].shape[1], images[snap][red[0]].shape[2], 3)
         )
-        red_flux = np.sum([images[snap][filt][i] for filt in red], axis=0)
-        orange_flux = np.sum(
-            [images[snap][filt][i] for filt in orange], axis=0
+        red_flux = np.sum(
+            [images[snap][filt[1]][i] * filt[0] for filt in red], axis=0
         )
-        green_flux = np.sum([images[snap][filt][i] for filt in green], axis=0)
-        blue_flux = np.sum([images[snap][filt][i] for filt in blue], axis=0)
-        rgb[:, :, 0] = red_flux + 0.6 * orange_flux
-        rgb[:, :, 1] = green_flux + 0.4 * orange_flux
+        green_flux = np.sum(
+            [images[snap][filt[1]][i] * filt[0] for filt in green], axis=0
+        )
+        blue_flux = np.sum(
+            [images[snap][filt[1]][i] * filt[0] for filt in blue], axis=0
+        )
+        rgb[:, :, 0] = red_flux
+        rgb[:, :, 1] = green_flux
         rgb[:, :, 2] = blue_flux
 
         # Normalise the rgb image
