@@ -77,7 +77,7 @@ for snap in images:
         norm = mcolors.Normalize(vmin=vmin, vmax=vmax, clip=True)
 
         # Loop over filters and axes
-        for i, (filt, ax) in enumerate(zip(images[snap], axes)):
+        for filt, ax in zip(images[snap], axes):
             # Plot the images
             im = ax.imshow(
                 images[snap][filt][i, :, :],
