@@ -322,6 +322,173 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
         return fluxes, colors, red1, red2, sizes, masks, indices
 
 
+def get_synth_data_with_imgs(synth_data_path, spec):
+    """
+    Get the fluxes and colors of the galaxies in the simulation.
+
+    Args:
+        synth_data_path (str): The path to the synthetic data.
+        spec (str): The spectral synthesis model to use.
+        size_thresh (float): The size threshold to apply for LRDs.
+
+    Returns:
+        dict: A dictionary containing the fluxes of the galaxies.
+        dict: A dictionary containing the colors of the galaxies.
+        dict: A dictionary containing the red1 mask of the galaxies.
+        dict: A dictionary containing the red2 mask of the galaxies.
+    """
+    # Define containers for the data
+    fluxes = {}
+    sizes = {}
+    indices = {}
+    images = {}
+
+    # Lood over regions
+    for reg in REGIONS:
+        # Loop over snapshots
+        for snap in SNAPSHOTS:
+            # Ensure a key exists for this snapshot
+            fluxes.setdefault(snap, {})
+            sizes.setdefault(snap, {})
+            indices.setdefault(snap, {})
+            images.setdefault(snap, {})
+
+            # Get the fluxes we need
+            with h5py.File(
+                synth_data_path.replace("<region>", reg).replace(
+                    "<snap>", snap
+                ),
+                "r",
+            ) as hdf:
+                try:
+                    inds = hdf["Indices"][...]
+                    f115w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f150w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f200w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f277w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f356w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f444w = unyt_array(
+                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
+                            ...
+                        ],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    for filt in FILTER_CODES:
+                        sizes[snap].setdefault(filt.split(".")[-1], []).extend(
+                            hdf[f"HalfLightRadii/{spec}/{filt}"][...]
+                        )
+                        images[snap].setdefault(
+                            filt.split(".")[-1], []
+                        ).extend(hdf[f"Images/{filt}"][...])
+                except KeyError as e:
+                    print(f"KeyError: {e}")
+                    continue
+                except OSError as e:
+                    print(f"OSError: {e}")
+                    continue
+                except TypeError as e:
+                    print(f"TypeError: {e}")
+                    continue
+
+                # Store the data
+                fluxes[snap].setdefault("F115W", []).extend(f115w)
+                fluxes[snap].setdefault("F150W", []).extend(f150w)
+                fluxes[snap].setdefault("F200W", []).extend(f200w)
+                fluxes[snap].setdefault("F277W", []).extend(f277w)
+                fluxes[snap].setdefault("F356W", []).extend(f356w)
+                fluxes[snap].setdefault("F444W", []).extend(f444w)
+                indices[snap].setdefault(reg, []).extend(inds)
+
+    # Convert the data to arrays
+    for snap in fluxes.keys():
+        for key in fluxes[snap].keys():
+            fluxes[snap][key] = np.array(fluxes[snap][key])
+            sizes[snap][key] = np.array(sizes[snap][key])
+            for reg in REGIONS:
+                if reg in indices[snap]:
+                    indices[snap][reg] = np.array(
+                        indices[snap][reg], dtype=int
+                    )
+                else:
+                    indices[snap][reg] = np.array([], dtype=int)
+        for filt in images[snap].keys():
+            images[snap][filt] = np.array(images[snap][filt])
+
+    # Compute the colors
+    colors = {}
+    for snap in fluxes.keys():
+        colors.setdefault(snap, {})
+        colors[snap]["F115W_F150W"] = -2.5 * np.log10(
+            fluxes[snap]["F115W"] / fluxes[snap]["F150W"]
+        )
+        colors[snap]["F150W_F200W"] = -2.5 * np.log10(
+            fluxes[snap]["F150W"] / fluxes[snap]["F200W"]
+        )
+        colors[snap]["F200W_F277W"] = -2.5 * np.log10(
+            fluxes[snap]["F200W"] / fluxes[snap]["F277W"]
+        )
+        colors[snap]["F200W_F356W"] = -2.5 * np.log10(
+            fluxes[snap]["F200W"] / fluxes[snap]["F356W"]
+        )
+        colors[snap]["F200W_F277W"] = -2.5 * np.log10(
+            fluxes[snap]["F200W"] / fluxes[snap]["F277W"]
+        )
+        colors[snap]["F277W_F356W"] = -2.5 * np.log10(
+            fluxes[snap]["F277W"] / fluxes[snap]["F356W"]
+        )
+        colors[snap]["F277W_F444W"] = -2.5 * np.log10(
+            fluxes[snap]["F277W"] / fluxes[snap]["F444W"]
+        )
+
+    # Derive the kokorev masks
+    red1 = {}
+    red2 = {}
+    for snap in colors.keys():
+        mask = np.logical_and(
+            colors[snap]["F115W_F150W"] < 0.8,
+            colors[snap]["F200W_F277W"] > 0.7,
+        )
+        red1[snap] = np.logical_and(mask, colors[snap]["F200W_F356W"] > 1.0)
+        mask = np.logical_and(
+            colors[snap]["F150W_F200W"] < 0.8,
+            colors[snap]["F277W_F356W"] > 0.6,
+        )
+        red2[snap] = np.logical_and(mask, colors[snap]["F277W_F444W"] > 0.7)
+
+    # Combine the masks with a size threshold
+    masks = {}
+    for snap in sizes.keys():
+        mask = np.logical_or(red1[snap], red2[snap])
+        masks[snap] = mask
+
+    return fluxes, colors, red1, red2, sizes, masks, indices, images
+
+
 def get_master_data(master_file_path, indices, key, get_weights=False):
     """
     Get the data from the master file for the given indices.
