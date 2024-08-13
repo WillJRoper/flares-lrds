@@ -73,10 +73,8 @@ for snap in images:
             )
             vmax = max(vmax, images[snap][filt][i].max())
 
-        print(vmin, vmax)
-
         # Create the norm
-        norm = mcolors.LogNorm(vmin=vmin, vmax=vmax, clip=True)
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax, clip=True)
 
         # Loop over filters and axes
         for i, (filt, ax) in enumerate(zip(images[snap], axes)):
