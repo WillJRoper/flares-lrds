@@ -286,6 +286,8 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     ) * kpc
     fov = 30 * kpc
 
+    print(gal.)
+
     # Get the image
     imgs = gal.get_images_flux(
         resolution=kpc_res,
@@ -623,8 +625,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
     # Get the units for each dataset
     units = {
-        "fnu": "erg/s/cm**2/Hz",
-        "flux": "erg/s/cm^**2",
+        "fnu": "erg/s/cm^2/Hz",
+        "flux": "erg/s/cm^2/Hz",
         "hlr": "kpc",
         "sfzh": "Msun",
     }
