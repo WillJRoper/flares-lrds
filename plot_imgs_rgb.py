@@ -69,7 +69,7 @@ for snap in images:
 
         # Create the RGB image
         rgb = np.zeros(
-            (images[snap][red].shape[1], images[snap][red].shape[2], 3)
+            (images[snap][red[0]].shape[1], images[snap][red[0]].shape[2], 3)
         )
         red_flux = np.sum([images[snap][filt][i] for filt in red], axis=0)
         orange_flux = np.sum(
