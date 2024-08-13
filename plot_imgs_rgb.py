@@ -42,6 +42,12 @@ else:
 # How many filters do we have?
 nfilt = len(images["010_z005p000"].keys())
 
+# Define the ROGB filters
+red = ["F444W"]
+orange = ["F356W"]
+green = ["F200W", "F277W"]
+blue = ["F115W", "F150W"]
+
 # Apply masks to the images
 for snap in images:
     for filt in images[snap]:
@@ -57,39 +63,26 @@ for snap in images:
 
     # Loop over images
     for i in range(len(images[snap]["F115W"])):
-        # Setup the plot with a row of panels per filter
-        fig = plt.figure(figsize=(nfilt * 3.5 + 0.4, 3.5))
-        gs = fig.add_gridspec(
-            1, nfilt + 1, wspace=0.0, width_ratios=[10] * nfilt + [1]
+        # Setup the plot
+        fig = plt.figure(figsize=(3.5, 3.5))
+        ax = fig.add_subplot(111)
+
+        # Create the RGB image
+        rgb = np.zeros(
+            (images[snap][red].shape[1], images[snap][red].shape[2], 3)
         )
-        cax = fig.add_subplot(gs[0, -1])
-        axes = [fig.add_subplot(gs[0, i]) for i in range(nfilt)]
+        red_flux = np.sum([images[snap][filt][i] for filt in red], axis=0)
+        orange_flux = np.sum(
+            [images[snap][filt][i] for filt in orange], axis=0
+        )
+        green_flux = np.sum([images[snap][filt][i] for filt in green], axis=0)
+        blue_flux = np.sum([images[snap][filt][i] for filt in blue], axis=0)
+        rgb[:, :, 0] = red_flux + 0.6 * orange_flux
+        rgb[:, :, 1] = green_flux + 0.4 * orange_flux
+        rgb[:, :, 2] = blue_flux
 
-        # Loop over images collecting the global min and max
-        vmin = np.inf
-        vmax = -np.inf
-        for filt in images[snap]:
-            vmin = min(
-                vmin, images[snap][filt][i][images[snap][filt][i] > 0].min()
-            )
-            vmax = max(vmax, images[snap][filt][i].max())
+        # Plot the images
+        im = ax.imshow(rgb)
+        ax.axis("off")
 
-        # Create the norm
-        norm = mcolors.Normalize(vmin=vmin, vmax=vmax, clip=True)
-
-        # Loop over filters and axes
-        for filt, ax in zip(images[snap], axes):
-            # Plot the images
-            im = ax.imshow(
-                images[snap][filt][i, :, :],
-                cmap="Greys_r",
-                norm=norm,
-            )
-            ax.axis("off")
-            ax.set_title(filt)
-
-        # Add the colorbar
-        cbar = fig.colorbar(im, cax=cax, orientation="vertical")
-        cbar.set_label("Flux / [erg / s / cm$^2$]")
-
-        savefig(fig, f"images/{args.type}_{snap}_{i}")
+        savefig(fig, f"images/rgb_{args.type}_{snap}_{i}")
