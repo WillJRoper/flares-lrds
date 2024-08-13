@@ -80,7 +80,7 @@ for snap in images:
         for i, (filt, ax) in enumerate(zip(images[snap], axes)):
             # Plot the images
             im = ax.imshow(
-                images[snap][filt][masks[snap], :, :].mean(axis=0),
+                images[snap][filt][i, :, :],
                 cmap="Greys_r",
                 norm=norm,
             )
