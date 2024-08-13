@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from unyt import erg, s, cm, Hz, nJy
 
 from utils import get_synth_data_with_imgs, savefig
 
@@ -74,7 +75,7 @@ for snap in images:
             vmax = max(vmax, images[snap][filt][i].max())
 
         # Create the norm
-        norm = mcolors.LogNorm(vmin=vmin, vmax=vmax, clip=True)
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax, clip=True)
 
         # Loop over filters and axes
         for filt, ax in zip(images[snap], axes):
