@@ -649,6 +649,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for key, i in img.items():
             imgs.setdefault(key, []).extend(i)
         for key, i in app_02.items():
+            print(i)
             apps_02.setdefault(key, []).extend(i)
         for key, i in app_04.items():
             apps_04.setdefault(key, []).extend(i)
