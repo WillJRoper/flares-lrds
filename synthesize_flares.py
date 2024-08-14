@@ -310,8 +310,10 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     for filt in FILTER_CODES:
         app_flux.setdefault(filt, {})
         for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
-            app_flux[filt][lab] = psf_imgs[filt].get_signal_in_aperture(
-                ap, nthreads=nthreads
+            app_flux[filt][lab] = (
+                psf_imgs[filt]
+                .get_signal_in_aperture(ap, nthreads=nthreads)
+                .value
             )
 
     # Attach apertures to image
@@ -517,7 +519,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Attach apertures from images
         for filt in FILTER_CODES:
-            print(gal.flux_imgs.app_fluxes[filt]["0p2"])
             app_02.setdefault(filt, []).append(
                 gal.flux_imgs.app_fluxes[filt]["0p2"]
             )
@@ -703,6 +704,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     for key, i in app_02.items():
         apps_02[key] = [i[j] for j in sort_indices]
     for key, i in app_04.items():
+        print(key, len(i), len(sort_indices))
         apps_04[key] = [i[j] for j in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
