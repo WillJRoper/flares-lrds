@@ -517,6 +517,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Attach apertures from images
         for filt in FILTER_CODES:
+            print(gal.flux_imgs.app_fluxes[filt]["0p2"])
             app_02.setdefault(filt, []).append(
                 gal.flux_imgs.app_fluxes[filt]["0p2"]
             )
