@@ -829,15 +829,17 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Write the apertures
         app_grp = hdf.create_group("Apertures")
+        app_02_grp = app_grp.create_group("0p2")
+        app_04_grp = app_grp.create_group("0p4")
         for key, app in apps_02.items():
-            dset = app_grp.create_dataset(
-                f"0p2_{key}",
+            dset = app_02_grp.create_dataset(
+                key,
                 data=np.array(app),
             )
             dset.attrs["Units"] = units["flux"]
         for key, app in apps_04.items():
-            dset = app_grp.create_dataset(
-                f"0p4_{key}",
+            dset = app_04_grp.create_dataset(
+                key,
                 data=np.array(app),
             )
             dset.attrs["Units"] = units["flux"]
