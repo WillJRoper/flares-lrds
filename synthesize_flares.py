@@ -371,7 +371,7 @@ def analyse_galaxy(
 
     # Compute the half-light radius on each filter
     gal.stars.half_light_radii = {}
-    for spec in gal.stars.particle_photo_fluxes.keys():
+    for spec in gal.stars.particle_photo_fnu.keys():
         gal.stars.half_light_radii[spec] = {}
         for filt in filters.filter_codes:
             # Get the half light radius
@@ -381,7 +381,7 @@ def analyse_galaxy(
 
     # Get the 95% light radius
     gal.stars.light_radii_95 = {}
-    for spec in gal.stars.particle_photo_fluxes.keys():
+    for spec in gal.stars.particle_photo_fnu.keys():
         gal.stars.light_radii_95[spec] = {}
         for filt in filters.filter_codes:
             # Get the light radius
@@ -391,7 +391,7 @@ def analyse_galaxy(
 
     # Get the 80% light radius
     gal.stars.light_radii_80 = {}
-    for spec in gal.stars.particle_photo_fluxes.keys():
+    for spec in gal.stars.particle_photo_fnu.keys():
         gal.stars.light_radii_80[spec] = {}
         for filt in filters.filter_codes:
             # Get the light radius
@@ -401,7 +401,7 @@ def analyse_galaxy(
 
     # Get the 20% light radius
     gal.stars.light_radii_20 = {}
-    for spec in gal.stars.particle_photo_fluxes.keys():
+    for spec in gal.stars.particle_photo_fnu.keys():
         gal.stars.light_radii_20[spec] = {}
         for filt in filters.filter_codes:
             # Get the light radius
