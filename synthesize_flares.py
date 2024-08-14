@@ -18,6 +18,7 @@ from synthesizer.filters import FilterCollection
 from synthesizer import Grid
 from synthesizer.kernel_functions import Kernel
 from synthesizer._version import __version__
+from synthesizer.conversions import angular_to_spatial_at_z
 
 from stellar_emission_model import FLARESLRDsEmission
 
@@ -286,8 +287,6 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     ) * kpc
     fov = 30 * kpc
 
-    print(gal.)
-
     # Get the image
     imgs = gal.get_images_flux(
         resolution=kpc_res,
@@ -303,6 +302,20 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     imgs.supersample(2)
     psf_imgs = imgs.apply_psfs(psfs)
     psf_imgs.downsample(0.5)
+
+    # Apply the 0.2" and 0.4" apertures
+    ang_apertures = np.array([0.2, 0.4]) * arcsecond
+    kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
+    app_flux = {}
+    for filt in FILTER_CODES:
+        app_flux.setdefault(filt, {})
+        for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
+            app_flux[filt][lab] = psf_imgs[filt].get_signal_in_aperture(
+                ap, nthreads=nthreads
+            )
+
+    # Attach apertures to image
+    psf_imgs.app_fluxes = app_flux
 
     return psf_imgs
 
@@ -431,6 +444,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     indices = []
     sfzhs = []
     imgs = {}
+    app_02 = {}
+    app_04 = {}
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -500,6 +515,15 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     gal.stars.light_radii_20[spec][filt]
                 )
 
+        # Attach apertures from images
+        for filt in FILTER_CODES:
+            app_02.setdefault(filt, []).append(
+                gal.flux_imgs.app_fluxes[filt]["0p2"]
+            )
+            app_04.setdefault(filt, []).append(
+                gal.flux_imgs.app_fluxes[filt]["0p4"]
+            )
+
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
@@ -519,6 +543,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
     imgs_per_rank = comm.gather(imgs, root=0)
+    app_02_per_rank = comm.gather(app_02, root=0)
+    app_04_per_rank = comm.gather(app_04, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -543,6 +569,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     dust_sizes = []
     sfzhs = []
     imgs = {}
+    apps_02 = {}
+    apps_04 = {}
     for (
         fnu,
         flux,
@@ -562,6 +590,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         dust_size,
         sfzh,
         img,
+        app_02,
+        app_04,
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
@@ -581,6 +611,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         dust_size_per_rank,
         sfzhs_per_rank,
         imgs_per_rank,
+        app_02_per_rank,
+        app_04_per_rank,
     ):
         for key, spec in fnu.items():
             fnus.setdefault(key, []).extend(spec)
@@ -614,6 +646,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 sizes_20[key].setdefault(filt, []).extend(size_arr)
         for key, i in img.items():
             imgs.setdefault(key, []).extend(i)
+        for key, i in app_02.items():
+            apps_02.setdefault(key, []).extend(i)
+        for key, i in app_04.items():
+            apps_04.setdefault(key, []).extend(i)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -663,6 +699,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         }
     for key, img in imgs.items():
         imgs[key] = [img[i] for i in sort_indices]
+    for key, i in app_02.items():
+        apps_02[key] = [i[j] for j in sort_indices]
+    for key, i in app_04.items():
+        apps_04[key] = [i[j] for j in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
@@ -782,6 +822,21 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             dset = img_grp.create_dataset(
                 key,
                 data=np.array(img),
+            )
+            dset.attrs["Units"] = units["flux"]
+
+        # Write the apertures
+        app_grp = hdf.create_group("Apertures")
+        for key, app in apps_02.items():
+            dset = app_grp.create_dataset(
+                f"0p2_{key}",
+                data=np.array(app),
+            )
+            dset.attrs["Units"] = units["flux"]
+        for key, app in apps_04.items():
+            dset = app_grp.create_dataset(
+                f"0p4_{key}",
+                data=np.array(app),
             )
             dset.attrs["Units"] = units["flux"]
 
