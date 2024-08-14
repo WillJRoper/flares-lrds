@@ -649,7 +649,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for key, i in img.items():
             imgs.setdefault(key, []).extend(i)
         for key, i in app_02.items():
-            print(i)
             apps_02.setdefault(key, []).extend(i)
         for key, i in app_04.items():
             apps_04.setdefault(key, []).extend(i)
@@ -703,7 +702,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     for key, img in imgs.items():
         imgs[key] = [img[i] for i in sort_indices]
     for key, i in app_02.items():
-        print(key, len(i), len(sort_indices))
+        print(key, len(i), i, len(sort_indices))
         apps_02[key] = [i[j] for j in sort_indices]
     for key, i in app_04.items():
         apps_04[key] = [i[j] for j in sort_indices]
