@@ -505,6 +505,8 @@ def get_synth_data_with_imgs(synth_data_path, spec):
         )
         masks[snap] = mask
 
+    print(np.sum(mask), np.min(compactness), np.max(compactness))
+
     return fluxes, colors, red1, red2, sizes, masks, indices, images
 
 
