@@ -105,7 +105,7 @@ for snap in images:
 
         # Draw a dashed aperture at 0.2" and 0.4" (we need to convert these
         # to kpc and then to pixels)
-        aper1 = angular_to_spatial_at_z(0.2, cosmo, z) / res_kpc
+        aper1 = angular_to_spatial_at_z(0.2 * arcsecond, cosmo, z) / res_kpc
         aperture1 = plt.Circle(
             (rgb.shape[1] / 2, rgb.shape[0] / 2),
             aper1,
@@ -114,7 +114,7 @@ for snap in images:
             linestyle="--",
         )
         ax.add_artist(aperture1)
-        aper2 = angular_to_spatial_at_z(0.4, cosmo, z) / res_kpc
+        aper2 = angular_to_spatial_at_z(0.4 * arcsecond, cosmo, z) / res_kpc
         aperture2 = plt.Circle(
             (rgb.shape[1] / 2, rgb.shape[0] / 2),
             aper2,
