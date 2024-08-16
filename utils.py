@@ -501,13 +501,9 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     for snap in sizes.keys():
         mask = np.logical_and(
             np.logical_or(red1[snap], red2[snap]),
-            compactness[snap] < 1.7,
+            compactness[snap] < 5,
         )
         masks[snap] = mask
-
-        print(
-            np.sum(mask), np.min(compactness[snap]), np.max(compactness[snap])
-        )
 
     return fluxes, colors, red1, red2, sizes, masks, indices, images
 

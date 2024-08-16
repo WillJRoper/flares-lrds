@@ -3,7 +3,10 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from unyt import erg, s, cm, Hz, nJy
+from unyt import erg, s, cm, Hz, nJy, arcsecond
+from astropy.cosmology import Planck15 as cosmo
+
+from synthesizer.conversions import angular_to_spatial_at_z
 
 from utils import get_synth_data_with_imgs, savefig
 
@@ -57,8 +60,14 @@ for snap in images:
     # Are there any LRD images to plot?
     if len(images[snap]["F115W"]) == 0:
         continue
-
     print(f"Plotting images for {snap} ({len(images[snap]['F115W'])} images)")
+
+    # Get redshift
+    z = float(snap.split("z")[-1].replace("p", "."))
+
+    # Define the resolution
+    res = 0.031 * arcsecond
+    res_kpc = angular_to_spatial_at_z(res, cosmo, z)
 
     # Loop over images
     for i in range(len(images[snap]["F115W"])):
@@ -93,5 +102,26 @@ for snap in images:
         # Plot the images
         im = ax.imshow(rgb)
         ax.axis("off")
+
+        # Draw a dashed aperture at 0.2" and 0.4" (we need to convert these
+        # to kpc and then to pixels)
+        aper1 = angular_to_spatial_at_z(0.2, cosmo, z) / res_kpc
+        aperture1 = plt.Circle(
+            (rgb.shape[1] / 2, rgb.shape[0] / 2),
+            aper1,
+            color="white",
+            fill=False,
+            linestyle="--",
+        )
+        ax.add_artist(aperture1)
+        aper2 = angular_to_spatial_at_z(0.4, cosmo, z) / res_kpc
+        aperture2 = plt.Circle(
+            (rgb.shape[1] / 2, rgb.shape[0] / 2),
+            aper2,
+            color="white",
+            fill=False,
+            linestyle="--",
+        )
+        ax.add_artist(aperture2)
 
         savefig(fig, f"images/rgb_{args.type}_{snap}_{i}")
