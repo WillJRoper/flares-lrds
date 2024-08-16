@@ -137,6 +137,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     fluxes = {}
     sizes = {}
     indices = {}
+    compactness = {}
 
     # If requested, get the weights
     if get_weights:
@@ -180,6 +181,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             fluxes.setdefault(snap, {})
             sizes.setdefault(snap, {})
             indices.setdefault(snap, {})
+            compactness.setdefault(snap, [])
 
             # Get the fluxes we need
             with h5py.File(
@@ -230,6 +232,10 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                         sizes[snap].setdefault(filt.split(".")[-1], []).extend(
                             hdf[f"HalfLightRadii/{spec}/{filt}"][...]
                         )
+                    comp = (
+                        hdf["Apertures/0p4/JWST/NIRCam.F444W"][:]
+                        / hdf["Apertures/0p2/JWST/NIRCam.F444W"][:]
+                    )
 
                 except KeyError as e:
                     print(f"KeyError: {e}")
@@ -249,6 +255,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 fluxes[snap].setdefault("F356W", []).extend(f356w)
                 fluxes[snap].setdefault("F444W", []).extend(f444w)
                 indices[snap].setdefault(reg, []).extend(inds)
+                compactness[snap].extend(comp)
 
     # Convert the data to arrays
     for snap in fluxes.keys():
@@ -309,7 +316,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     for snap in sizes.keys():
         mask = np.logical_and(
             np.logical_or(red1[snap], red2[snap]),
-            sizes[snap]["F444W"] < size_thresh,
+            compactness[snap] < 1.7,
         )
         masks[snap] = mask
 
@@ -342,6 +349,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     sizes = {}
     indices = {}
     images = {}
+    compactness = {}
 
     # Lood over regions
     for reg in REGIONS:
@@ -352,6 +360,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             sizes.setdefault(snap, {})
             indices.setdefault(snap, {})
             images.setdefault(snap, {})
+            compactness.setdefault(snap, [])
 
             # Get the fluxes we need
             with h5py.File(
@@ -405,6 +414,10 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                         images[snap].setdefault(
                             filt.split(".")[-1], []
                         ).extend(hdf[f"Images/{filt}"][...])
+                    comp = (
+                        hdf["Apertures/0p4/JWST/NIRCam.F444W"][:]
+                        / hdf["Apertures/0p2/JWST/NIRCam.F444W"][:]
+                    )
                 except KeyError as e:
                     print(f"KeyError: {e}")
                     continue
@@ -423,6 +436,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 fluxes[snap].setdefault("F356W", []).extend(f356w)
                 fluxes[snap].setdefault("F444W", []).extend(f444w)
                 indices[snap].setdefault(reg, []).extend(inds)
+                compactness[snap].extend(comp)
 
     # Convert the data to arrays
     for snap in fluxes.keys():
@@ -483,7 +497,10 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     # Combine the masks with a size threshold
     masks = {}
     for snap in sizes.keys():
-        mask = np.logical_or(red1[snap], red2[snap])
+        mask = np.logical_and(
+            np.logical_or(red1[snap], red2[snap]),
+            compactness[snap] < 1.7,
+        )
         masks[snap] = mask
 
     return fluxes, colors, red1, red2, sizes, masks, indices, images
