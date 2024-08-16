@@ -322,7 +322,7 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
                     psf_imgs[filt].arr.shape[0] / 2,
                     psf_imgs[filt].arr.shape[1] / 2,
                 ),
-                r=(ap / kpc_res).value,
+                r=float((ap / kpc_res).value),
             )
             phot1 = aperture_photometry(psf_imgs[filt].arr, app1)
             app_flux[filt][lab] = phot1["aperture_sum"][0]
