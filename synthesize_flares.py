@@ -312,7 +312,7 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
         for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
             app_flux[filt][lab] = float(
                 psf_imgs[filt]
-                .get_signal_in_aperture(ap, nthreads=nthreads)
+                .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
                 .value
             )
 
