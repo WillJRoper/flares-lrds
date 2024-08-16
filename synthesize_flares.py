@@ -12,8 +12,6 @@ from mpi4py import MPI as mpi
 from utils import FILTER_CODES
 import webbpsf
 
-from photutils import CircularAperture, aperture_photometry
-
 from synthesizer.particle import Stars, Gas
 from synthesizer.particle import Galaxy
 from synthesizer.filters import FilterCollection
@@ -312,20 +310,11 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     for filt in FILTER_CODES:
         app_flux.setdefault(filt, {})
         for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
-            # app_flux[filt][lab] = float(
-            #     psf_imgs[filt]
-            #     .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
-            #     .value
-            # )
-            app1 = CircularAperture(
-                (
-                    psf_imgs[filt].arr.shape[0] / 2,
-                    psf_imgs[filt].arr.shape[1] / 2,
-                ),
-                r=float((ap / kpc_res).value),
+            app_flux[filt][lab] = float(
+                psf_imgs[filt]
+                .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
+                .value
             )
-            phot1 = aperture_photometry(psf_imgs[filt].arr, app1)
-            app_flux[filt][lab] = phot1["aperture_sum"][0]
 
     # Attach apertures to image
     psf_imgs.app_fluxes = app_flux
