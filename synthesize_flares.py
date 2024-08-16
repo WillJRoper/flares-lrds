@@ -306,7 +306,6 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     # Apply the 0.2" and 0.4" apertures
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
     kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
-    print(kpc_apertures)
     app_flux = {}
     for filt in FILTER_CODES:
         app_flux.setdefault(filt, {})
