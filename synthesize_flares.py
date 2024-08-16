@@ -318,10 +318,13 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
             #     .value
             # )
             app1 = CircularAperture(
-                (psf_imgs[filt].shape[0] / 2, psf_imgs[filt].shape[1] / 2),
+                (
+                    psf_imgs[filt].arr.shape[0] / 2,
+                    psf_imgs[filt].arr.shape[1] / 2,
+                ),
                 ap / kpc_res,
             )
-            phot1 = aperture_photometry(psf_imgs[filt], app1)
+            phot1 = aperture_photometry(psf_imgs[filt].arr, app1)
             app_flux[filt][lab] = phot1["aperture_sum"][0]
 
     # Attach apertures to image
