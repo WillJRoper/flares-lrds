@@ -183,6 +183,18 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             indices.setdefault(snap, {})
             compactness.setdefault(snap, [])
 
+            # Skip files that don't exist
+            if not os.path.exists(
+                synth_data_path.replace("<region>", reg).replace(
+                    "<snap>", snap
+                )
+            ):
+                missing_path = synth_data_path.replace(
+                    "<region>", reg
+                ).replace("<snap>", snap)
+                print(f"File {missing_path} does not exist.")
+                continue
+
             # Get the fluxes we need
             with h5py.File(
                 synth_data_path.replace("<region>", reg).replace(
@@ -362,6 +374,18 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             indices.setdefault(snap, {})
             images.setdefault(snap, {})
             compactness.setdefault(snap, [])
+
+            # Skip files that don't exist
+            if not os.path.exists(
+                synth_data_path.replace("<region>", reg).replace(
+                    "<snap>", snap
+                )
+            ):
+                missing_path = synth_data_path.replace(
+                    "<region>", reg
+                ).replace("<snap>", snap)
+                print(f"File {missing_path} does not exist.")
+                continue
 
             # Get the fluxes we need
             with h5py.File(
