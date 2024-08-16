@@ -262,6 +262,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
         for key in fluxes[snap].keys():
             fluxes[snap][key] = np.array(fluxes[snap][key])
             sizes[snap][key] = np.array(sizes[snap][key])
+            compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
                 if reg in indices[snap]:
                     indices[snap][reg] = np.array(
@@ -443,6 +444,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
         for key in fluxes[snap].keys():
             fluxes[snap][key] = np.array(fluxes[snap][key])
             sizes[snap][key] = np.array(sizes[snap][key])
+            compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
                 if reg in indices[snap]:
                     indices[snap][reg] = np.array(
