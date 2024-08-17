@@ -868,9 +868,11 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
         hdf (h5py.File): The HDF5 file to write to.
         data (dict): The data to write.
         key (str): The key to write the data to.
+        units (str): The units of the data.
     """
     # If the data isn't a dictionary just write the dataset
     if not isinstance(data, dict):
+        print(f"Writing {key}")
         dset = hdf.create_dataset(key, data=data)
         dset.attrs["Units"] = units
         return
@@ -878,6 +880,7 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
     # Loop over the data
     for k, v in data.items():
         if isinstance(v, dict):
+            print(f"Writing {key}/{k}")
             write_dataset_recursive(hdf, v, f"{key}/{k}")
         else:
             dset = hdf.create_dataset(f"{key}/{k}", data=v)
