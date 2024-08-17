@@ -38,8 +38,8 @@ def get_key_recursive(dictionary, key=""):
     """Get a key from a dictionary recursively."""
     if not isinstance(dictionary, dict):
         return key
-    for k, v in dictionary.items():
-        key = get_key_recursive(v, key=f"{key}_{k}")
+    k, v = list(dictionary.items())[0]
+    key = get_key_recursive(v, key=f"{key}_{k}")
     return key
 
 
