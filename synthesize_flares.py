@@ -580,8 +580,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     dust_sizes = []
     sfzhs = []
     imgs = {}
-    apps_02 = {}
-    apps_04 = {}
+    apps = {}
     for (
         fnu,
         flux,
@@ -660,10 +659,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 imgs.setdefault(key, {}).setdefault(filt, []).extend(arr)
         for key, i in app_02.items():
             for filt, arr in i.items():
-                apps_02.setdefault(key, {}).setdefault(filt, []).extend(arr)
-        for key, i in app_04.items():
-            for filt, arr in i.items():
-                apps_04.setdefault(key, {}).setdefault(filt, []).extend(arr)
+                apps.setdefault("0p2", {}).setdefault(key, {}).setdefault(
+                    filt, []
+                ).extend(arr)
+                apps.setdefault("0p4", {}).setdefault(key, {}).setdefault(
+                    filt, []
+                ).extend(arr)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -714,12 +715,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     for key, img in imgs.items():
         for filt, arr in img.items():
             imgs[key][filt] = [arr[i] for i in sort_indices]
-    for key, i in apps_02.items():
-        for filt, arr in i.items():
-            apps_02[key][filt] = [arr[i] for i in sort_indices]
-    for key, i in apps_04.items():
-        for filt, arr in i.items():
-            apps_04[key][filt] = [arr[i] for i in sort_indices]
+    for key, i in apps.items():
+        for spec, d in i.items():
+            for filt, arr in d.items():
+                apps[key][spec][filt] = [arr[i] for i in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
