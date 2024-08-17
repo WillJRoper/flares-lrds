@@ -531,12 +531,12 @@ class FLARESLRDsEmission(StellarEmissionModel):
         # fraction)
         young_intrinsic = StellarEmissionModel(
             grid=grid,
-            label="young_intrinsc",
+            label="young_intrinsic",
             combine=[young_reprocessed, young_escaped],
         )
         old_intrinsic = StellarEmissionModel(
             grid=grid,
-            label="old_intrinsc",
+            label="old_intrinsic",
             combine=[old_reprocessed, old_escaped],
         )
         intrinsic = StellarEmissionModel(
