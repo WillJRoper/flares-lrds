@@ -858,3 +858,25 @@ def plot_step_hist(
             f"{outname}",
         )
     plt.close(fig)
+
+
+def write_dataset_recursive(hdf, data, key):
+    """
+    Write a dictionary to an HDF5 file recursively.
+
+    Args:
+        hdf (h5py.File): The HDF5 file to write to.
+        data (dict): The data to write.
+        key (str): The key to write the data to.
+    """
+    # If the data isn't a dictionary just write the dataset
+    if not isinstance(data, dict):
+        hdf.create_dataset(key, data=data)
+        return
+
+    # Loop over the data
+    for k, v in data.items():
+        if isinstance(v, dict):
+            write_dataset_recursive(hdf, v, f"{key}/{k}")
+        else:
+            hdf.create_dataset(f"{key}/{k}", data=v)
