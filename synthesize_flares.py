@@ -230,9 +230,24 @@ def get_grid(grid_name, grid_dir, filters):
     )
 
 
-def get_emission_model(grid, fesc=0.0, fesc_ly_alpha=1.0):
+def get_emission_model(
+    grid,
+    fesc=0.0,
+    fesc_ly_alpha=1.0,
+    save_spectra=(
+        "reprocessed",
+        "attenuated",
+        "young_reprocessed",
+        "old_reprocessed",
+        "young_attenuated",
+        "old_attenuated",
+    ),
+):
     """Get a StellarEmissionModel."""
     model = FLARESLRDsEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
+
+    # Limit the spectra to be saved
+    model.save_spectra(*save_spectra)
 
     return model
 
