@@ -740,25 +740,27 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Write output out to file
     with h5py.File(path, "w") as hdf:
         # Write the group and subgroup ids
-        write_dataset_recursive(hdf, "GroupNumber", group_ids)
-        write_dataset_recursive(hdf, "SubGroupNumber", subgroup_ids)
+        write_dataset_recursive(hdf, group_ids, "GroupNumber")
+        write_dataset_recursive(hdf, subgroup_ids, "SubGroupNumber")
 
         # Store the grid used and the Synthesizer version
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
 
         # Create groups for the data
-        fnu_grp = hdf.create_group("ObservedSpectra")
         flux_grp = hdf.create_group("ObservedPhotometry")
         comp_grp = hdf.create_group("Compactness")
 
         # Write the integrated observed spectra
-        for key, fnu in fnus.items():
-            dset = fnu_grp.create_dataset(
-                key,
-                data=np.array(fnu),
-            )
-            dset.attrs["Units"] = units["fnu"]
+        write_dataset_recursive(
+            hdf, fnus, "ObservedSpectra", units=units["fnu"]
+        )
+        # for key, fnu in fnus.items():
+        #     dset = fnu_grp.create_dataset(
+        #         key,
+        #         data=np.array(fnu),
+        #     )
+        #     dset.attrs["Units"] = units["fnu"]
 
         # Write the photometry
         for key, flux in fluxes.items():
