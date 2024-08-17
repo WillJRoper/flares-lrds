@@ -3,6 +3,7 @@ import os
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
+from mpi4py import MPI as mpi
 
 from unyt import unyt_array
 
@@ -37,6 +38,15 @@ FILTER_CODES = [
     "JWST/NIRCam.F356W",
     "JWST/NIRCam.F444W",
 ]
+
+
+def _print(*args, **kwargs):
+    """Overload print with rank info."""
+    comm = mpi.COMM_WORLD
+    rank = comm.Get_rank()
+    size = comm.Get_size()
+    print(f"[{str(rank).zfill(len(str(size)) + 1)}]: ", end="")
+    print(*args, **kwargs)
 
 
 def savefig(fig, outname):

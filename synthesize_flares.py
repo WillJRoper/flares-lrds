@@ -9,7 +9,7 @@ import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond, angstrom, kpc
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
-from utils import FILTER_CODES, write_dataset_recursive
+from utils import FILTER_CODES, write_dataset_recursive, _print
 import webbpsf
 
 from synthesizer.particle import Stars, Gas
@@ -26,15 +26,6 @@ from stellar_emission_model import FLARESLRDsEmission
 import warnings
 
 warnings.filterwarnings("ignore")
-
-
-def _print(*args, **kwargs):
-    """Overload print with rank info."""
-    comm = mpi.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-    print(f"[{str(rank).zfill(len(str(size)) + 1)}]: ", end="")
-    print(*args, **kwargs)
 
 
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
