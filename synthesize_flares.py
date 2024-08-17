@@ -569,7 +569,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
     # Concatenate the data
     fnus = combine_distributed_data(fnu_per_rank)
-    print(fnus)
     fluxes = combine_distributed_data(flux_per_rank)
     group_ids = combine_distributed_data(group_per_rank)
     subgroup_ids = combine_distributed_data(subgroup_per_rank)
@@ -729,7 +728,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             hdf,
             sort_data_recursive(sfzhs, sort_indices),
             "SFZH",
-            units="Msun",
+            units=units["sfzh"],
         )
 
 
