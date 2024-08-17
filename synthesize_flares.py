@@ -569,10 +569,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
     # Concatenate the data
     fnus = combine_distributed_data(fnu_per_rank)
+    print(fnus)
     fluxes = combine_distributed_data(flux_per_rank)
-    print(fluxes)
     group_ids = combine_distributed_data(group_per_rank)
-    print(group_ids)
     subgroup_ids = combine_distributed_data(subgroup_per_rank)
     indices = combine_distributed_data(index_per_rank)
     uv_slopes = combine_distributed_data(uv_slope_per_rank)
