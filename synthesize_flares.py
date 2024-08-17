@@ -814,13 +814,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the apertures
         write_dataset_recursive(
             hdf,
-            apps_02,
-            key="Apertures",
-            units=units["flux"],
-        )
-        write_dataset_recursive(
-            hdf,
-            apps_04,
+            apps,
             key="Apertures",
             units=units["flux"],
         )
