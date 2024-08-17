@@ -870,6 +870,27 @@ def plot_step_hist(
     plt.close(fig)
 
 
+def sort_data_recursive(data, sinds):
+    """
+    Sort a dictionary recursively.
+
+    Args:
+        data (dict): The data to sort.
+        sinds (dict): The sorted indices.
+    """
+    # If the data isn't a dictionary just return the sorted data
+    if not isinstance(data, dict):
+        data = np.array(data)
+        return data[sinds]
+
+    # Loop over the data
+    sorted_data = {}
+    for k, v in data.items():
+        sorted_data[k] = sort_data_recursive(v, sinds)
+
+    return sorted_data
+
+
 def write_dataset_recursive(hdf, data, key, units="dimensionless"):
     """
     Write a dictionary to an HDF5 file recursively.
@@ -890,3 +911,39 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
     # Loop over the data
     for k, v in data.items():
         write_dataset_recursive(hdf, v, f"{key}/{k}")
+
+
+def _combine_data_recursive(rank_data, out_dict):
+    """
+    Combine data from multiple processors recursively.
+
+    Args:
+        rank_data (dict): The data from the current processor.
+        out_dict (dict): The dictionary to write the data to.
+    """
+    # Loop over the data
+    for k, v in rank_data.items():
+        if isinstance(v, dict):
+            out_dict = _combine_data_recursive(v, out_dict.setdefault(k, {}))
+        else:
+            out_dict.setdefault(k, []).extend(v)
+
+    return out_dict
+
+
+def combine_distributed_data(distributed_data):
+    """
+    Combine data from multiple processors.
+
+    Args:
+        distributed_data (dict): The data from each processor.
+        out_dict (dict): The dictionary to write the data to.
+    """
+    # Setup output
+    out_dict = {}
+
+    # Loop over the list of data from ranks
+    for rank_data in distributed_data:
+        out_dict = _combine_data_recursive(rank_data, out_dict)
+
+    return out_dict

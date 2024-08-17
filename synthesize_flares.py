@@ -9,7 +9,13 @@ import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond, angstrom, kpc
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
-from utils import FILTER_CODES, write_dataset_recursive, _print
+from utils import (
+    FILTER_CODES,
+    write_dataset_recursive,
+    _print,
+    sort_data_recursive,
+    combine_distributed_data,
+)
 import webbpsf
 
 from synthesizer.particle import Stars, Gas
@@ -566,6 +572,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         return
 
     # Concatenate the data
+    fnus = combine_distributed_data(fnu_per_rank)
+    print(fnus)
     fnus = {}
     fluxes = {}
     group_ids = []
@@ -679,61 +687,31 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         "sfzh": "Msun",
     }
 
-    # Sort the data by galaxy index
+    # Get the indices that will sort the data to match the master file
     sort_indices = np.argsort(indices)
-    for key, spec in fnus.items():
-        fnus[key] = [spec[i] for i in sort_indices]
-    for key, phot in fluxes.items():
-        fluxes[key] = {
-            filt: [phot[filt][i] for i in sort_indices] for filt in phot
-        }
-    for key, slopes in uv_slopes.items():
-        uv_slopes[key] = [slopes[i] for i in sort_indices]
-    for key, slopes in ir_slopes.items():
-        ir_slopes[key] = [slopes[i] for i in sort_indices]
-    for key, d in sizes.items():
-        sizes[key] = {filt: [d[filt][i] for i in sort_indices] for filt in d}
-    for key, d in sizes_95.items():
-        sizes_95[key] = {
-            filt: [d[filt][i] for i in sort_indices] for filt in d
-        }
-    for key, d in sizes_80.items():
-        sizes_80[key] = {
-            filt: [d[filt][i] for i in sort_indices] for filt in d
-        }
-    for key, d in sizes_20.items():
-        sizes_20[key] = {
-            filt: [d[filt][i] for i in sort_indices] for filt in d
-        }
-    for key, img in imgs.items():
-        for filt, arr in img.items():
-            imgs[key][filt] = [arr[i] for i in sort_indices]
-    for key, i in apps.items():
-        for spec, d in i.items():
-            for filt, arr in d.items():
-                apps[key][spec][filt] = [arr[i] for i in sort_indices]
-    group_ids = [group_ids[i] for i in sort_indices]
-    subgroup_ids = [subgroup_ids[i] for i in sort_indices]
-    indices = [indices[i] for i in sort_indices]
-    gas_sizes = [gas_sizes[i] for i in sort_indices]
-    gas_sizes_80 = [gas_sizes_80[i] for i in sort_indices]
-    gas_sizes_20 = [gas_sizes_20[i] for i in sort_indices]
-    dust_sizes = [dust_sizes[i] for i in sort_indices]
 
     # Write output out to file
     with h5py.File(path, "w") as hdf:
-        # Write the group and subgroup ids
-        write_dataset_recursive(hdf, group_ids, "GroupNumber")
-        write_dataset_recursive(hdf, subgroup_ids, "SubGroupNumber")
-
         # Store the grid used and the Synthesizer version
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
 
+        # Write the group and subgroup ids
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(group_ids, sort_indices),
+            "GroupNumber",
+        )
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(subgroup_ids, sort_indices),
+            "SubGroupNumber",
+        )
+
         # Write the integrated observed spectra
         write_dataset_recursive(
             hdf,
-            fnus,
+            sort_data_recursive(fnus, sort_indices),
             "ObservedSpectra",
             units=units["fnu"],
         )
@@ -741,7 +719,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the photometry
         write_dataset_recursive(
             hdf,
-            fluxes,
+            sort_data_recursive(fluxes, sort_indices),
             key="ObservedPhotometry",
             units=units["flux"],
         )
@@ -749,7 +727,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the UV slopes
         write_dataset_recursive(
             hdf,
-            uv_slopes,
+            sort_data_recursive(uv_slopes, sort_indices),
             key="UVSlopes",
             units="dimensionless",
         )
@@ -757,7 +735,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the IR slopes
         write_dataset_recursive(
             hdf,
-            ir_slopes,
+            sort_data_recursive(ir_slopes, sort_indices),
             key="IRSlopes",
             units="dimensionless",
         )
@@ -765,25 +743,25 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the light radii
         write_dataset_recursive(
             hdf,
-            sizes,
+            sort_data_recursive(sizes, sort_indices),
             key="HalfLightRadii",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            sizes_95,
+            sort_data_recursive(sizes_95, sort_indices),
             key="LightRadii95",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            sizes_80,
+            sort_data_recursive(sizes_80, sort_indices),
             key="LightRadii80",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            sizes_20,
+            sort_data_recursive(sizes_20, sort_indices),
             key="LightRadii20",
             units=units["hlr"],
         )
@@ -791,7 +769,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the images
         write_dataset_recursive(
             hdf,
-            imgs,
+            sort_data_recursive(imgs, sort_indices),
             key="Images",
             units=units["flux"],
         )
@@ -799,42 +777,51 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Write the apertures
         write_dataset_recursive(
             hdf,
-            apps,
+            sort_data_recursive(apps, sort_indices),
             key="Apertures",
             units=units["flux"],
         )
 
         # Write out the indices
-        write_dataset_recursive(hdf, indices, "Indices")
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(indices, sort_indices),
+            "Indices",
+        )
 
         # Write out the gas sizes
         write_dataset_recursive(
             hdf,
-            gas_sizes,
+            sort_data_recursive(gas_sizes, sort_indices),
             key="GasHalfMassRadius",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            gas_sizes_80,
+            sort_data_recursive(gas_sizes_80, sort_indices),
             key="GasMassRadius80",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            gas_sizes_20,
+            sort_data_recursive(gas_sizes_20, sort_indices),
             key="GasMassRadius20",
             units=units["hlr"],
         )
         write_dataset_recursive(
             hdf,
-            dust_sizes,
+            sort_data_recursive(dust_sizes, sort_indices),
             key="DustHalfMassRadius",
             units=units["hlr"],
         )
 
         # Store the sfzhs
-        write_dataset_recursive(hdf, sfzhs, "SFZH", units="Msun")
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(sfzhs, sort_indices),
+            "SFZH",
+            units="Msun",
+        )
 
 
 # Define the snapshot tags
