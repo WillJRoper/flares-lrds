@@ -747,140 +747,125 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
 
-        # Create groups for the data
-        flux_grp = hdf.create_group("ObservedPhotometry")
-        comp_grp = hdf.create_group("Compactness")
-
         # Write the integrated observed spectra
         write_dataset_recursive(
-            hdf, fnus, "ObservedSpectra", units=units["fnu"]
+            hdf,
+            fnus,
+            "ObservedSpectra",
+            units=units["fnu"],
         )
-        # for key, fnu in fnus.items():
-        #     dset = fnu_grp.create_dataset(
-        #         key,
-        #         data=np.array(fnu),
-        #     )
-        #     dset.attrs["Units"] = units["fnu"]
 
         # Write the photometry
-        for key, flux in fluxes.items():
-            filt_grp = flux_grp.create_group(key)
-            for filt, phot in flux.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(phot),
-                )
-                dset.attrs["Units"] = units["flux"]
+        write_dataset_recursive(
+            hdf,
+            fluxes,
+            key="ObservedPhotometry",
+            units=units["flux"],
+        )
 
         # Write the compactness
-        for key, comp in compactnesses.items():
-            filt_grp = comp_grp.create_group(key)
-            for filt, comp_arr in comp.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(comp_arr),
-                )
-                dset.attrs["Units"] = "dimensionless"
+        write_dataset_recursive(
+            hdf,
+            compactnesses,
+            key="Compactness",
+            units="dimensionless",
+        )
 
         # Write the UV slopes
-        uv_grp = hdf.create_group("UVSlopes")
-        for key, slopes in uv_slopes.items():
-            dset = uv_grp.create_dataset(
-                key,
-                data=np.array(slopes),
-            )
-            dset.attrs["Units"] = "dimensionless"
+        write_dataset_recursive(
+            hdf,
+            uv_slopes,
+            key="UVSlopes",
+            units="dimensionless",
+        )
 
         # Write the IR slopes
-        ir_grp = hdf.create_group("OpticalSlopes")
-        for key, slopes in ir_slopes.items():
-            dset = ir_grp.create_dataset(
-                key,
-                data=np.array(slopes),
-            )
-            dset.attrs["Units"] = "dimensionless"
+        write_dataset_recursive(
+            hdf,
+            ir_slopes,
+            key="IRSlopes",
+            units="dimensionless",
+        )
 
-        # Write the half light radii
-        hlr_grp = hdf.create_group("HalfLightRadii")
-        for key, d in sizes.items():
-            filt_grp = hlr_grp.create_group(key)
-            for filt, size_arr in d.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(size_arr),
-                )
-                dset.attrs["Units"] = units["hlr"]
-
-        # Write the 95% light radii
-        hlr95_grp = hdf.create_group("LightRadii95")
-        for key, d in sizes_95.items():
-            filt_grp = hlr95_grp.create_group(key)
-            for filt, size_arr in d.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(size_arr),
-                )
-                dset.attrs["Units"] = units["hlr"]
-
-        # Write the 80% light radii
-        hlr80_grp = hdf.create_group("LightRadii80")
-        for key, d in sizes_80.items():
-            filt_grp = hlr80_grp.create_group(key)
-            for filt, size_arr in d.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(size_arr),
-                )
-                dset.attrs["Units"] = units["hlr"]
-
-        # Write the 20% light radii
-        hlr20_grp = hdf.create_group("LightRadii20")
-        for key, d in sizes_20.items():
-            filt_grp = hlr20_grp.create_group(key)
-            for filt, size_arr in d.items():
-                dset = filt_grp.create_dataset(
-                    filt,
-                    data=np.array(size_arr),
-                )
-                dset.attrs["Units"] = units["hlr"]
+        # Write the light radii
+        write_dataset_recursive(
+            hdf,
+            sizes,
+            key="HalfLightRadii",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            sizes_95,
+            key="LightRadii95",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            sizes_80,
+            key="LightRadii80",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            sizes_20,
+            key="LightRadii20",
+            units=units["hlr"],
+        )
 
         # Write the images
-        img_grp = hdf.create_group("Images")
-        for key, img in imgs.items():
-            dset = img_grp.create_dataset(
-                key,
-                data=np.array(img),
-            )
-            dset.attrs["Units"] = units["flux"]
+        write_dataset_recursive(
+            hdf,
+            imgs,
+            key="Images",
+            units=units["flux"],
+        )
 
         # Write the apertures
-        app_grp = hdf.create_group("Apertures")
-        app_02_grp = app_grp.create_group("0p2")
-        app_04_grp = app_grp.create_group("0p4")
-        for key, app in apps_02.items():
-            dset = app_02_grp.create_dataset(
-                key,
-                data=np.array(app),
-            )
-            dset.attrs["Units"] = units["flux"]
-        for key, app in apps_04.items():
-            dset = app_04_grp.create_dataset(
-                key,
-                data=np.array(app),
-            )
-            dset.attrs["Units"] = units["flux"]
+        write_dataset_recursive(
+            hdf,
+            apps_02,
+            key="Apertures",
+            units=units["flux"],
+        )
+        write_dataset_recursive(
+            hdf,
+            apps_04,
+            key="Apertures",
+            units=units["flux"],
+        )
 
         # Write out the indices
-        hdf.create_dataset("Indices", data=np.array(indices))
+        write_dataset_recursive(hdf, indices, "Indices")
 
         # Write out the gas sizes
-        hdf.create_dataset("GasHalfMassRadius", data=np.array(gas_sizes))
-        hdf.create_dataset("GasMassRadius80", data=np.array(gas_sizes_80))
-        hdf.create_dataset("GasMassRadius20", data=np.array(gas_sizes_20))
-        hdf.create_dataset("DustHalfMassRadius", data=np.array(dust_sizes))
+        write_dataset_recursive(
+            hdf,
+            gas_sizes,
+            key="GasHalfMassRadius",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            gas_sizes_80,
+            key="GasMassRadius80",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            gas_sizes_20,
+            key="GasMassRadius20",
+            units=units["hlr"],
+        )
+        write_dataset_recursive(
+            hdf,
+            dust_sizes,
+            key="DustHalfMassRadius",
+            units=units["hlr"],
+        )
 
         # Store the sfzhs
-        hdf.create_dataset("SFZH", data=np.array(sfzhs))
+        write_dataset_recursive(hdf, sfzhs, "SFZH", units="Msun")
 
 
 # Define the snapshot tags
