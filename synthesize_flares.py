@@ -412,6 +412,7 @@ def analyse_galaxy(
             )
 
     # Get the images
+    gal.flux_imgs = {}
     imgs = get_images(
         gal,
         "reprocessed",
@@ -420,7 +421,7 @@ def analyse_galaxy(
         psfs=psfs,
         cosmo=cosmo,
     )
-    gal.reprocessed_flux_imgs = imgs
+    gal.flux_imgs["reprocessed"] = imgs
 
     imgs = get_images(
         gal,
@@ -430,7 +431,7 @@ def analyse_galaxy(
         psfs=psfs,
         cosmo=cosmo,
     )
-    gal.attenuated_flux_imgs = imgs
+    gal.flux_imgs["attenuated"] = imgs
 
     return gal
 
@@ -481,7 +482,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for spec in ["reprocessed", "attenuated"]:
             imgs.setdefault(spec, {})
             for key in FILTER_CODES:
-                imgs[spec].setdefault(key, []).append(gal.flux_imgs[key].arr)
+                imgs[spec].setdefault(key, []).append(
+                    gal.flux_imgs[spec][key].arr
+                )
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
@@ -535,10 +538,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             app_04.setdefault(spec, {})
             for filt in FILTER_CODES:
                 app_02[spec].setdefault(filt, []).append(
-                    gal.flux_imgs.app_fluxes[filt]["0p2"]
+                    gal.flux_imgs[spec].app_fluxes[filt]["0p2"]
                 )
                 app_04[spec].setdefault(filt, []).append(
-                    gal.flux_imgs.app_fluxes[filt]["0p4"]
+                    gal.flux_imgs[spec].app_fluxes[filt]["0p4"]
                 )
 
     # Collect output data onto rank 0
