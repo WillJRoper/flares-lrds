@@ -215,39 +215,39 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 try:
                     inds = hdf["Indices"][...]
                     f115w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
@@ -407,39 +407,39 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 try:
                     inds = hdf["Indices"][...]
                     f115w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F115W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F150W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F200W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F277W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F356W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
-                        hdf[f"ObservedPhotometry/{spec}/JWST/NIRCam.F444W"][
-                            ...
-                        ],
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                        ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
@@ -535,7 +535,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     for snap in sizes.keys():
         mask = np.logical_and(
             np.logical_or(red1[snap], red2[snap]),
-            compactness[snap] < 5,
+            compactness[snap] < 1.7,
         )
         masks[snap] = mask
 
