@@ -880,6 +880,7 @@ def sort_data_recursive(data, sinds):
     """
     # If the data isn't a dictionary just return the sorted data
     if not isinstance(data, dict):
+        print(data)
         data = np.array(data)
         return data[sinds]
 
