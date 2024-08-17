@@ -922,12 +922,15 @@ def _combine_data_recursive(rank_data, out_dict, key=None):
         out_dict (dict): The dictionary to write the data to.
     """
     if not isinstance(rank_data, dict):
-        out_dict.setdefault(key, []).extend(rank_data)
+        out_dict.extend(rank_data)
         return out_dict
 
     # Loop over the data
     for k, v in rank_data.items():
-        out_dict = _combine_data_recursive(v, out_dict.get(k, {}), k)
+        if isinstance(v, list):
+            out_dict[k] = _combine_data_recursive(v, out_dict.get(k, []), k)
+        else:
+            out_dict[k] = _combine_data_recursive(v, out_dict.get(k, {}), k)
 
     return out_dict
 
