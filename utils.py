@@ -889,9 +889,4 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
 
     # Loop over the data
     for k, v in data.items():
-        if isinstance(v, dict):
-            _print(f"Writing {key}/{k}")
-            write_dataset_recursive(hdf, v, f"{key}/{k}")
-        else:
-            dset = hdf.create_dataset(f"{key}/{k}", data=v)
-            dset.attrs["Units"] = units
+        write_dataset_recursive(hdf, v, f"{key}/{k}")
