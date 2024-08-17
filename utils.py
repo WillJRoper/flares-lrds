@@ -945,8 +945,11 @@ def combine_distributed_data(distributed_data):
     if isinstance(distributed_data[0], list):
         return np.concatenate(distributed_data)
 
+    # Ok, we need to initialise the output dict
+    out_dict = {}
+
     # Loop over the list of data from ranks
     for rank_data in distributed_data:
-        out_dict = _combine_data_recursive(rank_data, out_dict={})
+        out_dict = _combine_data_recursive(rank_data, out_dict)
 
     return out_dict
