@@ -331,6 +331,14 @@ def get_images(gal, spec_key, kernel, nthreads, psfs, cosmo):
     # Attach apertures to image
     psf_imgs.app_fluxes = app_flux
 
+    # Compute and store the fluxes based on the images
+    img_fluxes = {}
+    for filt in FILTER_CODES:
+        img_fluxes[filt] = np.sum(psf_imgs[filt].arr)
+
+    # Attach the fluxes to the images
+    psf_imgs.fluxes = img_fluxes
+
     return psf_imgs
 
 
@@ -469,6 +477,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sfzhs = []
     imgs = {}
     apps = {}
+    img_fluxes = {}
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -543,6 +552,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                         gal.flux_imgs[spec].app_fluxes[filt][app]
                     )
 
+        # Get the fluxes from the images
+        for spec in ["reprocessed", "attenuated"]:
+            img_fluxes.setdefault(spec, {})
+            for filt in FILTER_CODES:
+                img_fluxes[spec].setdefault(filt, []).append(
+                    gal.flux_imgs[spec].fluxes[filt]
+                )
+
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
@@ -562,6 +579,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
     imgs_per_rank = comm.gather(imgs, root=0)
     apps_per_rank = comm.gather(apps, root=0)
+    img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -586,6 +604,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sfzhs = combine_distributed_data(sfzhs_per_rank)
     imgs = combine_distributed_data(imgs_per_rank)
     apps = combine_distributed_data(apps_per_rank)
+    img_fluxes = combine_distributed_data(img_fluxes_per_rank)
 
     # Get the units for each dataset
     units = {
@@ -617,7 +636,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         )
 
         # Write the integrated observed spectra
-        print(fnus)
         write_dataset_recursive(
             hdf,
             sort_data_recursive(fnus, sort_indices),
@@ -730,6 +748,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             sort_data_recursive(sfzhs, sort_indices),
             "SFZH",
             units=units["sfzh"],
+        )
+
+        # Write the image fluxes
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(img_fluxes, sort_indices),
+            key="ImageObservedPhotometry",
+            units=units["flux"],
         )
 
 
