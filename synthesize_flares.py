@@ -20,7 +20,7 @@ from synthesizer.kernel_functions import Kernel
 from synthesizer._version import __version__
 from synthesizer.conversions import angular_to_spatial_at_z
 
-from stellar_emission_model import FLARESLRDsEmission
+from stellar_emission_model import FLARESLOSEmission
 
 # Silence warnings (only because we now what we're doing)
 import warnings
@@ -244,7 +244,7 @@ def get_emission_model(
     ),
 ):
     """Get a StellarEmissionModel."""
-    model = FLARESLRDsEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
+    model = FLARESLOSEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
 
     # Limit the spectra to be saved
     model.save_spectra(*save_spectra)
@@ -447,7 +447,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Loop over galaxies and unpacking all the data we'll write out
     fluxes = {}
     fnus = {}
-    compactnesses = {}
     uv_slopes = {}
     ir_slopes = {}
     sizes = {}
@@ -498,15 +497,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             for filt, phot in photcol.items():
                 fluxes[key].setdefault(filt, []).append(phot)
 
-        # Get the compactness
-        for key in ["reprocessed", "attenuated"]:
-            compactnesses.setdefault(key, {})
-            for filt in filters.filter_codes:
-                compactnesses[key].setdefault(filt, []).append(
-                    gal.stars.photo_fluxes[f"0p4_aperture_{key}"][filt].value
-                    / gal.stars.photo_fluxes[f"0p2_aperture_{key}"][filt].value
-                )
-
         # Get slopes
         for key, spectra in gal.stars.spectra.items():
             uv_slopes.setdefault(key, []).append(
@@ -553,7 +543,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
-    comp_per_rank = comm.gather(compactnesses, root=0)
     group_per_rank = comm.gather(group_ids, root=0)
     subgroup_per_rank = comm.gather(subgroup_ids, root=0)
     index_per_rank = comm.gather(indices, root=0)
@@ -579,7 +568,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Concatenate the data
     fnus = {}
     fluxes = {}
-    compactnesses = {}
     group_ids = []
     subgroup_ids = []
     indices = []
@@ -599,7 +587,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     for (
         fnu,
         flux,
-        comp,
         group,
         subgroup,
         index,
@@ -620,7 +607,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     ) in zip(
         fnu_per_rank,
         flux_per_rank,
-        comp_per_rank,
         group_per_rank,
         subgroup_per_rank,
         index_per_rank,
@@ -645,10 +631,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fluxes.setdefault(key, {})
             for filt, phot_arr in phot.items():
                 fluxes[key].setdefault(filt, []).extend(phot_arr)
-        for key, comps in comp.items():
-            compactnesses.setdefault(key, {})
-            for filt in filters.filter_codes:
-                compactnesses[key].setdefault(filt, []).extend(comps[filt])
         for key, slopes in uv_slope.items():
             uv_slopes.setdefault(key, []).extend(slopes)
         for key, slopes in ir_slope.items():
@@ -704,10 +686,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     for key, phot in fluxes.items():
         fluxes[key] = {
             filt: [phot[filt][i] for i in sort_indices] for filt in phot
-        }
-    for key, comp in compactnesses.items():
-        compactnesses[key] = {
-            filt: [comp[filt][i] for i in sort_indices] for filt in comp
         }
     for key, slopes in uv_slopes.items():
         uv_slopes[key] = [slopes[i] for i in sort_indices]
@@ -766,14 +744,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fluxes,
             key="ObservedPhotometry",
             units=units["flux"],
-        )
-
-        # Write the compactness
-        write_dataset_recursive(
-            hdf,
-            compactnesses,
-            key="Compactness",
-            units="dimensionless",
         )
 
         # Write the UV slopes
