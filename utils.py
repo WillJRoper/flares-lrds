@@ -913,7 +913,7 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
         write_dataset_recursive(hdf, v, f"{key}/{k}")
 
 
-def _combine_data_recursive(rank_data, out_dict):
+def _combine_data_recursive(rank_data, out_dict={}, key=None):
     """
     Combine data from multiple processors recursively.
 
@@ -921,12 +921,12 @@ def _combine_data_recursive(rank_data, out_dict):
         rank_data (dict): The data from the current processor.
         out_dict (dict): The dictionary to write the data to.
     """
+    if not isinstance(rank_data, dict):
+        return out_dict.setdefault(key, []).extend(rank_data)
+
     # Loop over the data
     for k, v in rank_data.items():
-        if isinstance(v, dict):
-            out_dict = _combine_data_recursive(v, out_dict.setdefault(k, {}))
-        else:
-            out_dict.setdefault(k, []).extend(v)
+        out_dict[k] = _combine_data_recursive(v, out_dict.get(k, {}), k)
 
     return out_dict
 
@@ -944,11 +944,8 @@ def combine_distributed_data(distributed_data):
     if isinstance(distributed_data[0], list):
         return np.concatenate(distributed_data)
 
-    # Ok, we have a list of dicts, we need to combine them together
-    out_dict = {}
-
     # Loop over the list of data from ranks
     for rank_data in distributed_data:
-        out_dict = _combine_data_recursive(rank_data, out_dict)
+        out_dict = _combine_data_recursive(rank_data)
 
     return out_dict
