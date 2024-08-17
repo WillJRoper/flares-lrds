@@ -537,7 +537,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for app in ["0p2", "0p4"]:
             apps.setdefault(app, {})
             for spec in ["reprocessed", "attenuated"]:
-                apps.setdefault(spec, {})
+                apps[app].setdefault(spec, {})
                 for filt in FILTER_CODES:
                     apps[app][spec].setdefault(filt, []).append(
                         gal.flux_imgs[spec].app_fluxes[filt][app]
