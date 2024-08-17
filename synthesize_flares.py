@@ -9,7 +9,7 @@ import h5py
 from unyt import Gyr, Mpc, Msun, arcsecond, angstrom, kpc
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
-from utils import FILTER_CODES
+from utils import FILTER_CODES, write_dataset_recursive
 import webbpsf
 
 from synthesizer.particle import Stars, Gas
@@ -414,13 +414,23 @@ def analyse_galaxy(
     # Get the images
     imgs = get_images(
         gal,
+        "reprocessed",
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.reprocessed_flux_imgs = imgs
+
+    imgs = get_images(
+        gal,
         "attenuated",
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
         cosmo=cosmo,
     )
-    gal.flux_imgs = imgs
+    gal.attenuated_flux_imgs = imgs
 
     return gal
 
@@ -468,8 +478,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fnus.setdefault(key, []).append(spec._fnu)
 
         # Get the images
-        for key in FILTER_CODES:
-            imgs.setdefault(key, []).append(gal.flux_imgs[key].arr)
+        for spec in ["reprocessed", "attenuated"]:
+            imgs.setdefault(spec, {})
+            for key in FILTER_CODES:
+                imgs[spec].setdefault(key, []).append(gal.flux_imgs[key].arr)
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
@@ -518,13 +530,16 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 )
 
         # Attach apertures from images
-        for filt in FILTER_CODES:
-            app_02.setdefault(filt, []).append(
-                gal.flux_imgs.app_fluxes[filt]["0p2"]
-            )
-            app_04.setdefault(filt, []).append(
-                gal.flux_imgs.app_fluxes[filt]["0p4"]
-            )
+        for spec in ["reprocessed", "attenuated"]:
+            app_02.setdefault(spec, {})
+            app_04.setdefault(spec, {})
+            for filt in FILTER_CODES:
+                app_02[spec].setdefault(filt, []).append(
+                    gal.flux_imgs.app_fluxes[filt]["0p2"]
+                )
+                app_04[spec].setdefault(filt, []).append(
+                    gal.flux_imgs.app_fluxes[filt]["0p4"]
+                )
 
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
@@ -647,11 +662,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             for filt, size_arr in d.items():
                 sizes_20[key].setdefault(filt, []).extend(size_arr)
         for key, i in img.items():
-            imgs.setdefault(key, []).extend(i)
+            for filt, arr in i.items():
+                imgs.setdefault(key, {}).setdefault(filt, []).extend(arr)
         for key, i in app_02.items():
-            apps_02.setdefault(key, []).extend(i)
+            for filt, arr in i.items():
+                apps_02.setdefault(key, {}).setdefault(filt, []).extend(arr)
         for key, i in app_04.items():
-            apps_04.setdefault(key, []).extend(i)
+            for filt, arr in i.items():
+                apps_04.setdefault(key, {}).setdefault(filt, []).extend(arr)
         group_ids.extend(group)
         subgroup_ids.extend(subgroup)
         indices.extend(index)
@@ -700,11 +718,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             filt: [d[filt][i] for i in sort_indices] for filt in d
         }
     for key, img in imgs.items():
-        imgs[key] = [img[i] for i in sort_indices]
+        for filt, arr in img.items():
+            imgs[key][filt] = [arr[i] for i in sort_indices]
     for key, i in apps_02.items():
-        apps_02[key] = [i[j] for j in sort_indices]
+        for filt, arr in i.items():
+            apps_02[key][filt] = [arr[i] for i in sort_indices]
     for key, i in apps_04.items():
-        apps_04[key] = [i[j] for j in sort_indices]
+        for filt, arr in i.items():
+            apps_04[key][filt] = [arr[i] for i in sort_indices]
     group_ids = [group_ids[i] for i in sort_indices]
     subgroup_ids = [subgroup_ids[i] for i in sort_indices]
     indices = [indices[i] for i in sort_indices]
@@ -716,8 +737,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Write output out to file
     with h5py.File(path, "w") as hdf:
         # Write the group and subgroup ids
-        hdf.create_dataset("GroupNumber", data=group_ids)
-        hdf.create_dataset("SubGroupNumber", data=subgroup_ids)
+        write_dataset_recursive(hdf, "GroupNumber", group_ids)
+        write_dataset_recursive(hdf, "SubGroupNumber", subgroup_ids)
 
         # Store the grid used and the Synthesizer version
         hdf.attrs["Grid"] = grid_name
