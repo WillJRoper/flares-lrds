@@ -34,15 +34,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def get_key_recursive(dictionary, key=""):
-    """Get a key from a dictionary recursively."""
-    if not isinstance(dictionary, dict):
-        return key
-    k, v = list(dictionary.items())[0]
-    key = get_key_recursive(v, key=f"{key}_{k}")
-    return key
-
-
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     """
     Get a galaxy from the master file.
@@ -552,8 +543,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                         gal.flux_imgs[spec].app_fluxes[filt][app]
                     )
 
-    print(get_key_recursive(apps))
-
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
@@ -597,8 +586,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sfzhs = combine_distributed_data(sfzhs_per_rank)
     imgs = combine_distributed_data(imgs_per_rank)
     apps = combine_distributed_data(apps_per_rank)
-
-    print(get_key_recursive(apps))
 
     # Get the units for each dataset
     units = {

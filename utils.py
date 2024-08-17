@@ -927,7 +927,7 @@ def _combine_data_recursive(rank_data, out_dict, key=None):
 
     # Loop over the data
     for k, v in rank_data.items():
-        out_dict[k] = _combine_data_recursive(v, out_dict.get(k, {}), k)
+        out_dict = _combine_data_recursive(v, out_dict.get(k, {}), k)
 
     return out_dict
 
