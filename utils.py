@@ -913,7 +913,7 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
         write_dataset_recursive(hdf, v, f"{key}/{k}")
 
 
-def _combine_data_recursive(rank_data, out_dict={}, key=None):
+def _combine_data_recursive(rank_data, out_dict, key=None):
     """
     Combine data from multiple processors recursively.
 
@@ -947,6 +947,6 @@ def combine_distributed_data(distributed_data):
 
     # Loop over the list of data from ranks
     for rank_data in distributed_data:
-        out_dict = _combine_data_recursive(rank_data)
+        out_dict = _combine_data_recursive(rank_data, out_dict={})
 
     return out_dict
