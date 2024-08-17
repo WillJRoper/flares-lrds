@@ -468,8 +468,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     indices = []
     sfzhs = []
     imgs = {}
-    app_02 = {}
-    app_04 = {}
+    apps = {}
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -535,16 +534,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 )
 
         # Attach apertures from images
-        for spec in ["reprocessed", "attenuated"]:
-            app_02.setdefault(spec, {})
-            app_04.setdefault(spec, {})
-            for filt in FILTER_CODES:
-                app_02[spec].setdefault(filt, []).append(
-                    gal.flux_imgs[spec].app_fluxes[filt]["0p2"]
-                )
-                app_04[spec].setdefault(filt, []).append(
-                    gal.flux_imgs[spec].app_fluxes[filt]["0p4"]
-                )
+        for app in ["0p2", "0p4"]:
+            apps.setdefault(app, {})
+            for spec in ["reprocessed", "attenuated"]:
+                apps.setdefault(spec, {})
+                for filt in FILTER_CODES:
+                    apps[app][spec].setdefault(filt, []).append(
+                        gal.flux_imgs[spec].app_fluxes[filt][app]
+                    )
 
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
@@ -564,8 +561,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
     imgs_per_rank = comm.gather(imgs, root=0)
-    app_02_per_rank = comm.gather(app_02, root=0)
-    app_04_per_rank = comm.gather(app_04, root=0)
+    apps_per_rank = comm.gather(apps, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -573,111 +569,23 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
     # Concatenate the data
     fnus = combine_distributed_data(fnu_per_rank)
-    print(fnus)
-    fnus = {}
-    fluxes = {}
-    group_ids = []
-    subgroup_ids = []
-    indices = []
-    uv_slopes = {}
-    ir_slopes = {}
-    sizes = {}
-    sizes_95 = {}
-    sizes_80 = {}
-    sizes_20 = {}
-    gas_sizes = []
-    gas_sizes_80 = []
-    gas_sizes_20 = []
-    dust_sizes = []
-    sfzhs = []
-    imgs = {}
-    apps = {}
-    for (
-        fnu,
-        flux,
-        group,
-        subgroup,
-        index,
-        uv_slope,
-        ir_slope,
-        size,
-        size_95,
-        size_80,
-        size_20,
-        gas_size,
-        gas_size_80,
-        gas_size_20,
-        dust_size,
-        sfzh,
-        img,
-        app_02,
-        app_04,
-    ) in zip(
-        fnu_per_rank,
-        flux_per_rank,
-        group_per_rank,
-        subgroup_per_rank,
-        index_per_rank,
-        uv_slope_per_rank,
-        ir_slope_per_rank,
-        size_per_rank,
-        size_95_per_rank,
-        size_80_per_rank,
-        size_20_per_rank,
-        gas_size_per_rank,
-        gas_size_80_per_rank,
-        gas_size_20_per_rank,
-        dust_size_per_rank,
-        sfzhs_per_rank,
-        imgs_per_rank,
-        app_02_per_rank,
-        app_04_per_rank,
-    ):
-        for key, spec in fnu.items():
-            fnus.setdefault(key, []).extend(spec)
-        for key, phot in flux.items():
-            fluxes.setdefault(key, {})
-            for filt, phot_arr in phot.items():
-                fluxes[key].setdefault(filt, []).extend(phot_arr)
-        for key, slopes in uv_slope.items():
-            uv_slopes.setdefault(key, []).extend(slopes)
-        for key, slopes in ir_slope.items():
-            ir_slopes.setdefault(key, []).extend(slopes)
-        for key, d in size.items():
-            sizes.setdefault(key, {})
-            for filt, size_arr in d.items():
-                sizes[key].setdefault(filt, []).extend(size_arr)
-        for key, d in size_95.items():
-            sizes_95.setdefault(key, {})
-            for filt, size_arr in d.items():
-                sizes_95[key].setdefault(filt, []).extend(size_arr)
-        for key, d in size_80.items():
-            sizes_80.setdefault(key, {})
-            for filt, size_arr in d.items():
-                sizes_80[key].setdefault(filt, []).extend(size_arr)
-        for key, d in size_20.items():
-            sizes_20.setdefault(key, {})
-            for filt, size_arr in d.items():
-                sizes_20[key].setdefault(filt, []).extend(size_arr)
-        for key, i in img.items():
-            for filt, arr in i.items():
-                imgs.setdefault(key, {}).setdefault(filt, []).extend(arr)
-        for key, i in app_02.items():
-            for filt, arr in i.items():
-                apps.setdefault("0p2", {}).setdefault(key, {}).setdefault(
-                    filt, []
-                ).extend(arr)
-                apps.setdefault("0p4", {}).setdefault(key, {}).setdefault(
-                    filt, []
-                ).extend(arr)
-        group_ids.extend(group)
-        subgroup_ids.extend(subgroup)
-        indices.extend(index)
-        gas_sizes.extend(gas_size)
-        gas_sizes_80.extend(gas_size_80)
-        gas_sizes_20.extend(gas_size_20)
-        dust_sizes.extend(dust_size)
-        sfzhs.extend(sfzh)
+    fluxes = combine_distributed_data(flux_per_rank)
+    group_ids = combine_distributed_data(group_per_rank)
+    subgroup_ids = combine_distributed_data(subgroup_per_rank)
+    indices = combine_distributed_data(index_per_rank)
+    uv_slopes = combine_distributed_data(uv_slope_per_rank)
+    ir_slopes = combine_distributed_data(ir_slope_per_rank)
+    sizes = combine_distributed_data(size_per_rank)
+    sizes_95 = combine_distributed_data(size_95_per_rank)
+    sizes_80 = combine_distributed_data(size_80_per_rank)
+    sizes_20 = combine_distributed_data(size_20_per_rank)
+    gas_sizes = combine_distributed_data(gas_size_per_rank)
+    gas_sizes_80 = combine_distributed_data(gas_size_80_per_rank)
+    gas_sizes_20 = combine_distributed_data(gas_size_20_per_rank)
+    dust_sizes = combine_distributed_data(dust_size_per_rank)
+    sfzhs = combine_distributed_data(sfzhs_per_rank)
+    imgs = combine_distributed_data(imgs_per_rank)
+    apps = combine_distributed_data(apps_per_rank)
 
     # Get the units for each dataset
     units = {

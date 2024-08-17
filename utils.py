@@ -939,7 +939,15 @@ def combine_distributed_data(distributed_data):
         distributed_data (dict): The data from each processor.
         out_dict (dict): The dictionary to write the data to.
     """
-    # Setup output
+    # Setup output, if we have a list of lists we only need to combine them,
+    # otherwise we need to recusively combine the data in dicts
+    if isinstance(distributed_data[0], list):
+        out_dict = []
+        for rank_data in distributed_data:
+            out_dict.extend(rank_data)
+        return out_dict
+
+    # Ok, we have a list of dicts, we need to combine them together
     out_dict = {}
 
     # Loop over the list of data from ranks
