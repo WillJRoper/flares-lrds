@@ -573,7 +573,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     group_ids = combine_distributed_data(group_per_rank)
     subgroup_ids = combine_distributed_data(subgroup_per_rank)
     indices = combine_distributed_data(index_per_rank)
-    print(indices)
     uv_slopes = combine_distributed_data(uv_slope_per_rank)
     ir_slopes = combine_distributed_data(ir_slope_per_rank)
     sizes = combine_distributed_data(size_per_rank)
@@ -618,6 +617,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         )
 
         # Write the integrated observed spectra
+        print(fnus)
         write_dataset_recursive(
             hdf,
             sort_data_recursive(fnus, sort_indices),
