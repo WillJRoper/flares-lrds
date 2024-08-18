@@ -448,10 +448,10 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                         )
                         images[snap].setdefault(
                             filt.split(".")[-1], []
-                        ).extend(hdf[f"Images/{filt}"][...])
+                        ).extend(hdf[f"Images/{spec}/{filt}"][...])
                     comp = (
-                        hdf["Apertures/0p4/JWST/NIRCam.F444W"][:]
-                        / hdf["Apertures/0p2/JWST/NIRCam.F444W"][:]
+                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][:]
+                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][:]
                     )
                 except KeyError as e:
                     print(f"KeyError: {e}")
