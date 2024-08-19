@@ -577,7 +577,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
-    imgs_per_rank = comm.gather(imgs, root=0)
+    imgs_att_per_rank = comm.gather(imgs["attenuated"], root=0)
+    imgs_rep_per_rank = comm.gather(imgs["reprocessed"], root=0)
     apps_per_rank = comm.gather(apps, root=0)
     img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
 
@@ -602,7 +603,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_sizes_20 = combine_distributed_data(gas_size_20_per_rank)
     dust_sizes = combine_distributed_data(dust_size_per_rank)
     sfzhs = combine_distributed_data(sfzhs_per_rank)
-    imgs = combine_distributed_data(imgs_per_rank)
+    imgs = {}
+    imgs["attenuated"] = combine_distributed_data(imgs_att_per_rank)
+    imgs["reprocessed"] = combine_distributed_data(imgs_rep_per_rank)
     apps = combine_distributed_data(apps_per_rank)
     img_fluxes = combine_distributed_data(img_fluxes_per_rank)
 
