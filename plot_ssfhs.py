@@ -179,8 +179,8 @@ for snap in SNAPSHOTS:
             ),
         )
 
-        # Set limtis
-        ax.set_ylim(10**-1.5, 10**3.2)
+        # # Set limtis
+        # ax.set_ylim(10**-1.5, 10**3.2)
 
     # Turn off the x-axis labels for all but the bottom plot
     for ax in axes[:-1]:
