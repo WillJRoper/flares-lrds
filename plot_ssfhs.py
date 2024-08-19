@@ -135,8 +135,8 @@ for snap in SNAPSHOTS:
 
         # Convert the SFHs in terms of SFR to sSFR by dividing by the cumalative
         # mass
-        lrdsfh /= np.cumsum(lrd_sfh, axis=1)
-        othersfh /= np.cumsum(other_sfh, axis=1)
+        lrdsfh /= np.cumsum(lrdsfh, axis=1)
+        othersfh /= np.cumsum(othersfh, axis=1)
 
         # Plot all LRDS with a low alpha
         for sfh in lrdsfh:
