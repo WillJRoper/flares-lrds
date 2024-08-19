@@ -52,7 +52,6 @@ class AGNTemplateEmission(BlackHoleEmissionModel):
         # Define the attenuated AGN model
         BlackHoleEmissionModel.__init__(
             self,
-            grid=grid,
             label="AGN_attenuated",
             apply_dust_to=agn_intrinsic,
             tau_v="tau_v",
