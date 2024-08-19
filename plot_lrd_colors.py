@@ -48,7 +48,7 @@ weights = []
 masks = []
 for snap in _colors.keys():
     for key in _colors[snap].keys():
-        colors.setdefault(key, []).extend(_colors[snap])
+        colors.setdefault(key, []).extend(_colors[snap][key])
     weights.extend(_weights[snap])
     masks.extend(_masks[snap])
 
