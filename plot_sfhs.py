@@ -226,5 +226,8 @@ for snap in SNAPSHOTS:
     # Add a legend
     ax.legend(loc="lower right")
 
+    # Set limtis
+    ax.set_ylim(10**-1.5, 10**3.2)
+
     # Save the figure
     savefig(fig, f"sfh_{snap}_{args.type}_single_panel.png")
