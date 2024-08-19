@@ -255,8 +255,8 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                             hdf[f"HalfLightRadii/{spec}/{filt}"][...]
                         )
                     comp = (
-                        hdf["Apertures/0p4/JWST/NIRCam.F444W"][:]
-                        / hdf["Apertures/0p2/JWST/NIRCam.F444W"][:]
+                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][:]
+                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][:]
                     )
 
                 except KeyError as e:
