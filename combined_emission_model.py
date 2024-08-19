@@ -23,12 +23,13 @@ class AGNTemplateEmission(BlackHoleEmissionModel):
     to generate the stellar emission for galaxies in FLARES.
     """
 
-    def __init__(self, agn_template_file):
+    def __init__(self, agn_template_file, grid):
         """
         Initialize the FLARESLOSEmission model.
 
         Args:
-            grid (Grid): The grid to use for the model.
+            agn_template_file (str): The path to the AGN template file.
+            grid (Grid): The grid object to unify the template with.
         """
 
         # Load the AGN template
@@ -40,6 +41,7 @@ class AGNTemplateEmission(BlackHoleEmissionModel):
         temp = Template(
             lam=agn_template[:, 0] * 0.1 * nm,
             lnu=agn_template[:, 1] * erg / s / Hz,
+            unify_with_grid=grid,
         )
 
         # Create the agn template emission model

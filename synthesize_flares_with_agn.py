@@ -272,7 +272,7 @@ def get_emission_model(
 ):
     """Get a StellarEmissionModel."""
     model = FLARESLOSEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
-    agn_model = AGNTemplateEmission(agn_template_file)
+    agn_model = AGNTemplateEmission(agn_template_file, grid)
 
     # Limit the spectra to be saved
     model.save_spectra(*save_spectra)
