@@ -158,14 +158,6 @@ ax[1, 1].scatter(
 )
 ax[1, 1].set_xlabel("F277W - F356W")
 ax[1, 1].set_ylabel("F115W - F150W")
-ax[1, 1].text(
-    0.05,
-    0.95,
-    "Red 2 (Kokorev+24)",
-    transform=ax[1, 1].transAxes,
-    fontsize=12,
-    verticalalignment="top",
-)
 ax[1, 1].set_xlim(-2, 2.5)
 ax[1, 1].set_ylim(-1, 4)
 
