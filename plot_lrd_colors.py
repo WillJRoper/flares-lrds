@@ -6,7 +6,7 @@ import h5py
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from astropy.cosmology import Planck15 as cosmo
-from utils import get_synth_data
+from utils import get_synth_data, savefig
 
 # Define the parser
 parser = argparse.ArgumentParser(
@@ -201,5 +201,4 @@ cbar = fig.colorbar(ax[0, 0].collections[0], ax=ax)
 cbar.set_label("Number of galaxies")
 
 # Save the figure
-fig.savefig(f"lrd_kokorev_colors_{snap}.png", dpi=300, bbox_inches="tight")
-plt.close(fig)
+savefig(fig, "color_distribution")
