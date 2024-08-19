@@ -560,6 +560,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     gal.flux_imgs[spec].fluxes[filt]
                 )
 
+    # Need some gymnastics to avoid errors:
+    if "attenuated" not in imgs:
+        imgs["attenuated"] = {}
+    if "reprocessed" not in imgs:
+        imgs["reprocessed"] = {}
+
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
