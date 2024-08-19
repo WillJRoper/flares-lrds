@@ -5,7 +5,7 @@ from unyt import Myr, arcsecond, nm, erg, s, Hz
 from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.emission_models import (
     StellarEmissionModel,
-    AGNEmissionModel,
+    BlackHoleEmissionModel,
     TemplateEmission,
     NebularEmission,
     TransmittedEmission,
@@ -50,7 +50,7 @@ class FLARESLOSWithAGNTemplateEmission(StellarEmissionModel):
         )
 
         # Define the attenuated AGN model
-        agn_attenuated = AGNEmissionModel(
+        agn_attenuated = BlackHoleEmissionModel(
             grid=grid,
             label="AGN_attenuated",
             apply_dust_to=agn_temp_model,
