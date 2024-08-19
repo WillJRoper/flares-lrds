@@ -151,8 +151,10 @@ for snap in SNAPSHOTS:
         if np.sum(lrd_okinds) > 0:
             ax.loglog(
                 xs[::-1],
-                np.median(lrdsfh[::-1], axis=0)
-                / np.cumsum(np.median(lrdsfh[::-1], axis=0)),
+                np.median(
+                    lrdsfh[:, ::-1] / np.cumsum(lrdsfh[:, ::-1], axis=0),
+                    axis=0,
+                ),
                 label="LRD",
                 color="red",
             )
@@ -161,8 +163,10 @@ for snap in SNAPSHOTS:
         if np.sum(other_okinds) > 0:
             ax.loglog(
                 xs[::-1],
-                np.median(othersfh[::-1], axis=0)
-                / np.cumsum(np.median(othersfh[::-1], axis=0)),
+                np.median(
+                    othersfh[:, ::-1] / np.cumsum(othersfh[:, ::-1], axis=0),
+                    axis=0,
+                ),
                 label="Other",
                 color="blue",
             )
