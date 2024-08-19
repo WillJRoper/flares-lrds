@@ -86,14 +86,6 @@ ax[0, 0].scatter(
 )
 ax[0, 0].set_xlabel("F200W - F277W")
 ax[0, 0].set_ylabel("F200W - F356W")
-ax[0, 0].text(
-    0.05,
-    0.95,
-    "Red 1 (Kokorev+24)",
-    transform=ax[0, 0].transAxes,
-    fontsize=12,
-    verticalalignment="top",
-)
 ax[0, 0].set_xlim(-1, 2.5)
 ax[0, 0].set_ylim(-1, 4)
 
@@ -118,14 +110,6 @@ ax[0, 1].scatter(
 )
 ax[0, 1].set_xlabel("F277W - F356W")
 ax[0, 1].set_ylabel("F277W - F444W")
-ax[0, 1].text(
-    0.05,
-    0.95,
-    "Red 2 (Kokorev+24)",
-    transform=ax[0, 1].transAxes,
-    fontsize=12,
-    verticalalignment="top",
-)
 ax[0, 1].set_xlim(-2, 2.5)
 ax[0, 1].set_ylim(-1, 4)
 
@@ -147,14 +131,6 @@ ax[1, 0].scatter(
     color="red",
     s=3,
     alpha=0.7,
-)
-ax[1, 0].text(
-    0.05,
-    0.95,
-    "Red 1 (Kokorev+24)",
-    transform=ax[1, 0].transAxes,
-    fontsize=12,
-    verticalalignment="top",
 )
 ax[1, 0].set_xlabel("F200W - F277W")
 ax[1, 0].set_ylabel("F115W - F150W")
