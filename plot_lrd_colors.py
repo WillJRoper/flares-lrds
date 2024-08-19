@@ -57,7 +57,7 @@ lrd_colors = {key: np.array(value)[masks] for key, value in colors.items()}
 lrd_weights = np.array(weights)[masks]
 
 # Define plotting parameters
-gridsize = 50
+gridsize = 100
 extent = (8, 11.5, -2, 3)
 norm = LogNorm(vmin=10**-4.5, vmax=10**0.8)
 
