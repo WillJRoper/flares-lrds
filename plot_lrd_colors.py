@@ -43,7 +43,7 @@ else:
 ) = get_synth_data(data_file, "attenuated", get_weights=True)
 
 # Combine together the different snapshots (we'll plot everything together)
-colors = []
+colors = {}
 weights = []
 masks = []
 for snap in _colors.keys():
