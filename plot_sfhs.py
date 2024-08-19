@@ -199,7 +199,7 @@ for snap in SNAPSHOTS:
 
     # Plot all LRDS with a low alpha
     for sfh in lrdsfh:
-        ax.loglog(xs, sfh, color="red", alpha=0.05)
+        ax.loglog(xs, sfh, color="gray", alpha=0.05)
 
     # Plot the median SFHs
     if np.sum(lrd_okinds) > 0:
