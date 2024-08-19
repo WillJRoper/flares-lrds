@@ -111,6 +111,8 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     if np.sum(mask) < 100:
         return None
 
+    print(bh_mass.shape, bh_pos.shape, bh_mdot.shape)
+
     gal = Galaxy(
         name=f"{reg}_{snap}_{gal_ind}_{group_id}_{subgrp_id}",
         redshift=z,
