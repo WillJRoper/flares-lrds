@@ -133,24 +133,26 @@ for snap in SNAPSHOTS:
         lrdsfh = lrd_sfh[lrd_okinds, :-1] / np.diff(10**grid.log10ages)
         othersfh = other_sfh[other_okinds, :-1] / np.diff(10**grid.log10ages)
 
-        # Convert the SFHs in terms of SFR to sSFR by dividing by the cumalative
-        # mass
-        lrdsfh /= np.cumsum(lrdsfh, axis=1)
-        othersfh /= np.cumsum(othersfh, axis=1)
-
         # Replace nans with zeros
         lrdsfh[np.isnan(lrdsfh)] = 0
         othersfh[np.isnan(othersfh)] = 0
 
         # Plot all LRDS with a low alpha
         for sfh in lrdsfh:
-            ax.loglog(xs, sfh, color="red", alpha=0.05, linestyle="--")
+            ax.loglog(
+                xs[::-1],
+                sfh[::-1] / np.cumsum(sfh[::-1]),
+                color="red",
+                alpha=0.05,
+                linestyle="--",
+            )
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
             ax.loglog(
-                xs,
-                np.median(lrdsfh, axis=0),
+                xs[::-1],
+                np.median(lrdsfh[::-1], axis=0)
+                / np.cumsum(np.median(lrdsfh[::-1], axis=0)),
                 label="LRD",
                 color="red",
             )
@@ -158,8 +160,9 @@ for snap in SNAPSHOTS:
         # Plot the median of the other galaxies
         if np.sum(other_okinds) > 0:
             ax.loglog(
-                xs,
-                np.median(othersfh, axis=0),
+                xs[::-1],
+                np.median(othersfh[::-1], axis=0)
+                / np.cumsum(np.median(othersfh[::-1], axis=0)),
                 label="Other",
                 color="blue",
             )
