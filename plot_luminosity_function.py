@@ -133,6 +133,7 @@ for spec in spectra_keys:
             ax.legend()
 
             fig.savefig(
-                f"plots/luminosity_function_{spec}_{snap}_{filt.replace('/', '')}.png"
+                f"plots/luminosity_function_{spec}_"
+                f"{snap}_{filt.replace('/', '')}.png"
             )
             plt.close(fig)
