@@ -57,7 +57,7 @@ lrd_colors = {key: np.array(value)[masks] for key, value in colors.items()}
 lrd_weights = np.array(weights)[masks]
 
 # Define plotting parameters
-gridsize = 30
+gridsize = 50
 extent = (8, 11.5, -2, 3)
 norm = LogNorm(vmin=10**-4.5, vmax=10**0.8)
 
@@ -107,6 +107,7 @@ ax[0, 1].hexbin(
     mincnt=1,
     norm=norm,
     extent=[-2, 2.5, -1, 4],
+    reduce_C_function=np.sum,
 )
 ax[0, 1].scatter(
     lrd_colors["F277W_F356W"],
@@ -138,6 +139,7 @@ ax[1, 0].hexbin(
     mincnt=1,
     norm=norm,
     extent=[-1, 2.5, -1, 4],
+    reduce_C_function=np.sum,
 )
 ax[1, 0].scatter(
     lrd_colors["F200W_F277W"],
@@ -169,6 +171,7 @@ ax[1, 1].hexbin(
     mincnt=1,
     norm=norm,
     extent=[-2, 2.5, -1, 4],
+    reduce_C_function=np.sum,
 )
 ax[1, 1].scatter(
     lrd_colors["F277W_F356W"],
@@ -192,9 +195,13 @@ ax[1, 1].set_ylim(-1, 4)
 
 # Turn on the grid for each axis
 ax[0, 0].grid(True)
+ax[0, 0].set_axisbelow(True)
 ax[0, 1].grid(True)
+ax[0, 1].set_axisbelow(True)
 ax[1, 0].grid(True)
+ax[1, 0].set_axisbelow(True)
 ax[1, 1].grid(True)
+ax[1, 1].set_axisbelow(True)
 
 # Add a colorbar
 cbar = fig.colorbar(ax[0, 0].collections[0], ax=ax)
