@@ -53,7 +53,7 @@ class FLARESLOSWithAGNTemplateEmission(StellarEmissionModel):
         agn_attenuated = BlackHoleEmissionModel(
             grid=grid,
             label="AGN_attenuated",
-            apply_dust_to=agn_temp_model,
+            apply_dust_to=agn_intrinsic,
             tau_v="tau_v",
             dust_curve=PowerLaw(slope=-1),
         )
