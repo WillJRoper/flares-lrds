@@ -188,7 +188,7 @@ for snap in SNAPSHOTS:
 
     # Labeled axes
     ax3.set_xlabel(r"$\mathrm{Age} / [\mathrm{yr}]$")
-    ax2.set_ylabel(r"$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
+    ax2.set_ylabel(r"$\mathrm{sSFR} / [\mathrm{yr}^{-1}]$")
 
     # Add a legend
     ax3.legend(loc="lower right")
