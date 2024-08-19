@@ -480,7 +480,7 @@ def analyse_galaxy(
     imgs = get_images(
         gal,
         "reprocessed",
-        "agn_intrinsic",
+        "AGN_intrinsic",
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
@@ -491,7 +491,7 @@ def analyse_galaxy(
     imgs = get_images(
         gal,
         "attenuated",
-        "agn_attenuated",
+        "AGN_attenuated",
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
