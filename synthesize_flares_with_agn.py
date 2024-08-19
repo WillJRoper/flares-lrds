@@ -267,8 +267,8 @@ def get_emission_model(
         "old_reprocessed",
         "young_attenuated",
         "old_attenuated",
-        "agn_intrinsic",
-        "agn_attenuated",
+        "AGN_intrinsic",
+        "AGN_attenuated",
     ),
 ):
     """Get a StellarEmissionModel."""
