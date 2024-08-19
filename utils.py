@@ -4,9 +4,15 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from mpi4py import MPI as mpi
+from astropy.cosmology import Planck15 as cosmo
 
 from unyt import unyt_array
 
+from synthesizer.conversions import absolute_mag_to_lnu, lnu_to_fnu
+
+
+# Define the flux limit in F444W (this is an AB magnitude)
+FLUX_LIMIT = 28.3
 
 # Get regions and snapshots
 REGIONS = [str(reg).zfill(2) for reg in range(40)]
@@ -193,6 +199,9 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             indices.setdefault(snap, {})
             compactness.setdefault(snap, [])
 
+            # Get the redshift
+            z = float(snap.split("z")[-1].replace("p", "."))
+
             # Skip files that don't exist
             if not os.path.exists(
                 synth_data_path.replace("<region>", reg).replace(
@@ -205,6 +214,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 print(f"File {missing_path} does not exist.")
                 continue
 
+            # Convert the flux limit to nJy
+            flux_limit = lnu_to_fnu(
+                absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z
+            ).to("nJy")
+
             # Get the fluxes we need
             with h5py.File(
                 synth_data_path.replace("<region>", reg).replace(
@@ -213,46 +227,61 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 "r",
             ) as hdf:
                 try:
-                    inds = hdf["Indices"][...]
-                    f115w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f150w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f200w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f277w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f356w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
+                    # Get f444w fluxes first so we can apply the flux limit
                     f444w = unyt_array(
                         hdf[
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
+                    mask = f444w > flux_limit
+                    if np.sum(mask) == 0:
+                        continue
+
+                    # Apply the mask
+                    f444w = f444w[mask]
+
+                    # Get the indices
+                    inds = hdf["Indices"][mask]
+                    f115w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f150w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f200w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f277w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f356w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f444w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
                     for filt in FILTER_CODES:
                         sizes[snap].setdefault(filt.split(".")[-1], []).extend(
-                            hdf[f"HalfLightRadii/{spec}/{filt}"][...]
+                            hdf[f"HalfLightRadii/{spec}/{filt}"][mask]
                         )
                     comp = (
                         hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][:]
@@ -385,6 +414,9 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             images.setdefault(snap, {})
             compactness.setdefault(snap, [])
 
+            # Get the redshift
+            z = float(snap.split("z")[-1].replace("p", "."))
+
             # Skip files that don't exist
             if not os.path.exists(
                 synth_data_path.replace("<region>", reg).replace(
@@ -397,6 +429,11 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 print(f"File {missing_path} does not exist.")
                 continue
 
+            # Convert the flux limit to nJy
+            flux_limit = lnu_to_fnu(
+                absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z
+            ).to("nJy")
+
             # Get the fluxes we need
             with h5py.File(
                 synth_data_path.replace("<region>", reg).replace(
@@ -405,53 +442,68 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 "r",
             ) as hdf:
                 try:
-                    inds = hdf["Indices"][...]
-                    f115w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f150w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f200w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f277w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f356w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ][...],
-                        "erg/s/cm**2/Hz",
-                    ).to("nJy")
+                    # Get f444w fluxes first so we can apply the flux limit
                     f444w = unyt_array(
                         hdf[
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
+                    mask = f444w > flux_limit
+                    if np.sum(mask) == 0:
+                        continue
+
+                    # Apply the mask
+                    f444w = f444w[mask]
+
+                    # Get the indices
+                    inds = hdf["Indices"][mask]
+                    f115w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f150w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f200w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f277w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f356w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    f444w = unyt_array(
+                        hdf[
+                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                        ][mask],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
                     for filt in FILTER_CODES:
                         sizes[snap].setdefault(filt.split(".")[-1], []).extend(
-                            hdf[f"HalfLightRadii/{spec}/{filt}"][...]
+                            hdf[f"HalfLightRadii/{spec}/{filt}"][mask]
                         )
                         images[snap].setdefault(
                             filt.split(".")[-1], []
-                        ).extend(hdf[f"Images/{spec}/{filt}"][...])
+                        ).extend(hdf[f"Images/{spec}/{filt}"][mask])
                     comp = (
-                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][:]
-                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][:]
+                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][mask]
+                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][mask]
                     )
                 except KeyError as e:
                     print(f"KeyError: {e}")
