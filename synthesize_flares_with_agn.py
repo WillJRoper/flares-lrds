@@ -26,7 +26,8 @@ from synthesizer.kernel_functions import Kernel
 from synthesizer._version import __version__
 from synthesizer.conversions import angular_to_spatial_at_z
 
-from combined_emission_model import FLARESLOSWithAGNTemplateEmission
+from stellar_emission_model import FLARESLOSEmission
+from combined_emission_model import AGNTemplateEmission
 
 # Silence warnings (only because we now what we're doing)
 import warnings
@@ -272,14 +273,15 @@ def get_emission_model(
     ),
 ):
     """Get a StellarEmissionModel."""
-    model = FLARESLOSWithAGNTemplateEmission(
+    model = FLARESLOSEmission(
         grid, agn_template_file, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha
     )
+    agn_model = AGNTemplateEmission(agn_template_file)
 
     # Limit the spectra to be saved
     model.save_spectra(*save_spectra)
 
-    return model
+    return model, agn_model
 
 
 def get_kernel():
@@ -378,6 +380,7 @@ def get_images(
 def analyse_galaxy(
     gal,
     emission_model,
+    agn_model,
     grid,
     kern,
     nthreads,
@@ -423,7 +426,7 @@ def analyse_galaxy(
         nthreads=nthreads,
     )
     gal.black_holes.get_particle_spectra(
-        emission_model,
+        agn_model,
         nthreads=nthreads,
     )
 
@@ -906,7 +909,7 @@ if __name__ == "__main__":
 
     # Get the emission model
     start_emission = time.time()
-    emission_model = get_emission_model(grid)
+    emission_model, agn_model = get_emission_model(grid)
     end_emission = time.time()
     _print(
         f"Getting the emission model took "
@@ -948,6 +951,7 @@ if __name__ == "__main__":
         analyse_galaxy(
             gal,
             emission_model,
+            agn_model,
             grid,
             kern,
             nthreads,
