@@ -190,3 +190,41 @@ for snap in SNAPSHOTS:
 
     # Save the figure
     savefig(fig, f"sfh_{snap}_{args.type}.png")
+
+    # Also make a figure not binned by mass
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(111)
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    # Plot all LRDS with a low alpha
+    for sfh in lrdsfh:
+        ax.loglog(xs, sfh, color="red", alpha=0.05)
+
+    # Plot the median SFHs
+    if np.sum(lrd_okinds) > 0:
+        ax.loglog(
+            xs,
+            np.median(lrdsfh, axis=0),
+            label="LRD",
+            color="red",
+        )
+
+    # Plot the median of the other galaxies
+    if np.sum(other_okinds) > 0:
+        ax.loglog(
+            xs,
+            np.median(othersfh, axis=0),
+            label="Other",
+            color="blue",
+        )
+
+    # Labeled axes
+    ax.set_xlabel(r"$\mathrm{Age} / [\mathrm{yr}]$")
+    ax.set_ylabel(r"$\mathrm{SFR} / [M_\odot/\mathrm{yr}]$")
+
+    # Add a legend
+    ax.legend(loc="lower right")
+
+    # Save the figure
+    savefig(fig, f"sfh_{snap}_{args.type}_single_panel.png")
