@@ -107,8 +107,8 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # Define a mask to get a 30 kpc aperture
     mask = radii < 30 * kpc
 
-    # Early exist if there are fewer than 100 baryons
-    if np.sum(mask) < 100:
+    # Early exist if there are fewer than 100 baryons or 0 black holes
+    if np.sum(mask) < 100 or bh_mass.size == 0:
         return None
 
     gal = Galaxy(
@@ -141,9 +141,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             coordinates=bh_pos,
             redshift=z,
             centre=centre,
-        )
-        if len(bh_mass) > 0
-        else BlackHoles([], [], []),
+        ),
     )
 
     # Calculate the DTM, we'll need it later
