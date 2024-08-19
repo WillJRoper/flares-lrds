@@ -138,9 +138,13 @@ for snap in SNAPSHOTS:
         lrdsfh /= np.cumsum(lrdsfh, axis=1)
         othersfh /= np.cumsum(othersfh, axis=1)
 
+        # Replace nans with zeros
+        lrdsfh[np.isnan(lrdsfh)] = 0
+        othersfh[np.isnan(othersfh)] = 0
+
         # Plot all LRDS with a low alpha
         for sfh in lrdsfh:
-            ax.loglog(xs, sfh, color="red", alpha=0.05)
+            ax.loglog(xs, sfh, color="red", alpha=0.05, linestyle="--")
 
         # Plot the median SFHs
         if np.sum(lrd_okinds) > 0:
