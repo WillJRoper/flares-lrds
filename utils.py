@@ -946,6 +946,8 @@ def combine_distributed_data(distributed_data):
     # Setup output, if we have a list of lists we only need to combine them,
     # otherwise we need to recusively combine the data in dicts
     if isinstance(distributed_data[0], list):
+        # Just check for empty lists and remove them
+        distributed_data = [d for d in distributed_data if len(d) > 0]
         return np.concatenate(distributed_data)
 
     # Ok, we need to initialise the output dict
