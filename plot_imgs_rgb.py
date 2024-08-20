@@ -18,7 +18,7 @@ parser.add_argument(
     default="stellar",
     help="The type of data to plot.",
 )
-partser.add_argument(
+parser.add_argument(
     "--master",
     type=str,
     default="/cosma7/data/dp004/dc-payy1/my_files//flares_pipeline/data/flares.hdf5",
