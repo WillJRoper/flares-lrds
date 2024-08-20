@@ -107,8 +107,8 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     # Define a mask to get a 30 kpc aperture
     mask = radii < 30 * kpc
 
-    # Early exist if there are fewer than 100 baryons or 0 black holes
-    if np.sum(mask) < 100 or bh_mass.size == 0:
+    # Early exist if there are fewer than 100 stars
+    if np.sum(mask) < 100:
         return None
 
     gal = Galaxy(
