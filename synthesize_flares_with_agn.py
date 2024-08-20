@@ -543,7 +543,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)of
+            fnus.setdefault(key, []).append(spec._fnu)
         for key, spec in gal.black_holes.spectra.items():
             fnus.setdefault(key, []).append(spec._fnu)
 
