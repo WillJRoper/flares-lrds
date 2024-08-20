@@ -124,4 +124,4 @@ for snap in images:
         # )
         # ax.add_artist(aperture2)
 
-        savefig(fig, f"images/rgb_{args.type}_{snap}_{i}")
+        savefig(fig, f"images/{args.type}/rgb_{args.type}_{snap}_{i}")
