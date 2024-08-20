@@ -1040,6 +1040,8 @@ def combine_distributed_data(distributed_data):
     if isinstance(distributed_data[0], list):
         # Just check for empty lists and remove them
         distributed_data = [d for d in distributed_data if len(d) > 0]
+        if len(distributed_data) == 0:
+            return np.array([])
         return np.concatenate(distributed_data)
 
     # Ok, we need to initialise the output dict
