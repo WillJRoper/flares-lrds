@@ -54,6 +54,7 @@ blue = [(0.5, "F115W"), (0.5, "F150W")]
 for snap in images:
     for filt in images[snap]:
         images[snap][filt] = images[snap][filt][masks[snap], :, :]
+        indices[snap] = indices[snap][masks[snap]]
 
 # Loop over regions
 for snap in images:
@@ -124,4 +125,7 @@ for snap in images:
         # )
         # ax.add_artist(aperture2)
 
-        savefig(fig, f"images/{args.type}/rgb_{args.type}_{snap}_{i}")
+        savefig(
+            fig,
+            f"images/{args.type}/rgb_{args.type}_{snap}_{indices[snap][i]}",
+        )
