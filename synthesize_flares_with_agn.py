@@ -505,6 +505,7 @@ def analyse_galaxy(
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
     # Loop over galaxies and unpacking all the data we'll write out
+    gal_ids = []
     fluxes = {}
     fnus = {}
     uv_slopes = {}
@@ -529,6 +530,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         indices.append(int(gal.name.split("_")[3]))
         group_ids.append(int(gal.name.split("_")[4]))
         subgroup_ids.append(int(gal.name.split("_")[5]))
+        gal_ids.append(gal.name)
 
         # Unpack the gas size information
         gas_sizes.append(gal.gas.half_mass_radius)
@@ -619,6 +621,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     flux_per_rank = comm.gather(fluxes, root=0)
     group_per_rank = comm.gather(group_ids, root=0)
     subgroup_per_rank = comm.gather(subgroup_ids, root=0)
+    gal_ids_per_rank = comm.gather(gal_ids, root=0)
     index_per_rank = comm.gather(indices, root=0)
     uv_slope_per_rank = comm.gather(uv_slopes, root=0)
     ir_slope_per_rank = comm.gather(ir_slopes, root=0)
@@ -645,6 +648,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     fluxes = combine_distributed_data(flux_per_rank)
     group_ids = combine_distributed_data(group_per_rank)
     subgroup_ids = combine_distributed_data(subgroup_per_rank)
+    gal_ids = combine_distributed_data(gal_ids_per_rank)
     indices = combine_distributed_data(index_per_rank)
     uv_slopes = combine_distributed_data(uv_slope_per_rank)
     ir_slopes = combine_distributed_data(ir_slope_per_rank)
@@ -690,6 +694,11 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             hdf,
             sort_data_recursive(subgroup_ids, sort_indices),
             "SubGroupNumber",
+        )
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(gal_ids, sort_indices),
+            "GalaxyID",
         )
 
         # Write the integrated observed spectra
