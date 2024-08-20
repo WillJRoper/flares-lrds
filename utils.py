@@ -152,6 +152,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     # Define containers for the data
     fluxes = {}
     sizes = {}
+    indices_by_region = {}
     indices = {}
     compactness = {}
 
@@ -196,7 +197,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             # Ensure a key exists for this snapshot
             fluxes.setdefault(snap, {})
             sizes.setdefault(snap, {})
-            indices.setdefault(snap, {})
+            indices_by_region.setdefault(snap, {})
             compactness.setdefault(snap, [])
 
             # Get the redshift
@@ -305,7 +306,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 fluxes[snap].setdefault("F277W", []).extend(f277w)
                 fluxes[snap].setdefault("F356W", []).extend(f356w)
                 fluxes[snap].setdefault("F444W", []).extend(f444w)
-                indices[snap].setdefault(reg, []).extend(inds)
+                indices_by_region[snap].setdefault(reg, []).extend(inds)
                 compactness[snap].extend(comp)
 
     # Convert the data to arrays
@@ -315,12 +316,12 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             sizes[snap][key] = np.array(sizes[snap][key])
             compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
-                if reg in indices[snap]:
-                    indices[snap][reg] = np.array(
-                        indices[snap][reg], dtype=int
+                if reg in indices_by_region[snap]:
+                    indices_by_region[snap][reg] = np.array(
+                        indices_by_region[snap][reg], dtype=int
                     )
                 else:
-                    indices[snap][reg] = np.array([], dtype=int)
+                    indices_by_region[snap][reg] = np.array([], dtype=int)
 
     # Compute the colors
     colors = {}
@@ -376,9 +377,18 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             weights[snap] = np.array(weights[snap])
 
     if get_weights:
-        return fluxes, colors, red1, red2, sizes, masks, indices, weights
+        return (
+            fluxes,
+            colors,
+            red1,
+            red2,
+            sizes,
+            masks,
+            indices_by_region,
+            weights,
+        )
     else:
-        return fluxes, colors, red1, red2, sizes, masks, indices
+        return fluxes, colors, red1, red2, sizes, masks, indices_by_region
 
 
 def get_synth_data_with_imgs(synth_data_path, spec):
@@ -399,7 +409,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     # Define containers for the data
     fluxes = {}
     sizes = {}
-    indices = {}
+    indices_by_region = {}
     images = {}
     compactness = {}
 
@@ -410,7 +420,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             # Ensure a key exists for this snapshot
             fluxes.setdefault(snap, {})
             sizes.setdefault(snap, {})
-            indices.setdefault(snap, {})
+            indices_by_region.setdefault(snap, {})
             images.setdefault(snap, {})
             compactness.setdefault(snap, [])
 
@@ -522,7 +532,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 fluxes[snap].setdefault("F277W", []).extend(f277w)
                 fluxes[snap].setdefault("F356W", []).extend(f356w)
                 fluxes[snap].setdefault("F444W", []).extend(f444w)
-                indices[snap].setdefault(reg, []).extend(inds)
+                indices_by_region[snap].setdefault(reg, []).extend(inds)
                 compactness[snap].extend(comp)
 
     # Convert the data to arrays
@@ -532,12 +542,12 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             sizes[snap][key] = np.array(sizes[snap][key])
             compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
-                if reg in indices[snap]:
-                    indices[snap][reg] = np.array(
-                        indices[snap][reg], dtype=int
+                if reg in indices_by_region[snap]:
+                    indices_by_region[snap][reg] = np.array(
+                        indices_by_region[snap][reg], dtype=int
                     )
                 else:
-                    indices[snap][reg] = np.array([], dtype=int)
+                    indices_by_region[snap][reg] = np.array([], dtype=int)
         for filt in images[snap].keys():
             images[snap][filt] = np.array(images[snap][filt])
 
@@ -591,7 +601,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
         )
         masks[snap] = mask
 
-    return fluxes, colors, red1, red2, sizes, masks, indices, images
+    return fluxes, colors, red1, red2, sizes, masks, indices_by_region, images
 
 
 def get_master_data(master_file_path, indices, key, get_weights=False):
