@@ -697,7 +697,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         )
         write_dataset_recursive(
             hdf,
-            sort_data_recursive(gal_ids, sort_indices),
+            [
+                s.encode("utf-8")
+                for s in sort_data_recursive(gal_ids, sort_indices)
+            ],
             "GalaxyID",
         )
 
