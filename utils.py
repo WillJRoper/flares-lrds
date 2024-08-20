@@ -727,6 +727,36 @@ def get_masked_synth_data(synth_path, key, masks=None):
     return data
 
 
+def get_galaxy_identifiers(master_file_path, indices):
+    # Create dict to store galaxy identifiers
+    gal_ids = {}
+
+    # Open the file
+    with h5py.File(master_file_path, "r") as hdf:
+        # Loop over regions
+        for reg in REGIONS:
+            # Loop over snapshots
+            for snap in SNAPSHOTS:
+                # Ensure a key exists for this snapshot
+                gal_ids.setdefault(snap, [])
+
+                grp_nums = hdf[f"{reg}/{snap}/Galaxy/GroupNumber"][
+                    indices[snap][reg]
+                ]
+                subgrp_nums = hdf[f"{reg}/{snap}/Galaxy/SubGroupNumber"][
+                    indices[snap][reg]
+                ]
+                regs = np.full_like(grp_nums, int(reg))
+
+                gal_ids[snap].extend(list(zip(regs, grp_nums, subgrp_nums)))
+
+    # Convert the galaxy identifiers to an array
+    for snap in gal_ids.keys():
+        gal_ids[snap] = np.array(gal_ids[snap])
+
+    return gal_ids
+
+
 def plot_masked_unmasked_hexbins(
     xs,
     ys,

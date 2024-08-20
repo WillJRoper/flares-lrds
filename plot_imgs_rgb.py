@@ -8,7 +8,7 @@ from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import angular_to_spatial_at_z
 
-from utils import get_synth_data_with_imgs, savefig
+from utils import get_synth_data_with_imgs, savefig, get_galaxy_indentifier
 
 # Define the parser
 parser = argparse.ArgumentParser(description="Plot images of galaxies.")
@@ -17,6 +17,12 @@ parser.add_argument(
     type=str,
     default="stellar",
     help="The type of data to plot.",
+)
+partser.add_argument(
+    "--master",
+    type=str,
+    default="/cosma7/data/dp004/dc-payy1/my_files//flares_pipeline/data/flares.hdf5",
+    help="The master data file.",
 )
 
 # Parse the arguments
@@ -42,10 +48,13 @@ else:
     images,
 ) = get_synth_data_with_imgs(data_file, "attenuated")
 
+# Get the galaxy ids for labelling
+gal_ids = get_galaxy_indentifier(args.master, indices)
+
 # How many filters do we have?
 nfilt = len(images["010_z005p000"].keys())
 
-# Define the ROGB filters
+# Define the RGB filters
 red = [(0.5, "F444W"), (0.5, "F356W")]
 green = [(0.5, "F200W"), (0.5, "F277W")]
 blue = [(0.5, "F115W"), (0.5, "F150W")]
@@ -54,7 +63,6 @@ blue = [(0.5, "F115W"), (0.5, "F150W")]
 for snap in images:
     for filt in images[snap]:
         images[snap][filt] = images[snap][filt][masks[snap], :, :]
-        indices[snap] = indices[snap][masks[snap]]
 
 # Loop over regions
 for snap in images:
@@ -127,5 +135,5 @@ for snap in images:
 
         savefig(
             fig,
-            f"images/{args.type}/rgb_{args.type}_{snap}_{indices[snap][i]}",
+            f"images/{args.type}/rgb_{args.type}_{snap}_{gal_ids[snap][i]}",
         )
