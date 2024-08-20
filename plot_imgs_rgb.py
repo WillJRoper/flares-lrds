@@ -8,7 +8,7 @@ from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import angular_to_spatial_at_z
 
-from utils import get_synth_data_with_imgs, savefig, get_galaxy_indentifier
+from utils import get_synth_data_with_imgs, savefig, get_galaxy_indentifiers
 
 # Define the parser
 parser = argparse.ArgumentParser(description="Plot images of galaxies.")
@@ -49,7 +49,7 @@ else:
 ) = get_synth_data_with_imgs(data_file, "attenuated")
 
 # Get the galaxy ids for labelling
-gal_ids = get_galaxy_indentifier(args.master, indices)
+gal_ids = get_galaxy_indentifiers(args.master, indices)
 
 # How many filters do we have?
 nfilt = len(images["010_z005p000"].keys())
