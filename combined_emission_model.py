@@ -212,6 +212,7 @@ class FLARESLOSCombinedEmission(GalaxyEmissionModel):
         young_escaped = EscapedEmission(
             grid,
             fesc=fesc,
+            label="young_escaped",
             mask_attr="ages",
             mask_op="<",
             mask_thresh=10 * Myr,
@@ -219,6 +220,7 @@ class FLARESLOSCombinedEmission(GalaxyEmissionModel):
         old_escaped = EscapedEmission(
             grid,
             fesc=fesc,
+            label="old_escaped",
             mask_attr="ages",
             mask_op=">=",
             mask_thresh=10 * Myr,
