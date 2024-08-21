@@ -4,6 +4,7 @@ from unyt import Myr, arcsecond, nm, erg, s, Hz
 
 from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.emission_models import (
+    EmissionModel,
     StellarEmissionModel,
     BlackHoleEmissionModel,
     TemplateEmission,
@@ -62,7 +63,7 @@ class AGNTemplateEmission(BlackHoleEmissionModel):
         )
 
 
-class FLARESLOSCombinedEmission(GalaxyEmissionModel):
+class FLARESLOSCombinedEmission(EmissionModel):
     """
     The combined emission model used for in FLARES.
 
@@ -306,12 +307,13 @@ class FLARESLOSCombinedEmission(GalaxyEmissionModel):
         )
 
         # Make the combined total
-        GalaxyEmissionModel.__init__(
+        EmissionModel.__init__(
             self,
             grid=grid,
             label="total",
             combine=(agn_attenuated, total_stellar),
             related_models=[gal_intrinsic],
+            emitter="galaxy",
         )
 
         self.set_per_particle(True)
