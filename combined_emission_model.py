@@ -288,12 +288,12 @@ class FLARESLOSCombinedEmission(EmissionModel):
         agn_intrinsic = TemplateEmission(
             temp,
             emitter="blackhole",
-            label="AGN_intrinsic",
+            label="agn_intrinsic",
         )
 
         # Define the attenuated AGN model
         agn_attenuated = BlackHoleEmissionModel(
-            label="AGN_attenuated",
+            label="agn_attenuated",
             apply_dust_to=agn_intrinsic,
             tau_v="tau_v",
             dust_curve=PowerLaw(slope=-1),
