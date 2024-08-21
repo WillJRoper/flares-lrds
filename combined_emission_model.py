@@ -259,7 +259,7 @@ class FLARESLOSCombinedEmission(GalaxyEmissionModel):
         # Finaly, combine to get the emergent emission
         total_stellar = StellarEmissionModel(
             grid=grid,
-            label="total",
+            label="stellar_total",
             combine=[escaped, attenuated],
             related_models=[
                 incident,
