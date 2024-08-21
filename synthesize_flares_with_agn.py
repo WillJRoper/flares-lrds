@@ -26,8 +26,7 @@ from synthesizer.kernel_functions import Kernel
 from synthesizer._version import __version__
 from synthesizer.conversions import angular_to_spatial_at_z
 
-from stellar_emission_model import FLARESLOSEmission
-from combined_emission_model import AGNTemplateEmission
+from combined_emission_model import FLARESLOSCombinedEmission
 
 # Silence warnings (only because we now what we're doing)
 import warnings
@@ -268,16 +267,24 @@ def get_emission_model(
         "old_reprocessed",
         "young_attenuated",
         "old_attenuated",
+        "agn_intrinsic",
+        "agn_attenuated",
+        "combined_intrinsic",
+        "total",
     ),
 ):
     """Get a StellarEmissionModel."""
-    model = FLARESLOSEmission(grid, fesc=fesc, fesc_ly_alpha=fesc_ly_alpha)
-    agn_model = AGNTemplateEmission(agn_template_file, grid)
+    model = FLARESLOSCombinedEmission(
+        agn_template_file,
+        grid,
+        fesc=fesc,
+        fesc_ly_alpha=fesc_ly_alpha,
+    )
 
     # Limit the spectra to be saved
     model.save_spectra(*save_spectra)
 
-    return model, agn_model
+    return model
 
 
 def get_kernel():
@@ -376,7 +383,6 @@ def get_images(
 def analyse_galaxy(
     gal,
     emission_model,
-    agn_model,
     grid,
     kern,
     nthreads,
@@ -417,17 +423,10 @@ def analyse_galaxy(
         gal.stars.get_sfzh(grid, nthreads=nthreads)
 
     # Get the spectra
-    gal.stars.get_particle_spectra(
+    gal.get_spectra(
         emission_model,
         nthreads=nthreads,
     )
-    gal.black_holes.get_particle_spectra(
-        agn_model,
-        nthreads=nthreads,
-    )
-
-    # Get the integrated spectra
-    gal.integrate_particle_spectra()
 
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
@@ -546,6 +545,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fnus.setdefault(key, []).append(spec._fnu)
         for key, spec in gal.black_holes.spectra.items():
             fnus.setdefault(key, []).append(spec._fnu)
+        for key, spec in gal.spectra.items():
+            fnus.setdefault(key, []).append(spec._fnu)
 
         # Get the images
         for spec in ["reprocessed", "attenuated"]:
@@ -557,6 +558,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
+            fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                fluxes[key].setdefault(filt, []).append(phot)
+        for key, photcol in gal.black_holes.photo_fluxes.items():
+            fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                fluxes[key].setdefault(filt, []).append(phot)
+        for key, photcol in gal.photo_fluxes.items():
             fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
                 fluxes[key].setdefault(filt, []).append(phot)
@@ -919,7 +928,7 @@ if __name__ == "__main__":
 
     # Get the emission model
     start_emission = time.time()
-    emission_model, agn_model = get_emission_model(grid)
+    emission_model = get_emission_model(grid)
     end_emission = time.time()
     _print(
         f"Getting the emission model took "
@@ -961,7 +970,6 @@ if __name__ == "__main__":
         analyse_galaxy(
             gal,
             emission_model,
-            agn_model,
             grid,
             kern,
             nthreads,
