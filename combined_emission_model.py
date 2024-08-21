@@ -292,7 +292,6 @@ class FLARESLOSCombinedEmission(GalaxyEmissionModel):
 
         # Define the attenuated AGN model
         agn_attenuated = BlackHoleEmissionModel(
-            self,
             label="AGN_attenuated",
             apply_dust_to=agn_intrinsic,
             tau_v="tau_v",
