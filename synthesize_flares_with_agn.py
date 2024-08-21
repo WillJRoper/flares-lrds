@@ -479,24 +479,63 @@ def analyse_galaxy(
     imgs = get_images(
         gal,
         "reprocessed",
-        "AGN_intrinsic",
+        "agn_intrinsic",
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
         cosmo=cosmo,
     )
     gal.flux_imgs["reprocessed"] = imgs
-
+    imgs = get_images(
+        gal,
+        None,
+        "agn_intrinsic",
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.flux_imgs["agn_reprocessed"] = imgs
+    imgs = get_images(
+        gal,
+        "reprocessed",
+        None,
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.flux_imgs["stellar_reprocessed"] = imgs
     imgs = get_images(
         gal,
         "attenuated",
-        "AGN_attenuated",
+        "agn_attenuated",
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
         cosmo=cosmo,
     )
     gal.flux_imgs["attenuated"] = imgs
+    imgs = get_images(
+        gal,
+        None,
+        "agn_attenuated",
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.flux_imgs["agn_attenuated"] = imgs
+    imgs = get_images(
+        gal,
+        "attenuated",
+        None,
+        kernel=kern.get_kernel(),
+        nthreads=nthreads,
+        psfs=psfs,
+        cosmo=cosmo,
+    )
+    gal.flux_imgs["stellar_attenuated"] = imgs
 
     return gal
 
@@ -549,7 +588,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fnus.setdefault(key, []).append(spec._fnu)
 
         # Get the images
-        for spec in ["reprocessed", "attenuated"]:
+        for spec in [
+            "reprocessed",
+            "attenuated",
+            "agn_reprocessed",
+            "stellar_reprocessed",
+            "agn_attenuated",
+            "stellar_attenuated",
+        ]:
             imgs.setdefault(spec, {})
             for key in FILTER_CODES:
                 imgs[spec].setdefault(key, []).append(
@@ -604,7 +650,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Attach apertures from images
         for app in ["0p2", "0p4"]:
             apps.setdefault(app, {})
-            for spec in ["reprocessed", "attenuated"]:
+            for spec in [
+                "reprocessed",
+                "attenuated",
+                "agn_reprocessed",
+                "stellar_reprocessed",
+                "agn_attenuated",
+                "stellar_attenuated",
+            ]:
                 apps[app].setdefault(spec, {})
                 for filt in FILTER_CODES:
                     apps[app][spec].setdefault(filt, []).append(
@@ -612,7 +665,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                     )
 
         # Get the fluxes from the images
-        for spec in ["reprocessed", "attenuated"]:
+        for spec in [
+            "reprocessed",
+            "attenuated",
+            "agn_reprocessed",
+            "stellar_reprocessed",
+            "agn_attenuated",
+            "stellar_attenuated",
+        ]:
             img_fluxes.setdefault(spec, {})
             for filt in FILTER_CODES:
                 img_fluxes[spec].setdefault(filt, []).append(
@@ -624,6 +684,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         imgs["attenuated"] = {}
     if "reprocessed" not in imgs:
         imgs["reprocessed"] = {}
+    if "agn_reprocessed" not in imgs:
+        imgs["agn_reprocessed"] = {}
+    if "stellar_reprocessed" not in imgs:
+        imgs["stellar_reprocessed"] = {}
+    if "agn_attenuated" not in imgs:
+        imgs["agn_attenuated"] = {}
+    if "stellar_attenuated" not in imgs:
+        imgs["stellar_attenuated"] = {}
 
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
@@ -645,6 +713,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
     imgs_att_per_rank = comm.gather(imgs["attenuated"], root=0)
     imgs_rep_per_rank = comm.gather(imgs["reprocessed"], root=0)
+    imgs_agn_rep_per_rank = comm.gather(imgs["agn_reprocessed"], root=0)
+    imgs_stellar_rep_per_rank = comm.gather(
+        imgs["stellar_reprocessed"], root=0
+    )
+    imgs_agn_att_per_rank = comm.gather(imgs["agn_attenuated"], root=0)
+    imgs_stellar_att_per_rank = comm.gather(imgs["stellar_attenuated"], root=0)
     apps_per_rank = comm.gather(apps, root=0)
     img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
 
@@ -673,6 +747,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     imgs = {}
     imgs["attenuated"] = combine_distributed_data(imgs_att_per_rank)
     imgs["reprocessed"] = combine_distributed_data(imgs_rep_per_rank)
+    imgs["agn_reprocessed"] = combine_distributed_data(imgs_agn_rep_per_rank)
+    imgs["stellar_reprocessed"] = combine_distributed_data(
+        imgs_stellar_rep_per_rank
+    )
+    imgs["agn_attenuated"] = combine_distributed_data(imgs_agn_att_per_rank)
+    imgs["stellar_attenuated"] = combine_distributed_data(
+        imgs_stellar_att_per_rank
+    )
     apps = combine_distributed_data(apps_per_rank)
     img_fluxes = combine_distributed_data(img_fluxes_per_rank)
 
