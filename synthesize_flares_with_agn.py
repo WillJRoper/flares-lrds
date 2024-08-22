@@ -27,6 +27,7 @@ from synthesizer._version import __version__
 from synthesizer.conversions import angular_to_spatial_at_z
 
 from combined_emission_model import FLARESLOSCombinedEmission
+from utils import savefig
 
 # Silence warnings (only because we now what we're doing)
 import warnings
@@ -430,6 +431,16 @@ def analyse_galaxy(
 
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
+
+    # Plot the spectra for this galaxy
+    fig, ax = gal.plot_observed_spectra(
+        combined_spectra=True,
+        stellar_spectra=["reprocessed", "attenuated"],
+        black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
+        show=False,
+        filters=filters,
+    )
+    savefig(fig, f"plots/spectra/{gal.name}_spectra")
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
