@@ -462,7 +462,7 @@ def analyse_galaxy(
         fontsize=10,
     )
 
-    savefig(fig, f"plots/spectra/{gal.name}_all_spectra")
+    savefig(fig, f"spectra/{gal.name}_all_spectra")
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
