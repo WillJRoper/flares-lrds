@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc
+from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, g, s
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from utils import (
@@ -98,10 +98,10 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         bh_mass = part_grp["BH_Mass"][start_bh:end_bh] * Msun * 10**10
         bh_mdot = (
             part_grp["BH_Mdot"][start_bh:end_bh]
-            / (6.445909132449984 * 10**23)
-            * Msun
-            / yr
-        )
+            * (6.445909132449984 * 10**23)
+            * g
+            / s
+        ).to(Msun / yr)
         print(bh_mdot)
 
         # Get the centre of potential
