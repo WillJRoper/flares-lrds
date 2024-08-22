@@ -34,6 +34,9 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+# Msun needs to be respected
+Msun = Msun.in_base("galactic")
+
 
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
     """
