@@ -438,7 +438,6 @@ def analyse_galaxy(
         stellar_spectra=["reprocessed", "attenuated"],
         black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
         show=False,
-        filters=filters,
     )
     savefig(fig, f"plots/spectra/{gal.name}_spectra")
 
