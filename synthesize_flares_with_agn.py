@@ -447,12 +447,36 @@ def analyse_galaxy(
         0.5,
         r"$N_\star = "
         f"{gal.stars.nstars}$\n"
-        f"N_\mathrm{{BH}} = {gal.black_holes.nbh}$",
+        r"$N_\mathrm{{BH}} = "
+        f"{gal.black_holes.nbh}$",
         transform=ax.transAxes,
         fontsize=10,
     )
 
-    savefig(fig, f"plots/spectra/{gal.name}_spectra")
+    savefig(fig, f"plots/spectra/{gal.name}_all_spectra")
+
+    # Plot the spectra for this galaxy
+    fig, ax = gal.plot_observed_spectra(
+        combined_spectra=None,
+        stellar_spectra=None,
+        black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
+        show=False,
+    )
+
+    # Include particle counts on the right hand side of the plot (outside
+    # the axis)
+    ax.text(
+        1.25,
+        0.5,
+        r"$N_\star = "
+        f"{gal.stars.nstars}$\n"
+        r"$N_\mathrm{{BH}} = "
+        f"{gal.black_holes.nbh}$",
+        transform=ax.transAxes,
+        fontsize=10,
+    )
+
+    savefig(fig, f"plots/spectra/{gal.name}_bh_spectra")
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
