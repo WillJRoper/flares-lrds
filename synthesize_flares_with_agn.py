@@ -102,7 +102,6 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             * Msun
             / yr
         )
-        print(bh_mdot)
 
         # Get the centre of potential
         centre = gal_grp["COP"][:].T[gal_ind, :] / (1 + z) * Mpc
