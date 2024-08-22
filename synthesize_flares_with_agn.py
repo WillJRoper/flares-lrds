@@ -93,13 +93,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             part_grp["BH_Coordinates"][:, start_bh:end_bh].T / (1 + z) * Mpc
         )
         bh_mass = part_grp["BH_Mass"][start_bh:end_bh] * Msun * 10**10
-        bh_mdot = (
-            part_grp["BH_Mdot"][start_bh:end_bh]
-            * 0.6777
-            * Msun
-            * 10**10
-            / yr
-        )
+        bh_mdot = part_grp["BH_Mdot"][start_bh:end_bh] * 0.6777 * Msun / yr
 
         # Get the centre of potential
         centre = gal_grp["COP"][:].T[gal_ind, :] / (1 + z) * Mpc
