@@ -438,6 +438,8 @@ def analyse_galaxy(
         stellar_spectra=["reprocessed", "attenuated"],
         black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
         show=False,
+        xlimits=(10**4, 10**7),
+        ylimits=(10**0, 10**7),
     )
 
     # Include particle counts on the right hand side of the plot (outside
@@ -461,6 +463,8 @@ def analyse_galaxy(
         stellar_spectra=None,
         black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
         show=False,
+        xlimits=(10**4, 10**7),
+        ylimits=(10**0, 10**7),
     )
 
     # Include particle counts on the right hand side of the plot (outside
