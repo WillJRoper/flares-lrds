@@ -439,6 +439,19 @@ def analyse_galaxy(
         black_hole_spectra=["agn_intrinsic", "agn_attenuated"],
         show=False,
     )
+
+    # Include particle counts in a corner of the plot
+    ax.text(
+        0.05,
+        0.95,
+        r"$N_\star = "
+        f"{gal.stars.nstars}$\n"
+        f"N_\mathrm{{BH}} = {gal.black_holes.nbh}$",
+        transform=ax.transAxes,
+        fontsize=10,
+        verticalalignment="top",
+    )
+
     savefig(fig, f"plots/spectra/{gal.name}_spectra")
 
     # Get the photometry
