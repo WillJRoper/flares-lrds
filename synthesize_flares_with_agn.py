@@ -427,8 +427,6 @@ def analyse_galaxy(
             force_loop=False,
             nthreads=nthreads,
         )
-    print("Stellar tau_v:", np.mean(gal.stars.tau_v))
-    print("Black hole tau_v:", np.mean(gal.black_holes.tau_v))
 
     # Get the SFZH
     if gal.stars.sfzh is None:
