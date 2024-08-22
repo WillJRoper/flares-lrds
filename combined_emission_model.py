@@ -1,6 +1,6 @@
 """A script defining the pure stellar emission model used for LRDs in FLARES."""
 import numpy as np
-from unyt import Myr, arcsecond, nm, erg, s, Hz
+from unyt import Myr, arcsecond, angstrom, erg, s, Hz
 
 from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.emission_models import (
@@ -279,7 +279,7 @@ class FLARESLOSCombinedEmission(EmissionModel):
 
         # Create the Template
         temp = Template(
-            lam=agn_template[:, 0] * 0.1 * nm,
+            lam=agn_template[:, 0] * angstrom,
             lnu=agn_template[:, 1] * erg / s / Hz,
             unify_with_grid=grid,
         )
