@@ -138,7 +138,7 @@ for snap in stellar_att_spectra:
         fig, ax = plot_observed_spectra(
             spec,
             show=False,
-            redshfit=z,
+            redshift=z,
         )
 
         savefig(
