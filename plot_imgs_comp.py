@@ -77,7 +77,7 @@ for snap in images:
             masks[snap], :, :
         ]
         agn_images[snap][filt] = agn_images[snap][filt][masks[snap], :, :]
-        gal_ids = gal_ids[snap][masks[snap]]
+    gal_ids[snap] = gal_ids[snap][masks[snap]]
 
 # Loop over regions
 for snap in images:

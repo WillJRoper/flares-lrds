@@ -58,6 +58,7 @@ blue = [(0.5, "F115W"), (0.5, "F150W")]
 for snap in images:
     for filt in images[snap]:
         images[snap][filt] = images[snap][filt][masks[snap], :, :]
+    gal_ids[snap] = gal_ids[snap][masks[snap]]
 
 # Count the total number of LRDs
 n_lrd = 0
