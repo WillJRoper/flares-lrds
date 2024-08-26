@@ -51,7 +51,7 @@ master_file = (
 flux_bins = np.logspace(-3, 1, 30)
 
 # Define mass bins
-mass_bins = np.logspace(8 / 10, 12 / 10, 30)
+mass_bins = np.logspace(8, 12, 30)
 
 # Get the masses from the master file
 masses = get_master_data(master_file, indices, "Mstar_aperture/30")
@@ -71,6 +71,8 @@ for snap in images:
     mass = masses[snap]
     stellar_mass = stellar_masses[snap]
     agn_mass = agn_masses[snap]
+    print(flux)
+    print(mass)
 
     # Count the LRDs
     lrd_counts = np.zeros((len(flux_bins) - 1, len(mass_bins) - 1))
