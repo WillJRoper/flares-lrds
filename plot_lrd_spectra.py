@@ -133,7 +133,7 @@ for snap in stellar_att_spectra:
         seds[-1]["agn_reprocessed"].obslam = grid.lam * (1 + z)
 
     # Loop over spectra plotting them
-    for spec in seds:
+    for i, spec in enumerate(seds):
         fig, ax = plot_observed_spectra(
             spec,
             show=False,
