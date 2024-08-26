@@ -11,7 +11,7 @@ from utils import (
     FLUX_LIMIT,
 )
 
-from synthesizer.conversion import absolute_mag_to_lnu, lnu_to_fnu
+from synthesizer.conversions import absolute_mag_to_lnu, lnu_to_fnu
 
 # Define the data file
 data_file = "data/combined_<region>_<snap>.hdf5"
