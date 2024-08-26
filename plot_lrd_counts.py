@@ -102,7 +102,7 @@ for snap in images:
             stellar_lrd_counts[i, j] = np.sum(stellar_mask)
             agn_lrd_counts[i, j] = np.sum(agn_mask)
 
-    print(np.max((lrd_counts, stellar_lrd_counts, agn_lrd_counts))
+    print(np.max((lrd_counts, stellar_lrd_counts, agn_lrd_counts)))
 
     # Create a global norm
     norm = mcolors.LogNorm(
