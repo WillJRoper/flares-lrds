@@ -121,8 +121,6 @@ for snap in images:
             stellar_lrd_counts[i, j] = np.sum(stellar_mask)
             agn_lrd_counts[i, j] = np.sum(agn_mask)
 
-    print(np.max((lrd_counts, stellar_lrd_counts, agn_lrd_counts)))
-
     # Create a global norm
     norm = mcolors.LogNorm(
         vmin=1, vmax=np.max((lrd_counts, stellar_lrd_counts, agn_lrd_counts))
@@ -185,6 +183,6 @@ for snap in images:
 
     # Add the colorbar
     cbar = fig.colorbar(im3, cax=cax)
-    cbar.set_label(r"$N_{\\rm LRD}$")
+    cbar.set_label(r"$N_\mathrm{LRD}$")
 
     savefig(fig, f"LRD_counts/lrd_counts_2D_{snap}.pdf")
