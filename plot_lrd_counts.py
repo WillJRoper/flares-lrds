@@ -47,11 +47,6 @@ master_file = (
     agn_images,
 ) = get_synth_data_with_imgs(data_file, "agn_attenuated")
 
-# Define flux bins
-flux_bins = np.logspace(0, 1, 30)
-
-# Define mass bins
-mass_bins = np.logspace(8, 12, 30)
 
 # Get the masses from the master file
 masses = get_master_data(master_file, indices, "Mstar_aperture/30")
@@ -77,8 +72,24 @@ for snap in images:
     mass = masses[snap]
     stellar_mass = stellar_masses[snap]
     agn_mass = agn_masses[snap]
-    print(flux)
-    print(mass)
+
+    # Skip empty snapshots
+    if len(flux) == 0 or len(stellar_flux) == 0 or len(agn_flux) == 0:
+        continue
+
+    # Define flux bins
+    flux_bins = np.logspace(
+        np.log10(np.min(flux)),
+        np.log10(np.max(flux)),
+        30,
+    )
+
+    # Define mass bins
+    mass_bins = np.logspace(
+        np.log10(np.min(mass)),
+        np.log10(np.max(mass)),
+        30,
+    )
 
     # Count the LRDs
     lrd_counts = np.zeros((len(flux_bins) - 1, len(mass_bins) - 1))
