@@ -55,10 +55,10 @@ data_file = "data/combined_<region>_<snap>.hdf5"
 grid = get_grid(args.grid, args.grid_dir, None)
 
 # Get the spectra arrays
-stellar_att_spectra = get_synth_spectra(data_file, "stellar_attenuated")
+stellar_att_spectra = get_synth_spectra(data_file, "attenuated")
 agn_att_spectra = get_synth_spectra(data_file, "agn_attenuated")
-stellar_rep_spectra = get_synth_spectra(data_file, "stellar_reprocessed")
-agn_rep_spectra = get_synth_spectra(data_file, "agn_reprocessed")
+stellar_rep_spectra = get_synth_spectra(data_file, "reprocessed")
+agn_rep_spectra = get_synth_spectra(data_file, "agn_intrinsic")
 
 # Get the synthesizer data
 (
@@ -70,7 +70,7 @@ agn_rep_spectra = get_synth_spectra(data_file, "agn_reprocessed")
     masks,
     indices,
     images,
-) = get_synth_data_with_imgs(data_file, args.spec_type)
+) = get_synth_data_with_imgs(data_file, "attenuated")
 
 # Get the galaxy ids for labelling
 gal_ids = get_galaxy_identifiers(args.master, indices)
