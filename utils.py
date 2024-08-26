@@ -505,6 +505,9 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
+                        sizes[snap].setdefault(filt.split(".")[-1], []).extend(
+                            []
+                        )
                         images[snap].setdefault(
                             filt.split(".")[-1], []
                         ).extend(hdf[f"Images/{spec}/{filt}"][mask])
