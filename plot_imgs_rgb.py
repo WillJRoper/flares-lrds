@@ -136,6 +136,6 @@ for snap in images:
 
         savefig(
             fig,
-            f"images/{args.spec_type}/rgb_{args.type}_"
+            f"images/{args.spec_type}/rgb_{args.spec_type}_"
             f"{snap}_{'_'.join([str(s) for s in gal_ids[snap][i]])}",
         )
