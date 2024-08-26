@@ -144,5 +144,6 @@ for snap in stellar_att_spectra:
         )
 
         savefig(
-            fig, f"spectra/spectra_{'_'.join(gal_ids[snap][i])}_{snap}.png"
+            fig,
+            f"spectra/spectra_{'_'.join([str(s) for s in gal_ids[snap][i]])}_{snap}.png",
         )
