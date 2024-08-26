@@ -2,12 +2,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+from astropy.cosmology import Planck15 as cosmo
 
 from utils import (
     get_synth_data_with_imgs,
     savefig,
     get_master_data,
+    FLUX_LIMIT,
 )
+
+from synthesizer.conversion import absolute_mag_to_lnu, lnu_to_fnu
 
 # Define the data file
 data_file = "data/combined_<region>_<snap>.hdf5"
@@ -73,13 +77,21 @@ for snap in images:
     stellar_mass = stellar_masses[snap][stellar_masks[snap]]
     agn_mass = agn_masses[snap][agn_masks[snap]]
 
+    # Get redshift
+    z = float(snap.split("z")[-1].replace("p", "."))
+
     # Skip empty snapshots
     if len(flux) == 0 or len(stellar_flux) == 0 or len(agn_flux) == 0:
         continue
 
+    # Convert the flux limit to nJy
+    flux_limit = lnu_to_fnu(absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z).to(
+        "nJy"
+    )
+
     # Define flux bins
     flux_bins = np.logspace(
-        np.log10(np.min(flux)),
+        np.log10(flux_limit),
         np.log10(np.max(flux)),
         30,
     )
