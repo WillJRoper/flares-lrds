@@ -691,7 +691,7 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
 
     # Convert the data to arrays
     for snap in spectra.keys():
-        spectra[snap] = np.array(spectra[snap])
+        spectra[snap] = unyt_array(spectra[snap], "erg/s/cm**2/Hz").to("nJy")
 
     return spectra
 
