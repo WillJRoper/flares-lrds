@@ -54,6 +54,8 @@ data_file = "data/combined_<region>_<snap>.hdf5"
 # Get the grid
 grid = get_grid(args.grid, args.grid_dir, None)
 
+print(grid.lam.shape)
+
 # Get the spectra arrays
 stellar_att_spectra = get_synth_spectra(
     data_file, "attenuated", cut_on="attenuated"
