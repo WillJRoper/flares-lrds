@@ -7,7 +7,7 @@ from unyt import erg, s, cm, Hz, nJy, arcsecond
 from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import angular_to_spatial_at_z
-from synthesizer.sed import Sed, plot_spectra
+from synthesizer.sed import Sed, plot_observed_spectra
 
 from utils import (
     get_synth_data_with_imgs,
@@ -103,24 +103,32 @@ for snap in stellar_att_spectra:
         seds.append({})
         seds[-1]["stellar_attenuated"] = Sed(
             grid.lam,
-            stellar_att_spectra[snap][i, :] * erg / s / cm**2 / Hz,
+        )
+        seds[-1]["stellar_attenuated"].fnu = (
+            stellar_att_spectra[snap][i, :] * erg / s / cm**2 / Hz
         )
         seds[-1]["agn_attenuated"] = Sed(
             grid.lam,
-            agn_att_spectra[snap][i, :] * erg / s / cm**2 / Hz,
+        )
+        seds[-1]["agn_attenuated"].fnu = (
+            agn_att_spectra[snap][i, :] * erg / s / cm**2 / Hz
         )
         seds[-1]["stellar_reprocessed"] = Sed(
             grid.lam,
-            stellar_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz,
+        )
+        seds[-1]["stellar_reprocessed"].fnu = (
+            stellar_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz
         )
         seds[-1]["agn_reprocessed"] = Sed(
             grid.lam,
-            agn_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz,
+        )
+        seds[-1]["agn_reprocessed"].fnu = (
+            agn_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz
         )
 
     # Loop over spectra plotting them
     for spec in seds:
-        fig, ax = plot_spectra(
+        fig, ax = plot_observed_spectra(
             spec,
             show=False,
         )
