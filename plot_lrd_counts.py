@@ -89,7 +89,8 @@ for snap in images:
         "nJy"
     )
 
-    print("Flux limit:", flux_limit)
+    print(f"Lnu limit @ {z}:", absolute_mag_to_lnu(FLUX_LIMIT))
+    print(f"Flux limit @ {z}:", flux_limit)
 
     # Define flux bins
     flux_bins = np.logspace(
