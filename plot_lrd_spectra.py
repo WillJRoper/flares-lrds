@@ -111,29 +111,25 @@ for snap in stellar_att_spectra:
             grid.lam,
         )
         seds[-1]["stellar_attenuated"].fnu = (
-            stellar_att_spectra[snap][i, :] * erg / s / cm**2 / Hz
+            stellar_att_spectra[snap][i, :] * nJy
         )
         seds[-1]["stellar_attenuated"].obslam = grid.lam * (1 + z)
         seds[-1]["agn_attenuated"] = Sed(
             grid.lam,
         )
-        seds[-1]["agn_attenuated"].fnu = (
-            agn_att_spectra[snap][i, :] * erg / s / cm**2 / Hz
-        )
+        seds[-1]["agn_attenuated"].fnu = agn_att_spectra[snap][i, :] * nJy
         seds[-1]["agn_attenuated"].obslam = grid.lam * (1 + z)
         seds[-1]["stellar_reprocessed"] = Sed(
             grid.lam,
         )
         seds[-1]["stellar_reprocessed"].fnu = (
-            stellar_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz
+            stellar_rep_spectra[snap][i, :] * nJy
         )
         seds[-1]["stellar_reprocessed"].obslam = grid.lam * (1 + z)
         seds[-1]["agn_reprocessed"] = Sed(
             grid.lam,
         )
-        seds[-1]["agn_reprocessed"].fnu = (
-            agn_rep_spectra[snap][i, :] * erg / s / cm**2 / Hz
-        )
+        seds[-1]["agn_reprocessed"].fnu = agn_rep_spectra[snap][i, :] * nJy
         seds[-1]["agn_reprocessed"].obslam = grid.lam * (1 + z)
 
     # Loop over spectra plotting them
@@ -146,5 +142,6 @@ for snap in stellar_att_spectra:
 
         savefig(
             fig,
-            f"spectra/spectra_{'_'.join([str(s) for s in gal_ids[snap][i]])}_{snap}.png",
+            f"spectra/spectra_"
+            f"{'_'.join([str(s) for s in gal_ids[snap][i]])}_{snap}",
         )
