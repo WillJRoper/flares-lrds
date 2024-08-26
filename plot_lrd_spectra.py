@@ -97,6 +97,7 @@ for snap in stellar_att_spectra:
 for snap in stellar_att_spectra:
     # Skip if there are no galaxies
     if len(stellar_att_spectra[snap]) == 0:
+        print("No galaxies in snapshot", snap)
         continue
 
     # Get redshift
