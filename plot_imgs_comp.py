@@ -79,6 +79,19 @@ for snap in images:
         agn_images[snap][filt] = agn_images[snap][filt][masks[snap], :, :]
     gal_ids[snap] = gal_ids[snap][masks[snap]]
 
+# Convert images to nJy
+for snap in images:
+    for filt in images[snap]:
+        images[snap][filt] = (images[snap][filt] * erg / s / cm**2 / Hz).to(
+            "nJy"
+        )
+        stellar_images[snap][filt] = (
+            stellar_images[snap][filt] * erg / s / cm**2 / Hz
+        ).to("nJy")
+        agn_images[snap][filt] = (
+            agn_images[snap][filt] * erg / s / cm**2 / Hz
+        ).to("nJy")
+
 # Loop over regions
 for snap in images:
     # Are there any LRD images to plot?
@@ -98,7 +111,7 @@ for snap in images:
             width_ratios=[10] * nfilt + [1],
             hspace=0.0,
         )
-        cax = fig.add_subplot(gs[0, -1])
+        cax = fig.add_subplot(gs[:, -1])
         axes = [fig.add_subplot(gs[0, i]) for i in range(nfilt)]
         stellar_axes = [fig.add_subplot(gs[1, i]) for i in range(nfilt)]
         agn_axes = [fig.add_subplot(gs[2, i]) for i in range(nfilt)]
@@ -125,7 +138,8 @@ for snap in images:
                 cmap="Greys_r",
                 norm=norm,
             )
-            ax.axis("off")
+            ax.set_yticks([])
+            ax.set_xticks([])
             ax.set_title(filt)
 
             # Plot the stellar images
@@ -145,13 +159,13 @@ for snap in images:
             aax.axis("off")
 
         # Label the rows
-        axes[0].set_title("Combined")
+        axes[0].set_xlabel("Combined")
         stellar_axes[0].set_xlabel("Stellar")
         agn_axes[0].set_xlabel("AGN")
 
         # Add the colorbar
         cbar = fig.colorbar(im, cax=cax, orientation="vertical")
-        cbar.set_label("Flux / [erg / s / cm$^2$]")
+        cbar.set_label("Flux / [nJy]")
 
         savefig(
             fig,
