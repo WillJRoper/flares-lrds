@@ -606,6 +606,93 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     return fluxes, colors, red1, red2, sizes, masks, indices_by_region, images
 
 
+def get_synth_spectra(synth_data_path, spec):
+    """
+    Get the fluxes and colors of the galaxies in the simulation.
+
+    Args:
+        synth_data_path (str): The path to the synthetic data.
+        spec (str): The spectral synthesis model to use.
+        size_thresh (float): The size threshold to apply for LRDs.
+
+    Returns:
+        dict: A dictionary containing the fluxes of the galaxies.
+        dict: A dictionary containing the colors of the galaxies.
+        dict: A dictionary containing the red1 mask of the galaxies.
+        dict: A dictionary containing the red2 mask of the galaxies.
+    """
+    # Define containers for the data
+    spectra = {}
+
+    # Lood over regions
+    for reg in REGIONS:
+        # Loop over snapshots
+        for snap in SNAPSHOTS:
+            # Ensure a key exists for this snapshot
+            spectra.setdefault(snap, [])
+
+            # Skip files that don't exist
+            if not os.path.exists(
+                synth_data_path.replace("<region>", reg).replace(
+                    "<snap>", snap
+                )
+            ):
+                missing_path = synth_data_path.replace(
+                    "<region>", reg
+                ).replace("<snap>", snap)
+                print(f"File {missing_path} does not exist.")
+                continue
+
+            # Convert the flux limit to nJy
+            flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
+
+            # Get the fluxes we need
+            with h5py.File(
+                synth_data_path.replace("<region>", reg).replace(
+                    "<snap>", snap
+                ),
+                "r",
+            ) as hdf:
+                try:
+                    # Get f444w fluxes first so we can apply the flux limit,
+                    # we always apply this cut to the combined emission
+                    f444w = unyt_array(
+                        hdf[
+                            "ImageObservedPhotometry/"
+                            + spec.replace("agn_", "").replace("stellar_", "")
+                            + "/JWST/NIRCam.F444W"
+                        ][...],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                    mask = f444w > flux_limit
+                    if np.sum(mask) == 0:
+                        continue
+
+                    # Get the spectra
+                    s = unyt_array(
+                        hdf[f"ObservedSpectra/{spec}"][mask, :],
+                        "erg/s/cm**2/Hz",
+                    ).to("nJy")
+                except KeyError as e:
+                    print(f"KeyError: {e}")
+                    continue
+                except OSError as e:
+                    print(f"OSError: {e}")
+                    continue
+                except TypeError as e:
+                    print(f"TypeError: {e}")
+                    continue
+
+                # Store the data
+                spectra[snap].extend(s)
+
+    # Convert the data to arrays
+    for snap in spectra.keys():
+        spectra[snap] = np.array(spectra[snap])
+
+    return spectra
+
+
 def get_master_data(master_file_path, indices, key, get_weights=False):
     """
     Get the data from the master file for the given indices.
