@@ -606,7 +606,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     return fluxes, colors, red1, red2, sizes, masks, indices_by_region, images
 
 
-def get_synth_spectra(synth_data_path, spec):
+def get_synth_spectra(synth_data_path, spec, cut_on=None):
     """
     Get the fluxes and colors of the galaxies in the simulation.
 
@@ -623,6 +623,10 @@ def get_synth_spectra(synth_data_path, spec):
     """
     # Define containers for the data
     spectra = {}
+
+    # If cut_on is none use spec
+    if cut_on is None:
+        cut_on = spec
 
     # Lood over regions
     for reg in REGIONS:
@@ -658,9 +662,8 @@ def get_synth_spectra(synth_data_path, spec):
                     # we always apply this cut to the combined emission
                     f444w = unyt_array(
                         hdf[
-                            "ImageObservedPhotometry/"
-                            + spec.replace("agn_", "").replace("stellar_", "")
-                            + "/JWST/NIRCam.F444W"
+                            f"ImageObservedPhotometry/{cut_on}"
+                            "/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
@@ -674,7 +677,7 @@ def get_synth_spectra(synth_data_path, spec):
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                 except KeyError as e:
-                    print(f"KeyError: {e}")
+                    print(f"KeyError: {e} ({reg}/{snap})")
                     continue
                 except OSError as e:
                     print(f"OSError: {e}")
