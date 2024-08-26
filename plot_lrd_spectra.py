@@ -55,10 +55,18 @@ data_file = "data/combined_<region>_<snap>.hdf5"
 grid = get_grid(args.grid, args.grid_dir, None)
 
 # Get the spectra arrays
-stellar_att_spectra = get_synth_spectra(data_file, "attenuated")
-agn_att_spectra = get_synth_spectra(data_file, "agn_attenuated")
-stellar_rep_spectra = get_synth_spectra(data_file, "reprocessed")
-agn_rep_spectra = get_synth_spectra(data_file, "agn_intrinsic")
+stellar_att_spectra = get_synth_spectra(
+    data_file, "attenuated", cut_on="attenuated"
+)
+agn_att_spectra = get_synth_spectra(
+    data_file, "agn_attenuated", cut_on="attenuated"
+)
+stellar_rep_spectra = get_synth_spectra(
+    data_file, "reprocessed", cut_on="attenuated"
+)
+agn_rep_spectra = get_synth_spectra(
+    data_file, "agn_intrinsic", cut_on="attenuated"
+)
 
 # Get the synthesizer data
 (
