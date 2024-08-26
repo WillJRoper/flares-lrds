@@ -89,6 +89,8 @@ for snap in images:
         "nJy"
     )
 
+    print("Flux limit:", flux_limit)
+
     # Define flux bins
     flux_bins = np.logspace(
         np.log10(flux_limit),
