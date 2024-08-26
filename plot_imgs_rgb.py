@@ -59,6 +59,12 @@ for snap in images:
     for filt in images[snap]:
         images[snap][filt] = images[snap][filt][masks[snap], :, :]
 
+# Count the total number of LRDs
+n_lrd = 0
+for snap in images:
+    n_lrd += len(images[snap]["F115W"])
+print(f"Total number of LRDs: {n_lrd}")
+
 # Loop over regions
 for snap in images:
     # Are there any LRD images to plot?
