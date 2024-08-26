@@ -64,14 +64,14 @@ for snap in masses:
 # Loop over snapshots
 for snap in images:
     # Get fluxes
-    flux = fluxes[snap]["F444W"]
-    stellar_flux = stellar_fluxes[snap]["F444W"]
-    agn_flux = agn_fluxes[snap]["F444W"]
+    flux = fluxes[snap]["F444W"][masks[snap]]
+    stellar_flux = stellar_fluxes[snap]["F444W"][stellar_masks[snap]]
+    agn_flux = agn_fluxes[snap]["F444W"][agn_masks[snap]]
 
     # Get the masses
-    mass = masses[snap]
-    stellar_mass = stellar_masses[snap]
-    agn_mass = agn_masses[snap]
+    mass = masses[snap][masks[snap]]
+    stellar_mass = stellar_masses[snap][stellar_masks[snap]]
+    agn_mass = agn_masses[snap][agn_masks[snap]]
 
     # Skip empty snapshots
     if len(flux) == 0 or len(stellar_flux) == 0 or len(agn_flux) == 0:
