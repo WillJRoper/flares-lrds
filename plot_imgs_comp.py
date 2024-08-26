@@ -74,9 +74,9 @@ for snap in images:
     for filt in images[snap]:
         images[snap][filt] = images[snap][filt][masks[snap], :, :]
         stellar_images[snap][filt] = stellar_images[snap][filt][
-            stellar_masks[snap], :, :
+            masks[snap], :, :
         ]
-        agn_images[snap][filt] = agn_images[snap][filt][agn_masks[snap], :, :]
+        agn_images[snap][filt] = agn_images[snap][filt][masks[snap], :, :]
 
 # Loop over regions
 for snap in images:
