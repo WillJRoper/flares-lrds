@@ -77,6 +77,7 @@ for snap in images:
             masks[snap], :, :
         ]
         agn_images[snap][filt] = agn_images[snap][filt][masks[snap], :, :]
+        gal_ids = gal_ids[snap][masks[snap]]
 
 # Loop over regions
 for snap in images:
@@ -152,4 +153,8 @@ for snap in images:
         cbar = fig.colorbar(im, cax=cax, orientation="vertical")
         cbar.set_label("Flux / [erg / s / cm$^2$]")
 
-        savefig(fig, f"images/{args.type}_{snap}_{i}")
+        savefig(
+            fig,
+            f"images/{args.spec_type}/compare_{args.spec_type}_"
+            f"{snap}_{'_'.join([str(s) for s in gal_ids[snap][i]])}",
+        )
