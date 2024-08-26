@@ -105,7 +105,7 @@ for snap in stellar_att_spectra:
 
     # Get the seds
     seds = []
-    for i in range(len(stellar_att_spectra)):
+    for i in range(len(stellar_att_spectra[snap])):
         seds.append({})
         seds[-1]["stellar_attenuated"] = Sed(
             grid.lam,
