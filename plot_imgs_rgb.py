@@ -16,7 +16,7 @@ parser.add_argument(
     "--spec-type",
     type=str,
     default="attenuated",
-    help="The type of data to plot.",
+    help="The spectra type of data to plot.",
 )
 parser.add_argument(
     "--master",
@@ -130,6 +130,6 @@ for snap in images:
 
         savefig(
             fig,
-            f"images/{args.type}/rgb_{args.type}_"
+            f"images/{args.spec_type}/rgb_{args.type}_"
             f"{snap}_{'_'.join([str(s) for s in gal_ids[snap][i]])}",
         )
