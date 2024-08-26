@@ -48,7 +48,7 @@ master_file = (
 ) = get_synth_data_with_imgs(data_file, "agn_attenuated")
 
 # Define flux bins
-flux_bins = np.logspace(-3, 1, 30)
+flux_bins = np.logspace(0, 1, 30)
 
 # Define mass bins
 mass_bins = np.logspace(8, 12, 30)
@@ -59,6 +59,12 @@ stellar_masses = get_master_data(
     master_file, stellar_indices, "Mstar_aperture/30"
 )
 agn_masses = get_master_data(master_file, agn_indices, "Mstar_aperture/30")
+
+# Convert masses to Msun
+for snap in masses:
+    masses[snap] *= 10**10
+    stellar_masses[snap] *= 10**10
+    agn_masses[snap] *= 10**10
 
 # Loop over snapshots
 for snap in images:
