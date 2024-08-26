@@ -666,7 +666,7 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
                             "/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
+                    )
                     mask = f444w > flux_limit
                     if np.sum(mask) == 0:
                         continue
@@ -674,7 +674,7 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
                     # Get the spectra
                     s = unyt_array(
                         hdf[f"ObservedSpectra/{spec}"][mask, :],
-                        "erg/s/cm**2/Hz",
+                        "nJy",
                     ).to("nJy")
                 except KeyError as e:
                     print(f"KeyError: {e} ({reg}/{snap})")
