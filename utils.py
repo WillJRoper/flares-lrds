@@ -8,10 +8,10 @@ from astropy.cosmology import Planck15 as cosmo
 
 from unyt import unyt_array
 
-from synthesizer.conversions import absolute_mag_to_lnu, lnu_to_fnu
+from synthesizer.conversions import apparent_mag_to_fnu
 
 
-# Define the flux limit in F444W (this is an AB magnitude)
+# Define the flux limit in F444W (this is an apparent AB magnitude)
 FLUX_LIMIT = 28.3
 
 # Get regions and snapshots
@@ -216,9 +216,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 continue
 
             # Convert the flux limit to nJy
-            flux_limit = lnu_to_fnu(
-                absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z
-            ).to("nJy")
+            flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
 
             # Get the fluxes we need
             with h5py.File(
@@ -228,10 +226,13 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                 "r",
             ) as hdf:
                 try:
-                    # Get f444w fluxes first so we can apply the flux limit
+                    # Get f444w fluxes first so we can apply the flux limit,
+                    # we always apply this cut to the combined emission
                     f444w = unyt_array(
                         hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                            "ImageObservedPhotometry/"
+                            + spec.replace("agn_", "").replace("stellar_", "")
+                            + "/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
@@ -440,9 +441,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 continue
 
             # Convert the flux limit to nJy
-            flux_limit = lnu_to_fnu(
-                absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z
-            ).to("nJy")
+            flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
 
             # Get the fluxes we need
             with h5py.File(
@@ -452,10 +451,13 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                 "r",
             ) as hdf:
                 try:
-                    # Get f444w fluxes first so we can apply the flux limit
+                    # Get f444w fluxes first so we can apply the flux limit,
+                    # we always apply this cut to the combined emission
                     f444w = unyt_array(
                         hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
+                            "ImageObservedPhotometry/"
+                            + spec.replace("agn_", "").replace("stellar_", "")
+                            + "/JWST/NIRCam.F444W"
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")

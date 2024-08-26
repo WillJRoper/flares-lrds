@@ -11,7 +11,7 @@ from utils import (
     FLUX_LIMIT,
 )
 
-from synthesizer.conversions import absolute_mag_to_lnu, lnu_to_fnu
+from synthesizer.conversions import apparent_mag_to_fnu
 
 # Define the data file
 data_file = "data/combined_<region>_<snap>.hdf5"
@@ -85,12 +85,7 @@ for snap in images:
         continue
 
     # Convert the flux limit to nJy
-    flux_limit = lnu_to_fnu(absolute_mag_to_lnu(FLUX_LIMIT), cosmo, z).to(
-        "nJy"
-    )
-
-    print(f"Lnu limit @ {z}:", absolute_mag_to_lnu(FLUX_LIMIT))
-    print(f"Flux limit @ {z}:", flux_limit)
+    flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
 
     # Define flux bins
     flux_bins = np.logspace(
