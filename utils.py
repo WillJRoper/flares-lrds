@@ -155,40 +155,13 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     indices_by_region = {}
     indices = {}
     compactness = {}
+    weights = {}
 
     # If requested, get the weights
     if get_weights:
         region_weights = np.loadtxt(
             "data/weights.txt", usecols=8, delimiter=","
         )
-        weights = {}
-
-        # Loop over regions and snapshots
-        for reg in REGIONS:
-            for snap in SNAPSHOTS:
-                weights.setdefault(snap, [])
-
-                # Get the indices so we know how many galaxies we need
-                # weights for
-
-                with h5py.File(
-                    synth_data_path.replace("<region>", reg).replace(
-                        "<snap>", snap
-                    ),
-                    "r",
-                ) as hdf:
-                    try:
-                        ngal = len(hdf["Indices"])
-                    except KeyError as e:
-                        print(f"KeyError: {e}")
-                        continue
-                    except OSError as e:
-                        print(f"OSError: {e}")
-                        continue
-                    except TypeError as e:
-                        print(f"TypeError: {e}")
-                        continue
-                weights[snap].extend(np.full(ngal, region_weights[int(reg)]))
 
     # Lood over regions
     for reg in REGIONS:
@@ -199,6 +172,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
             sizes.setdefault(snap, {})
             indices_by_region.setdefault(snap, {})
             compactness.setdefault(snap, [])
+            weights.setdefault(snap, [])
 
             # Get the redshift
             z = float(snap.split("z")[-1].replace("p", "."))
@@ -289,6 +263,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                         hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][mask]
                         / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][mask]
                     )
+
+                    if get_weights:
+                        weights[snap].extend(
+                            np.full(len(comp), region_weights[int(reg)])
+                        )
 
                 except KeyError as e:
                     print(f"KeyError: {e}")
