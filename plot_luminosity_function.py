@@ -45,7 +45,7 @@ filters = get_flares_filters("lrd_filters.hdf5")
 ) = get_synth_data(data_file, args.spec_type, get_weights=True)
 
 # Define magnitude bins
-bins = np.arange(-25, -15.5, 0.5)
+bins = np.arange(-25, -15.5, 1)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
 
 # Define magnitude bins
-bins = np.logspace(0, np.log10(1500), 30)
+bins = np.logspace(0, np.log10(2000), 1)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
