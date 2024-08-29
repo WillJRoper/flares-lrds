@@ -292,8 +292,10 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     # Convert the data to arrays
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
-            fluxes[snap][key] = np.array(fluxes[snap][key])
-            sizes[snap][key] = np.array(sizes[snap][key])
+            fluxes[snap][key] = (
+                np.array(fluxes[snap][key]) * erg / s / cm**2 / Hz
+            )
+            sizes[snap][key] = np.array(sizes[snap][key]) * kpc
             compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
                 if reg in indices_by_region[snap]:
@@ -519,7 +521,9 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     # Convert the data to arrays
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
-            fluxes[snap][key] = np.array(fluxes[snap][key])
+            fluxes[snap][key] = (
+                np.array(fluxes[snap][key]) * erg / s / cm**2 / Hz
+            )
             sizes[snap][key] = np.array(sizes[snap][key])
             compactness[snap] = np.array(compactness[snap])
             for reg in REGIONS:
