@@ -12,7 +12,7 @@ from synthesizer.conversions import apparent_mag_to_fnu
 
 
 # Define the flux limit in F444W (this is an apparent AB magnitude)
-FLUX_LIMIT = 28.3
+FLUX_LIMIT = 35
 
 # Get regions and snapshots
 REGIONS = [str(reg).zfill(2) for reg in range(40)]
