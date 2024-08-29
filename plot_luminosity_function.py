@@ -125,3 +125,86 @@ for snap in SNAPSHOTS:
         f"UVLF/luminosity_function_{args.spec_type}_"
         f"{snap}_{filt.filter_code.replace('/', '')}",
     )
+
+
+# Define magnitude bins
+bins = np.arange(0, 45, 0)
+bin_cents = (bins[:-1] + bins[1:]) / 2
+
+# Define the volume
+volume = 3200**3  # Mpc^3
+
+# Loop over snapshots
+for snap in SNAPSHOTS:
+    # Get the redshift from the snap tag
+    z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
+
+    # Find the filter containing 1500 Angstrom
+    filt = filters.find_filter(
+        2000,
+        redshift=z,
+        method="transmission",
+    )
+
+    # Get the flux for this filter
+    flux = fluxes[snap][filt.filter_code.split(".")[-1]]
+
+    # Get the right mask
+    mask = masks[snap]
+
+    # Convert flux to absolute magnitude
+    mags = flux
+
+    # Compute the luminosity function full
+    hist, _ = np.histogram(mags, bins=bins)
+    whist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
+    hist = hist.astype(float)
+    whist = whist.astype(float)
+    hist *= whist
+    phi = hist / volume / np.diff(bins)
+
+    # Compute the LRD luminosity function (masked LF)
+    hist, _ = np.histogram(mags[mask], bins=bins)
+    whist, _ = np.histogram(mags[mask], bins=bins, weights=weights[snap][mask])
+    hist = hist.astype(float)
+    whist = whist.astype(float)
+    hist *= whist
+    lrd_phi = hist / volume / np.diff(bins)
+
+    # Plot the luminosity function
+    fig, ax = plt.subplots()
+    ax.grid(True)
+    ax.set_axisbelow(True)
+
+    ax.scatter(
+        bin_cents,
+        phi,
+        label="All",
+        color="grey",
+        alpha=0.8,
+        marker="s",
+    )
+    ax.scatter(
+        bin_cents,
+        lrd_phi,
+        label="LRD",
+        color="red",
+        alpha=0.8,
+        marker="o",
+    )
+
+    # Reverse the x axis
+    ax.set_xlim(ax.get_xlim()[::-1])
+
+    ax.set_yscale("log")
+    ax.set_xlabel("$F_{2000} / [nJy]$")
+
+    ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]")
+
+    ax.legend()
+
+    savefig(
+        fig,
+        f"UVLF/luminosity_function_nomag_{args.spec_type}_"
+        f"{snap}_{filt.filter_code.replace('/', '')}",
+    )
