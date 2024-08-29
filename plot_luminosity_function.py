@@ -195,7 +195,7 @@ for snap in SNAPSHOTS:
     )
 
     ax.set_yscale("log")
-    ax.set_xlabel("$F_{2000} / [erg / s / Hz]$")
+    ax.set_xlabel("$L_{2000} / [erg / s / Hz]$")
 
     ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ dex$^{-1}$]")
 
