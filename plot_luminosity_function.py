@@ -70,9 +70,7 @@ for snap in SNAPSHOTS:
     mask = masks[snap]
 
     # Convert flux to absolute magnitude
-    mags = lnu_to_absolute_mag(
-        fnu_to_lnu(flux * default_units["fnu"], cosmo, z)
-    )
+    mags = lnu_to_absolute_mag(fnu_to_lnu(flux, cosmo, z))
 
     # Compute the luminosity function full
     hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
