@@ -175,7 +175,7 @@ for snap in SNAPSHOTS:
     fig, ax = plt.subplots()
     ax.grid(True)
     ax.set_axisbelow(True)
-    ax.semilogy()
+    ax.semilogx()
 
     ax.scatter(
         bin_cents,
