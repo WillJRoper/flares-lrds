@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
 
 # Define magnitude bins
-bins = np.arange(0, 100, 5)
+bins = np.logspace(-2, 3, 30)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
@@ -192,9 +192,6 @@ for snap in SNAPSHOTS:
         alpha=0.8,
         marker="o",
     )
-
-    # Reverse the x axis
-    ax.set_xlim(ax.get_xlim()[::-1])
 
     ax.set_yscale("log")
     ax.set_xlabel("$F_{2000} / [nJy]$")
