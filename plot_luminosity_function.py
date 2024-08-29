@@ -73,11 +73,11 @@ for snap in SNAPSHOTS:
     mags = lnu_to_absolute_mag(fnu_to_lnu(flux, cosmo, z))
 
     # Compute the luminosity function full
-    hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
+    hist, _ = np.histogram(mags, bins=bins)
     phi = hist / volume / np.diff(bins)
 
     # Compute the LRD luminosity function (masked LF)
-    hist, _ = np.histogram(mags[mask], bins=bins, weights=weights[snap][mask])
+    hist, _ = np.histogram(mags[mask], bins=bins)
     lrd_phi = hist / volume / np.diff(bins)
 
     # Plot the luminosity function
