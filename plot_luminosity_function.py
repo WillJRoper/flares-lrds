@@ -75,6 +75,7 @@ for snap in SNAPSHOTS:
     )
 
     # Compute the luminosity function full
+    print(weights[snap].shape, mags.shape)
     hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
     phi = hist / volume / np.diff(bins)
 
