@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(
     description="Plot the luminosity function of galaxies."
 )
 parser.add_argument(
-    "--type",
+    "--spec-type",
     type=str,
-    default="stellar",
+    default="attenuated",
     help="The type of data to plot.",
 )
 
@@ -27,39 +27,22 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Define the data file
-if args.type == "stellar":
-    data_file = "data/pure_stellar_<region>_<snap>.hdf5"
-elif args.type == "agn":
-    data_file = "data/pure_agn_<region>_<snap>.hdf5"
-else:
-    data_file = "data/combined_<region>_<snap>.hdf5"
+data_file = "data/combined_<region>_<snap>.hdf5"
 
 # Define the filters we'll use
 filters = get_flares_filters("lrd_filters.hdf5")
 
-# Define the spectra keys we'll read
-spectra_keys = ["attenuated", "reprocessed"]
-
 # Get the fluxes, colors and masks
 (
-    att_fluxes,
-    att_colors,
-    att_red1,
-    att_red2,
-    att_sizes,
-    att_masks,
+    fluxes,
+    colors,
+    red1,
+    red2,
+    sizes,
+    masks,
     _,
     weights,
-) = get_synth_data(data_file, "attenuated", get_weights=True)
-(
-    rep_fluxes,
-    rep_colors,
-    rep_red1,
-    rep_red2,
-    rep_sizes,
-    rep_masks,
-    _,
-) = get_synth_data(data_file, "reprocessed")
+) = get_synth_data(data_file, args.spec_type, get_weights=True)
 
 # Define magnitude bins
 bins = np.arange(-25, -17.5, 0.5)
@@ -68,72 +51,71 @@ bin_cents = (bins[:-1] + bins[1:]) / 2
 # Define the volume
 volume = 3200**3  # Mpc^3
 
-# Loop over the spectra keys
-for spec in spectra_keys:
-    # Loop over filters
-    for filt in FILTER_CODES:
-        # Loop over snapshots
-        for snap in SNAPSHOTS:
-            # Get the redshift from the snap tag
-            z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
+# Loop over snapshots
+for snap in SNAPSHOTS:
+    # Get the redshift from the snap tag
+    z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
 
-            # Get the flux for this filter
-            fluxes = (
-                att_fluxes[snap][filt.split(".")[-1]]
-                if spec == "attenuated"
-                else rep_fluxes[snap][filt.split(".")[-1]]
-            )
+    # Find the filter containing 1500 Angstrom
+    filt = filters.find_filter(
+        1500 * angstrom,
+        redshift=z,
+        method="transmission",
+    )
 
-            # Get the right mask
-            mask = att_masks[snap] if spec == "attenuated" else rep_masks[snap]
+    # Get the flux for this filter
+    fluxes = fluxes[snap][filt.split(".")[-1]]
 
-            # Convert flux to absolute magnitude
-            mags = lnu_to_absolute_mag(
-                fnu_to_lnu(fluxes * default_units["fnu"], cosmo, z)
-            )
+    # Get the right mask
+    mask = masks[snap]
 
-            # Compute the luminosity function full
-            hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
-            phi = hist / volume / np.diff(bins)
+    # Convert flux to absolute magnitude
+    mags = lnu_to_absolute_mag(
+        fnu_to_lnu(fluxes * default_units["fnu"], cosmo, z)
+    )
 
-            # Compute the LRD luminosity function (masked LF)
-            hist, _ = np.histogram(
-                mags[mask], bins=bins, weights=weights[snap][mask]
-            )
-            lrd_phi = hist / volume / np.diff(bins)
+    # Compute the luminosity function full
+    hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
+    phi = hist / volume / np.diff(bins)
 
-            # Plot the luminosity function
-            fig, ax = plt.subplots()
+    # Compute the LRD luminosity function (masked LF)
+    hist, _ = np.histogram(mags[mask], bins=bins, weights=weights[snap][mask])
+    lrd_phi = hist / volume / np.diff(bins)
 
-            ax.scatter(
-                bin_cents,
-                phi,
-                label="All",
-                color="grey",
-                alpha=0.8,
-                marker="s",
-            )
-            ax.scatter(
-                bin_cents,
-                lrd_phi,
-                label="LRD",
-                color="red",
-                alpha=0.8,
-                marker="o",
-            )
+    # Plot the luminosity function
+    fig, ax = plt.subplots()
+    ax.grid(True)
+    ax.set_axisbelow(True)
 
-            # Reverse the x axis
-            ax.set_xlim(ax.get_xlim()[::-1])
+    ax.scatter(
+        bin_cents,
+        phi,
+        label="All",
+        color="grey",
+        alpha=0.8,
+        marker="s",
+    )
+    ax.scatter(
+        bin_cents,
+        lrd_phi,
+        label="LRD",
+        color="red",
+        alpha=0.8,
+        marker="o",
+    )
 
-            ax.set_yscale("log")
-            ax.set_xlabel(f"$M_{filt.split('.')[-1][1:-1]}$")
+    # Reverse the x axis
+    ax.set_xlim(ax.get_xlim()[::-1])
 
-            ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]")
+    ax.set_yscale("log")
+    ax.set_xlabel("$M_{1500}$")
 
-            ax.legend()
+    ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]")
 
-            fig.savefig(
-                f"plots/luminosity_function_{spec}_"
-                f"{snap}_{filt.replace('/', '')}.png"
-            )
-            plt.close(fig)
+    ax.legend()
+
+    fig.savefig(
+        f"plots/UVLF/luminosity_function_{args.spec_type}_"
+        f"{snap}_{filt.replace('/', '')}.png"
+    )
+    plt.close(fig)
