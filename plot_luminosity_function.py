@@ -64,7 +64,7 @@ for snap in SNAPSHOTS:
     )
 
     # Get the flux for this filter
-    fluxes = fluxes[snap][filt.split(".")[-1]]
+    fluxes = fluxes[snap][filt.filter_code.split(".")[-1]]
 
     # Get the right mask
     mask = masks[snap]
@@ -117,5 +117,5 @@ for snap in SNAPSHOTS:
     savefig(
         fig,
         f"UVLF/luminosity_function_{args.spec_type}_"
-        f"{snap}_{filt.replace('/', '')}",
+        f"{snap}_{filt.filter_code.replace('/', '')}",
     )
