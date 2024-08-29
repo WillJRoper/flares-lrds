@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpi4py import MPI as mpi
 from astropy.cosmology import Planck15 as cosmo
 
-from unyt import unyt_array, erg, s, cm, Hz
+from unyt import unyt_array, erg, s, cm, Hz, kpc
 
 from synthesizer.conversions import apparent_mag_to_fnu
 
