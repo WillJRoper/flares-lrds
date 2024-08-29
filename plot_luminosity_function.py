@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
 
 # Define magnitude bins
-bins = np.logspace(0, np.log10(2000), 20)
+bins = np.logspace(27, 31, 20)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
@@ -153,7 +153,7 @@ for snap in SNAPSHOTS:
     mask = masks[snap]
 
     # Convert flux to absolute magnitude
-    mags = flux
+    mags = fnu_to_lnu(flux, cosmo, z)
 
     # Compute the luminosity function full
     hist, _ = np.histogram(mags, bins=bins)
@@ -195,7 +195,7 @@ for snap in SNAPSHOTS:
     )
 
     ax.set_yscale("log")
-    ax.set_xlabel("$F_{2000} / [nJy]$")
+    ax.set_xlabel("$F_{2000} / [erg / s / Hz]$")
 
     ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ dex$^{-1}$]")
 
