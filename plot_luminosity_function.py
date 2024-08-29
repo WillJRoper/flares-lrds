@@ -9,7 +9,7 @@ from astropy.cosmology import Planck15 as cosmo
 from synthesizer.conversions import lnu_to_absolute_mag, fnu_to_lnu
 from synthesizer.units import default_units
 
-from utils import get_synth_data, SNAPSHOTS, FILTER_CODES
+from utils import get_synth_data, SNAPSHOTS, FILTER_CODES, savefig
 from synthesize_flares import get_flares_filters
 
 # Define the parser
@@ -114,8 +114,8 @@ for snap in SNAPSHOTS:
 
     ax.legend()
 
-    fig.savefig(
-        f"plots/UVLF/luminosity_function_{args.spec_type}_"
-        f"{snap}_{filt.replace('/', '')}.png"
+    savefig(
+        fig,
+        f"UVLF/luminosity_function_{args.spec_type}_"
+        f"{snap}_{filt.replace('/', '')}",
     )
-    plt.close(fig)
