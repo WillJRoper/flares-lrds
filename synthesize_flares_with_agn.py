@@ -769,7 +769,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
     # Get the units for each dataset
     units = {
-        "fnu": "erg/s/cm^2/Hz",
+        "fnu": "nJy",
         "flux": "erg/s/cm^2/Hz",
         "hlr": "kpc",
         "sfzh": "Msun",
