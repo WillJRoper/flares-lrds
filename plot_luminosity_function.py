@@ -64,18 +64,17 @@ for snap in SNAPSHOTS:
     )
 
     # Get the flux for this filter
-    fluxes = fluxes[snap][filt.filter_code.split(".")[-1]]
+    flux = fluxes[snap][filt.filter_code.split(".")[-1]]
 
     # Get the right mask
     mask = masks[snap]
 
     # Convert flux to absolute magnitude
     mags = lnu_to_absolute_mag(
-        fnu_to_lnu(fluxes * default_units["fnu"], cosmo, z)
+        fnu_to_lnu(flux * default_units["fnu"], cosmo, z)
     )
 
     # Compute the luminosity function full
-    print(weights[snap].shape, mags.shape)
     hist, _ = np.histogram(mags, bins=bins, weights=weights[snap])
     phi = hist / volume / np.diff(bins)
 
