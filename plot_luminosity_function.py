@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
 
 # Define magnitude bins
-bins = np.logspace(-2, 3, 30)
+bins = np.logspace(-2, 4, 30)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
@@ -175,6 +175,7 @@ for snap in SNAPSHOTS:
     fig, ax = plt.subplots()
     ax.grid(True)
     ax.set_axisbelow(True)
+    ax.semilogy()
 
     ax.scatter(
         bin_cents,
