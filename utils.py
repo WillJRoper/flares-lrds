@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpi4py import MPI as mpi
 from astropy.cosmology import Planck15 as cosmo
 
-from unyt import unyt_array, erg, s, cm, Hz, kpc
+from unyt import unyt_array, nJy, kpc
 
 from synthesizer.conversions import apparent_mag_to_fnu
 
@@ -114,9 +114,7 @@ def get_sizes_mdot(master_file_path):
                     if end - start == 0:
                         continue
                     mdot[i] = (
-                        np.max(
-                            hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end]
-                        )
+                        np.max(hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end])
                         * 10**10
                         / 0.6777
                     )
@@ -159,9 +157,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
     # If requested, get the weights
     if get_weights:
-        region_weights = np.loadtxt(
-            "data/weights.txt", usecols=8, delimiter=","
-        )
+        region_weights = np.loadtxt("data/weights.txt", usecols=8, delimiter=",")
 
     # Lood over regions
     for reg in REGIONS:
@@ -179,13 +175,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
             # Skip files that don't exist
             if not os.path.exists(
-                synth_data_path.replace("<region>", reg).replace(
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
                     "<snap>", snap
                 )
-            ):
-                missing_path = synth_data_path.replace(
-                    "<region>", reg
-                ).replace("<snap>", snap)
                 print(f"File {missing_path} does not exist.")
                 continue
 
@@ -194,9 +188,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
             # Get the fluxes we need
             with h5py.File(
-                synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                ),
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
                 "r",
             ) as hdf:
                 try:
@@ -220,39 +212,27 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                     # Get the indices
                     inds = hdf["Indices"][mask]
                     f115w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
@@ -293,7 +273,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
             fluxes[snap][key] = (
-                np.array(fluxes[snap][key]) * erg / s / cm**2 / Hz
+                np.array(fluxes[snap][key]) * nJy
             )
             sizes[snap][key] = np.array(sizes[snap][key]) * kpc
             compactness[snap] = np.array(compactness[snap])
@@ -409,13 +389,11 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             # Get the redshift
             z = float(snap.split("z")[-1].replace("p", "."))
 
-            # Skip files that don't exist
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
             if not os.path.exists(
                 synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                )
-            ):
-                missing_path = synth_data_path.replace(
                     "<region>", reg
                 ).replace("<snap>", snap)
                 print(f"File {missing_path} does not exist.")
@@ -424,9 +402,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
             # Convert the flux limit to nJy
             flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
 
-            # Get the fluxes we need
-            with h5py.File(
-                synth_data_path.replace("<region>", reg).replace(
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
                     "<snap>", snap
                 ),
                 "r",
@@ -450,48 +426,34 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                     f444w = f444w[mask]
 
                     # Get the indices
-                    inds = hdf["Indices"][mask]
-                    f115w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f150w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f200w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f277w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f356w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    f444w = unyt_array(
-                        hdf[
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"][mask],
                             f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
                         ][mask],
                         "erg/s/cm**2/Hz",
-                    ).to("nJy")
-                    for filt in FILTER_CODES:
+                        sizes[snap].setdefault(filt.split(".")[-1], []).extend([])
+                        images[snap].setdefault(filt.split(".")[-1], []).extend(
+                            hdf[f"Images/{spec}/{filt}"][mask]
                         sizes[snap].setdefault(filt.split(".")[-1], []).extend(
-                            []
-                        )
-                        images[snap].setdefault(
                             filt.split(".")[-1], []
                         ).extend(hdf[f"Images/{spec}/{filt}"][mask])
                     comp = (
@@ -522,7 +484,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
     for snap in fluxes.keys():
         for key in fluxes[snap].keys():
             fluxes[snap][key] = (
-                np.array(fluxes[snap][key]) * erg / s / cm**2 / Hz
+                np.array(fluxes[snap][key]) * nJy
             )
             sizes[snap][key] = np.array(sizes[snap][key])
             compactness[snap] = np.array(compactness[snap])
@@ -616,13 +578,11 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
         # Loop over snapshots
         for snap in SNAPSHOTS:
             # Ensure a key exists for this snapshot
-            spectra.setdefault(snap, [])
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
 
             # Skip files that don't exist
-            if not os.path.exists(
-                synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                )
             ):
                 missing_path = synth_data_path.replace(
                     "<region>", reg
@@ -631,19 +591,16 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
                 continue
 
             # Convert the flux limit to nJy
-            flux_limit = apparent_mag_to_fnu(FLUX_LIMIT).to("nJy")
-
-            # Get the fluxes we need
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
             with h5py.File(
                 synth_data_path.replace("<region>", reg).replace(
                     "<snap>", snap
                 ),
                 "r",
             ) as hdf:
-                try:
-                    # Get f444w fluxes first so we can apply the flux limit,
-                    # we always apply this cut to the combined emission
-                    f444w = unyt_array(
+                        hdf[f"ImageObservedPhotometry/{cut_on}" "/JWST/NIRCam.F444W"][
+                            ...
+                        ],
                         hdf[
                             f"ImageObservedPhotometry/{cut_on}"
                             "/JWST/NIRCam.F444W"
@@ -713,9 +670,7 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
         # Convert the data to arrays
         for snap in data.keys():
             data[snap] = np.array(data[snap])
-
-        return data
-    else:
+        region_weights = np.loadtxt("data/weights.txt", usecols=8, delimiter=",")
         # Load the weights
         region_weights = np.loadtxt(
             "data/weights.txt", usecols=8, delimiter=","
@@ -732,9 +687,7 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
                 # Loop over snapshots
                 for snap in SNAPSHOTS:
                     # Ensure a key exists for this snapshot
-                    data.setdefault(snap, [])
-                    weights.setdefault(snap, [])
-
+                    reg_data = hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
                     # Get the data we need
                     reg_data = hdf[f"{reg}/{snap}/Galaxy/{key}"][
                         indices[snap][reg]
@@ -811,9 +764,7 @@ def get_galaxy_identifiers(master_file_path, indices):
         # Loop over regions
         for reg in REGIONS:
             # Loop over snapshots
-            for snap in SNAPSHOTS:
-                # Ensure a key exists for this snapshot
-                gal_ids.setdefault(snap, [])
+                grp_nums = hdf[f"{reg}/{snap}/Galaxy/GroupNumber"][indices[snap][reg]]
 
                 grp_nums = hdf[f"{reg}/{snap}/Galaxy/GroupNumber"][
                     indices[snap][reg]
@@ -890,9 +841,7 @@ def plot_masked_unmasked_hexbins(
         0.05,
         "All Galaxies",
         ha="right",
-        va="bottom",
-        transform=axs[0].transAxes,
-        fontsize=8,
+        bbox=dict(boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7),
         color="k",
         bbox=dict(
             boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
@@ -917,9 +866,7 @@ def plot_masked_unmasked_hexbins(
         0.05,
         "LRDs",
         ha="right",
-        va="bottom",
-        transform=axs[1].transAxes,
-        fontsize=8,
+        bbox=dict(boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7),
         color="k",
         bbox=dict(
             boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
