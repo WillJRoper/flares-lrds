@@ -58,7 +58,7 @@ for snap in SNAPSHOTS:
 
     # Find the filter containing 1500 Angstrom
     filt = filters.find_filter(
-        1500 * angstrom,
+        1500,
         redshift=z,
         method="transmission",
     )
