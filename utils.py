@@ -37,7 +37,6 @@ KOKOREV24 = {
 
 # Define the list of filter IDs
 FILTER_CODES = [
-    "JWST/NIRCam.F090W",
     "JWST/NIRCam.F115W",
     "JWST/NIRCam.F150W",
     "JWST/NIRCam.F200W",
