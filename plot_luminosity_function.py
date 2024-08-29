@@ -58,7 +58,7 @@ for snap in SNAPSHOTS:
 
     # Find the filter containing 1500 Angstrom
     filt = filters.find_filter(
-        1500,
+        2000,
         redshift=z,
         method="transmission",
     )
@@ -108,7 +108,7 @@ for snap in SNAPSHOTS:
     ax.set_xlim(ax.get_xlim()[::-1])
 
     ax.set_yscale("log")
-    ax.set_xlabel("$M_{1500}$")
+    ax.set_xlabel("$M_{2000}$")
 
     ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]")
 
