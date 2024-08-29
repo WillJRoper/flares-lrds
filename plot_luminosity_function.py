@@ -128,7 +128,7 @@ for snap in SNAPSHOTS:
 
 
 # Define magnitude bins
-bins = np.logspace(-2, np.log10(1500), 30)
+bins = np.logspace(0, np.log10(1500), 30)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
