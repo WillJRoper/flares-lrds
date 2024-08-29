@@ -236,7 +236,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
-                    mask = f444w > flux_limit
+                    mask = np.where(f444w > flux_limit)
                     if np.sum(mask) == 0:
                         continue
 
@@ -286,8 +286,8 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                             hdf[f"HalfLightRadii/{spec}/{filt}"][mask]
                         )
                     comp = (
-                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][:]
-                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][:]
+                        hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][mask]
+                        / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][mask]
                     )
 
                 except KeyError as e:
@@ -461,7 +461,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                         ][...],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
-                    mask = f444w > flux_limit
+                    mask = np.where(f444w > flux_limit)
                     if np.sum(mask) == 0:
                         continue
 
