@@ -98,7 +98,9 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         bh_mass = part_grp["BH_Mass"][start_bh:end_bh] * Msun * 10**10
         bh_mdot = (
             part_grp["BH_Mdot"][start_bh:end_bh]
-            * (6.445909132449984 * 10**23)
+            * (
+                6.445909132449984 * 10**23
+            )  # Unit conversion issue, need this
             * Msun
             / yr
         )
@@ -168,6 +170,18 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         0.2: gal.stars.get_attr_radius("current_masses", frac=0.2),
         0.8: gal.stars.get_attr_radius("current_masses", frac=0.8),
     }
+
+    # Calculate the 3D and 1D velocity dispersions
+    gal.stars.vel_disp1d = np.array(
+        [
+            np.std(gal.stars.velocities[:, 0], ddof=0),
+            np.std(gal.stars.velocities[:, 1], ddof=0),
+            np.std(gal.stars.velocities[:, 2], ddof=0),
+        ]
+    )
+    gal.stars.vel_disp3d = np.std(
+        np.sqrt(np.sum(gal.stars.velocities**2, axis=1)), ddof=0
+    )
 
     return gal
 
@@ -449,6 +463,7 @@ def analyse_galaxy(
 
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
+    gal.get_photo_luminosities(filters, verbose=False)
 
     # Compute the half-light radius on each filter
     gal.stars.half_light_radii = {}
@@ -561,6 +576,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Loop over galaxies and unpacking all the data we'll write out
     gal_ids = []
     fluxes = {}
+    rf_fluxes = {}
     fnus = {}
     uv_slopes = {}
     ir_slopes = {}
@@ -579,6 +595,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     imgs = {}
     apps = {}
     img_fluxes = {}
+    vel_disp_1d = []
+    vel_disp_3d = []
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -591,6 +609,10 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         gas_sizes_80.append(gal.gas.mass_radii[0.8])
         gas_sizes_20.append(gal.gas.mass_radii[0.2])
         dust_sizes.append(gal.gas.half_dust_radius)
+
+        # Unpack the velocity dispersions
+        vel_disp_1d.append(gal.stars.vel_disp1d)
+        vel_disp_3d.append(gal.stars.vel_disp3d)
 
         # Get the SFZH arrays
         sfzhs.append(gal.stars.sfzh)
@@ -631,6 +653,20 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
                 fluxes[key].setdefault(filt, []).append(phot)
+
+        # Get the rest frame photometry
+        for key, photcol in gal.stars.photo_luminosities.items():
+            rf_fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                rf_fluxes[key].setdefault(filt, []).append(phot)
+        for key, photcol in gal.black_holes.photo_luminosities.items():
+            rf_fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                rf_fluxes[key].setdefault(filt, []).append(phot)
+        for key, photcol in gal.photo_luminosities.items():
+            rf_fluxes.setdefault(key, {})
+            for filt, phot in photcol.items():
+                rf_fluxes[key].setdefault(filt, []).append(phot)
 
         # Get slopes
         for key, spectra in gal.stars.spectra.items():
@@ -712,6 +748,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Collect output data onto rank 0
     fnu_per_rank = comm.gather(fnus, root=0)
     flux_per_rank = comm.gather(fluxes, root=0)
+    rf_flux_per_rank = comm.gather(rf_fluxes, root=0)
     group_per_rank = comm.gather(group_ids, root=0)
     subgroup_per_rank = comm.gather(subgroup_ids, root=0)
     gal_ids_per_rank = comm.gather(gal_ids, root=0)
@@ -737,6 +774,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     imgs_stellar_att_per_rank = comm.gather(imgs["stellar_attenuated"], root=0)
     apps_per_rank = comm.gather(apps, root=0)
     img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
+    vel_disp_1d_per_rank = comm.gather(vel_disp_1d, root=0)
+    vel_disp_3d_per_rank = comm.gather(vel_disp_3d, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
@@ -745,6 +784,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Concatenate the data
     fnus = combine_distributed_data(fnu_per_rank)
     fluxes = combine_distributed_data(flux_per_rank)
+    rf_fluxes = combine_distributed_data(rf_flux_per_rank)
     group_ids = combine_distributed_data(group_per_rank)
     subgroup_ids = combine_distributed_data(subgroup_per_rank)
     gal_ids = combine_distributed_data(gal_ids_per_rank)
@@ -773,6 +813,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     )
     apps = combine_distributed_data(apps_per_rank)
     img_fluxes = combine_distributed_data(img_fluxes_per_rank)
+    vel_disp_1d = combine_distributed_data(vel_disp_1d_per_rank)
+    vel_disp_3d = combine_distributed_data(vel_disp_3d_per_rank)
 
     # Get the units for each dataset
     units = {
@@ -780,6 +822,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         "flux": "erg/s/cm^2/Hz",
         "hlr": "kpc",
         "sfzh": "Msun",
+        "vel": "km/s",
     }
 
     # Get the indices that will sort the data to match the master file
@@ -811,6 +854,20 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             "GalaxyID",
         )
 
+        # Write the velocity dispersions
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(vel_disp_1d, sort_indices),
+            "1DVelocityDispersion",
+            units=units["vel"],
+        )
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(vel_disp_3d, sort_indices),
+            "3DVelocityDispersion",
+            units=units["vel"],
+        )
+
         # Write the integrated observed spectra
         write_dataset_recursive(
             hdf,
@@ -824,6 +881,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             hdf,
             sort_data_recursive(fluxes, sort_indices),
             key="ObservedPhotometry",
+            units=units["flux"],
+        )
+        write_dataset_recursive(
+            hdf,
+            sort_data_recursive(rf_fluxes, sort_indices),
+            key="RestFramePhotometry",
             units=units["flux"],
         )
 
