@@ -2,7 +2,6 @@
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 
 from synthesizer.grid import Grid
 

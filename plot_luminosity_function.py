@@ -2,14 +2,11 @@
 import argparse
 import matplotlib.pyplot as plt
 import numpy as np
-import h5py
-from unyt import angstrom
 from astropy.cosmology import Planck15 as cosmo
 
 from synthesizer.conversions import lnu_to_absolute_mag, fnu_to_lnu
-from synthesizer.units import default_units
 
-from utils import get_synth_data, SNAPSHOTS, FILTER_CODES, savefig
+from utils import get_synth_data, SNAPSHOTS, savefig
 from synthesize_flares import get_flares_filters
 
 # Define the parser

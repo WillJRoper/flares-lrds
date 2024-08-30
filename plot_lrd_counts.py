@@ -2,7 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from astropy.cosmology import Planck15 as cosmo
 
 from utils import (
     get_synth_data_with_imgs,

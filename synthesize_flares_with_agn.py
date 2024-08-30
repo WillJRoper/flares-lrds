@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, g, s, km, s
+from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, km, s
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from utils import (
@@ -27,7 +27,6 @@ from synthesizer._version import __version__
 from synthesizer.conversions import angular_to_spatial_at_z
 
 from combined_emission_model import FLARESLOSCombinedEmission
-from utils import savefig
 
 # Silence warnings (only because we now what we're doing)
 import warnings

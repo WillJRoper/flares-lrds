@@ -2,10 +2,8 @@
 
 import argparse
 import numpy as np
-import h5py
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
-from astropy.cosmology import Planck15 as cosmo
 from utils import get_synth_data, savefig
 
 # Define the parser

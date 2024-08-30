@@ -4,7 +4,6 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from mpi4py import MPI as mpi
-from astropy.cosmology import Planck15 as cosmo
 
 from unyt import unyt_array, nJy, kpc
 

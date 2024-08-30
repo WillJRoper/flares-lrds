@@ -2,7 +2,6 @@
 import argparse
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import numpy as np
 
 from utils import get_synth_data, SNAPSHOTS, FILTER_CODES
 

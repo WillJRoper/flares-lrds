@@ -6,10 +6,8 @@ import matplotlib.colors as mcolors
 
 
 from utils import (
-    get_masked_synth_data,
     get_synth_data,
     savefig,
-    SNAPSHOTS,
     get_master_data,
 )
 

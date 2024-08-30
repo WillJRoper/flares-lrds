@@ -92,7 +92,7 @@ for snap in SNAPSHOTS:
 
     # Plot the SFZHs as a pcolormesh with a residual image
     fig = plt.figure(figsize=(3.5 * 3, 3.5 * 1))
-    gs = fig.add_gridspec(1, 5, width_ratios=[20, 20, 20, 1, 1])
+    gs = fig.add_gridspec(1, 5, width_ratios=[20, 20, 20, 2, 2])
     ax = [
         fig.add_subplot(gs[0]),
         fig.add_subplot(gs[1]),

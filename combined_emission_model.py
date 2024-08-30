@@ -1,6 +1,6 @@
 """A script defining the pure stellar emission model used for LRDs in FLARES."""
 import numpy as np
-from unyt import Myr, arcsecond, angstrom, erg, s, Hz
+from unyt import Myr, angstrom, erg, s, Hz
 
 from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.emission_models import (

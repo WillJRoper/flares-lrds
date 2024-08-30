@@ -3,10 +3,8 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from unyt import erg, s, cm, Hz, nJy, arcsecond
-from astropy.cosmology import Planck15 as cosmo
+from unyt import erg, s, cm, Hz
 
-from synthesizer.conversions import angular_to_spatial_at_z
 
 from utils import get_synth_data_with_imgs, savefig, get_galaxy_identifiers
 

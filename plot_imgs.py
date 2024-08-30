@@ -3,29 +3,30 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from unyt import erg, s, cm, Hz, nJy
 
-from utils import get_synth_data_with_imgs, savefig
+
+from utils import get_synth_data_with_imgs, savefig, get_galaxy_identifiers
 
 # Define the parser
 parser = argparse.ArgumentParser(description="Plot images of galaxies.")
 parser.add_argument(
-    "--type",
+    "--spec-type",
     type=str,
-    default="stellar",
-    help="The type of data to plot.",
+    default="attenuated",
+    help="The spectra type of data to plot.",
+)
+parser.add_argument(
+    "--master",
+    type=str,
+    default="/cosma7/data/dp004/dc-payy1/my_files//flares_pipeline/data/flares.hdf5",
+    help="The master data file.",
 )
 
 # Parse the arguments
 args = parser.parse_args()
 
 # Define the data file
-if args.type == "stellar":
-    data_file = "data/pure_stellar_<region>_<snap>.hdf5"
-elif args.type == "agn":
-    data_file = "data/pure_agn_<region>_<snap>.hdf5"
-else:
-    data_file = "data/combined_<region>_<snap>.hdf5"
+data_file = "data/combined_<region>_<snap>.hdf5"
 
 # Get the synthesizer data
 (
@@ -37,7 +38,11 @@ else:
     masks,
     indices,
     images,
-) = get_synth_data_with_imgs(data_file, "attenuated")
+) = get_synth_data_with_imgs(data_file, args.spec_type)
+
+# Get the galaxy ids for labelling
+gal_ids = get_galaxy_identifiers(args.master, indices)
+
 
 # How many filters do we have?
 nfilt = len(images["010_z005p000"].keys())
