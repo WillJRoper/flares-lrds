@@ -474,8 +474,10 @@ def analyse_galaxy(
     gal.get_observed_spectra(cosmo)
 
     # Get the photometry
-    gal.get_photo_fluxes(filters, verbose=False)
     gal.get_photo_luminosities(filters, verbose=False)
+    print("Got luminosities")
+    gal.get_photo_fluxes(filters, verbose=False)
+    print("Got fluxes")
 
     # Compute the half-light radius on each filter
     gal.stars.half_light_radii = {}
