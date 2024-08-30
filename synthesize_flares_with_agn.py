@@ -254,7 +254,7 @@ def get_flares_galaxies(
     return galaxies
 
 
-def get_flares_filters(filepath, rf_filepath):
+def get_flares_filters(filepath):
     """Get the filter collection."""
     # Check if the filter collection file already exists
     if os.path.exists(filepath):
