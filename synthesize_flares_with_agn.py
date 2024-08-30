@@ -1092,6 +1092,7 @@ if __name__ == "__main__":
     # Get the grid
     grid_start = time.time()
     grid = get_grid(grid_name, grid_dir, filters)
+    print(filters.lam.min(), filters.lam.max(), filters.lam.shape)
     grid_end = time.time()
 
     # Get the PSFs
