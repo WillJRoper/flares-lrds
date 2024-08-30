@@ -6,7 +6,7 @@ import os
 import multiprocessing as mp
 import numpy as np
 import h5py
-from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, g, s
+from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, g, s, km, s
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from utils import (
