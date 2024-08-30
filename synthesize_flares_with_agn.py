@@ -273,10 +273,6 @@ def get_flares_filters(filepath):
         # Write the filter collection
         filters.write_filters(path=filepath)
 
-    if rank == 0:
-        fig, ax = filters.plot_transmission_curves(show=False)
-        fig.savefig("plots/filters.png")
-
     return filters
 
 
