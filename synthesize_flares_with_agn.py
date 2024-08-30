@@ -82,6 +82,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_age = part_grp["S_Age"][start:end] * Gyr
         star_met = part_grp["S_Z_smooth"][start:end]
         star_sml = part_grp["S_sml"][start:end] * Mpc
+        star_vel = part_grp["S_Vel"][:, start:end].T * km / s
 
         # Get the gas data
         gas_pos = (
@@ -131,6 +132,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
             metallicities=star_met[mask],
             redshift=z,
             coordinates=star_pos[mask, :],
+            velocities=star_vel[mask, :],
             smoothing_lengths=star_sml[mask],
             centre=centre,
             young_tau_v=star_met[mask] / 0.01,
