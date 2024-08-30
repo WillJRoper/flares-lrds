@@ -37,6 +37,7 @@ KOKOREV24 = {
 
 # Define the list of filter IDs
 FILTER_CODES = [
+    "UV1500",
     "JWST/NIRCam.F090W",
     "JWST/NIRCam.F115W",
     "JWST/NIRCam.F150W",
@@ -45,6 +46,9 @@ FILTER_CODES = [
     "JWST/NIRCam.F356W",
     "JWST/NIRCam.F444W",
 ]
+TOPHATS = {
+    "UV1500": {"lam_eff": 1500, "lam_fwhm": 300},
+}
 
 
 def _print(*args, **kwargs):
