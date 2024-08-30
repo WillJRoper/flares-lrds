@@ -278,12 +278,15 @@ def get_flares_filters(filepath):
 
 def get_grid(grid_name, grid_dir, filters):
     """Get a Synthesizer Grid."""
-    return Grid(
+    grid = Grid(
         grid_name,
         grid_dir,
-        # filters=filters,
-        lam_lims=(500 * angstrom, 10**6 * angstrom),
+        lam_lims=(1000 * angstrom, 10**6 * angstrom),
     )
+
+    filters.resample_filters(new_lam=grid.lam)
+
+    return grid, filters
 
 
 def get_emission_model(
@@ -470,13 +473,9 @@ def analyse_galaxy(
     # Get the observed spectra
     gal.get_observed_spectra(cosmo)
 
-    print("Got spectra")
-
     # Get the photometry
     gal.get_photo_fluxes(filters, verbose=False)
     gal.get_photo_luminosities(filters, verbose=False)
-
-    print("Got fluxes")
 
     # Compute the half-light radius on each filter
     gal.stars.half_light_radii = {}
@@ -1091,8 +1090,7 @@ if __name__ == "__main__":
 
     # Get the grid
     grid_start = time.time()
-    grid = get_grid(grid_name, grid_dir, filters)
-    print(filters.lam.min(), filters.lam.max(), filters.lam.shape)
+    grid, filters = get_grid(grid_name, grid_dir, filters)
     grid_end = time.time()
 
     # Get the PSFs
