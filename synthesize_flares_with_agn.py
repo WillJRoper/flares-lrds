@@ -254,7 +254,7 @@ def get_flares_galaxies(
     return galaxies
 
 
-def get_flares_filters(filepath):
+def get_flares_filters(filepath, rf_filepath):
     """Get the filter collection."""
     # Check if the filter collection file already exists
     if os.path.exists(filepath):
@@ -403,7 +403,7 @@ def get_images(
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
     kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
     app_flux = {}
-    for filt in FILTER_CODES[1:]:
+    for filt in FILTER_CODES:
         app_flux.setdefault(filt, {})
         for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
             app_flux[filt][lab] = float(
