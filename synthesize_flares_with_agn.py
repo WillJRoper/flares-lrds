@@ -245,8 +245,15 @@ def get_flares_filters(filepath):
     if os.path.exists(filepath):
         filters = FilterCollection(path=filepath)
     else:
+        tophats = {
+            "UV1500": {"lam_eff": 1500, "lam_fwhm": 300},
+        }
+
         # Create the FilterCollection
-        filters = FilterCollection(filter_codes=FILTER_CODES)
+        filters = FilterCollection(
+            filter_codes=FILTER_CODES[1:],
+            tophat_dict=tophats,
+        )
 
         # Write the filter collection
         filters.write_filters(path=filepath)
