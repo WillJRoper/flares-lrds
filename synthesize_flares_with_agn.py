@@ -282,7 +282,7 @@ def get_grid(grid_name, grid_dir, filters):
         grid_name,
         grid_dir,
         # filters=filters,
-        lam_lims=(1000 * angstrom, 10**6 * angstrom),
+        lam_lims=(500 * angstrom, 10**6 * angstrom),
     )
 
 
