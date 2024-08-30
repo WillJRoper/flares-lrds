@@ -334,7 +334,6 @@ def get_psfs(filter_codes, filepath):
                     continue
                 psf = hdf[filt][...]
                 psfs[filt] = psf
-        return psfs
     else:
         # Ok we need to make them
         psfs = {}
@@ -352,7 +351,10 @@ def get_psfs(filter_codes, filepath):
             for filt, psf in psfs.items():
                 hdf.create_dataset(filt, data=psf)
 
-        return psfs
+    # Create a fake PSF of ones for the UV1500 filter
+    psfs["UV1500"] = np.ones((101, 101))
+
+    return psfs
 
 
 def get_images(
@@ -393,7 +395,7 @@ def get_images(
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
     kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
     app_flux = {}
-    for filt in FILTER_CODES:
+    for filt in FILTER_CODES[1:]:
         app_flux.setdefault(filt, {})
         for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
             app_flux[filt][lab] = float(
