@@ -335,12 +335,18 @@ def get_psfs(filter_codes, filepath):
         psfs = {}
         with h5py.File(filepath, "r") as hdf:
             for filt in filter_codes:
+                # Skip an without JWST
+                if "JWST" not in filt:
+                    continue
                 psf = hdf[filt][...]
                 psfs[filt] = psf
     else:
         # Ok we need to make them
         psfs = {}
         for filt in filter_codes:
+            # Skip an without JWST
+            if "JWST" not in filt:
+                continue
             if "NIRCam" in filt:
                 nc = webbpsf.NIRCam()
                 nc.filter = filt.split(".")[-1]
