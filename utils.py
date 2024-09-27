@@ -45,6 +45,30 @@ FILTER_CODES = [
     "JWST/NIRCam.F356W",
     "JWST/NIRCam.F444W",
 ]
+RUBIES_FILTER_CODES = [
+    "UV1500",
+    "JWST/NIRCam.F090W",
+    "JWST/NIRCam.F115W",
+    "JWST/NIRCam.F140M",
+    "JWST/NIRCam.F150W",
+    "JWST/NIRCam.F162M",
+    "JWST/NIRCam.F182M",
+    "JWST/NIRCam.F200W",
+    "JWST/NIRCam.F210M",
+    "JWST/NIRCam.F250M",
+    "JWST/NIRCam.F277W",
+    "JWST/NIRCam.F300M",
+    "JWST/NIRCam.F335M",
+    "JWST/NIRCam.F356W",
+    "JWST/NIRCam.F360M",
+    "JWST/NIRCam.F410M",
+    "JWST/NIRCam.F430M",
+    "JWST/NIRCam.F444W",
+    "JWST/NIRCam.F460M",
+    "JWST/NIRCam.F480M",
+    "JWST/MIRI.F770W",
+    "JWST/MIRI.F1800W",
+]
 TOPHATS = {
     "UV1500": {"lam_eff": 1500, "lam_fwhm": 300},
 }
