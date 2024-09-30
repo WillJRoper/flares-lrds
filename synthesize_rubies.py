@@ -488,10 +488,7 @@ def get_images(
 
     # Convert the images to float32
     for key, img in psf_imgs.items():
-        for filt in img.keys():
-            psf_imgs[key][filt].arr = psf_imgs[key][filt].arr.astype(
-                np.float32
-            )
+        psf_imgs[key].arr = psf_imgs[key][filt].arr.astype(np.float32)
 
     # Apply the 0.2" and 0.4" apertures
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
