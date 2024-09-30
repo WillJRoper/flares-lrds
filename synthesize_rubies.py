@@ -410,6 +410,13 @@ def get_images(
     psf_imgs = imgs.apply_psfs(psfs)
     psf_imgs.downsample(0.5)
 
+    # Convert the images to float32
+    for key, img in psf_imgs.items():
+        for filt in img.keys():
+            psf_imgs[key][filt].arr = psf_imgs[key][filt].arr.astype(
+                np.float32
+            )
+
     # Apply the 0.2" and 0.4" apertures
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
     kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
