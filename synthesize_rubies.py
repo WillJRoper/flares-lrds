@@ -1,6 +1,7 @@
 """A script to derive synthetic observations for FLARES."""
 
 import argparse
+import pickle
 import time
 import os
 import multiprocessing as mp
@@ -35,6 +36,81 @@ warnings.filterwarnings("ignore")
 
 # Msun needs to be respected
 Msun = Msun.in_base("galactic")
+
+
+def chunked_gather(data, comm, root=0, chunk_size=None):
+    """
+    Gathers data from all ranks to the root process, with optional chunking.
+
+    Parameters:
+    - data: The data to gather from each rank.
+    - comm: The MPI communicator.
+    - root: The rank of the root process.
+    - chunk_size: Maximum size (in bytes) for each chunk.
+                  If None, chunking is not used unless data size exceeds MPI limits.
+
+    Returns:
+    - On the root process, returns the list of data gathered from each rank.
+    - On other processes, returns None.
+    """
+    rank = comm.Get_rank()
+
+    # Serialize the data to measure its size
+    try:
+        serialized_data = pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL)
+    except pickle.PicklingError as e:
+        raise ValueError(f"Data on rank {rank} cannot be pickled: {e}")
+
+    data_size = len(serialized_data)
+
+    # Estimate the maximum message size (depends on MPI implementation)
+    # We'll use a conservative default of 1 GB
+    MAX_MESSAGE_SIZE = 1 * 1024 * 1024 * 1024  # 1 GB
+
+    if chunk_size is None:
+        # Decide whether to chunk based on data size
+        if data_size < MAX_MESSAGE_SIZE:
+            # Data size is acceptable, perform normal gather
+            gathered_data = comm.gather(data, root=root)
+            return gathered_data
+        else:
+            # Data is too large, set default chunk_size
+            chunk_size = MAX_MESSAGE_SIZE // 2  # Use half of max message size
+
+    # Split the serialized data into chunks
+    num_chunks = (data_size + chunk_size - 1) // chunk_size
+
+    # Broadcast the number of chunks to all ranks
+    num_chunks = comm.bcast(num_chunks, root=root)
+
+    # Gather chunks one by one
+    gathered_serialized_data = (
+        [[] for _ in range(comm.Get_size())] if rank == root else None
+    )
+
+    for chunk_index in range(num_chunks):
+        # Extract the chunk for this iteration
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, data_size)
+        chunk = serialized_data[start:end]
+
+        # Gather this chunk from all ranks
+        chunk_per_rank = comm.gather(chunk, root=root)
+
+        if rank == root:
+            for i, chunk_data in enumerate(chunk_per_rank):
+                gathered_serialized_data[i].append(chunk_data)
+
+    if rank == root:
+        # Reconstruct the data from the gathered serialized chunks
+        data_per_rank = []
+        for serialized_chunks in gathered_serialized_data:
+            full_serialized_data = b"".join(serialized_chunks)
+            data_item = pickle.loads(full_serialized_data)
+            data_per_rank.append(data_item)
+        return data_per_rank
+    else:
+        return None
 
 
 def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
@@ -798,14 +874,24 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
-    imgs_att_per_rank = comm.gather(imgs["attenuated"], root=0)
-    imgs_rep_per_rank = comm.gather(imgs["reprocessed"], root=0)
-    imgs_agn_rep_per_rank = comm.gather(imgs["agn_reprocessed"], root=0)
-    imgs_stellar_rep_per_rank = comm.gather(
-        imgs["stellar_reprocessed"], root=0
+    imgs_att_per_rank = chunked_gather(
+        imgs.get("attenuated", {}), comm, root=0
     )
-    imgs_agn_att_per_rank = comm.gather(imgs["agn_attenuated"], root=0)
-    imgs_stellar_att_per_rank = comm.gather(imgs["stellar_attenuated"], root=0)
+    imgs_rep_per_rank = chunked_gather(
+        imgs.get("reprocessed", {}), comm, root=0
+    )
+    imgs_agn_rep_per_rank = chunked_gather(
+        imgs.get("agn_reprocessed", {}), comm, root=0
+    )
+    imgs_stellar_rep_per_rank = chunked_gather(
+        imgs.get("stellar_reprocessed", {}), comm, root=0
+    )
+    imgs_agn_att_per_rank = chunked_gather(
+        imgs.get("agn_attenuated", {}), comm, root=0
+    )
+    imgs_stellar_att_per_rank = chunked_gather(
+        imgs.get("stellar_attenuated", {}), comm, root=0
+    )
     apps_per_rank = comm.gather(apps, root=0)
     img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
     vel_disp_1d_per_rank = comm.gather(vel_disp_1d, root=0)
