@@ -397,6 +397,13 @@ def get_images(
         nthreads=nthreads,
     )
 
+    # Convert imags to float32
+    for key, img in gal.flux_imgs.items():
+        for filt in img.keys():
+            gal.flux_imgs[key][filt].arr = gal.flux_imgs[key][filt].arr.astype(
+                np.float32
+            )
+
     # Apply the PSFs with a super and then down sample to remove any convolution
     # issues due to the resolution.
     imgs.supersample(2)
