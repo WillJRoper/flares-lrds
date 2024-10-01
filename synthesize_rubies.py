@@ -708,7 +708,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         apps["0p32"][spec] = {}
         apps["0p4"][spec] = {}
         apps["0p5"][spec] = {}
-        for filt in FILTER_CODES:
+        for filt in FILTER_CODES + ["UV1500"]:
             imgs[spec][filt] = []
             img_fluxes[spec][filt] = []
             fluxes[spec][filt] = []
