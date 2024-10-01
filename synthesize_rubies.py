@@ -60,6 +60,8 @@ def recursive_gather(data, comm, root=0):
                 return np.concatenate(collected_data)
             else:
                 return []
+        else:
+            return []
 
     # Recurse through the whole dict communicating an lists or
     # arrays we hit along the way
