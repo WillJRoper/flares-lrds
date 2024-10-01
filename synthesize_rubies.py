@@ -52,7 +52,6 @@ def recursive_gather(data, comm, root=0):
         root (int): The root rank to gather data to.
     """
     # If we don't have a dict, just gather the data straight away
-    print(type(data))
     if not isinstance(data, dict):
         return comm.gather(data, root=root)
 
@@ -62,11 +61,14 @@ def recursive_gather(data, comm, root=0):
         new_d = {}
         for k, v in d.items():
             if isinstance(v, (list, np.ndarray)):
-                collected_data = [
-                    l for l in comm.gather(v, root=root) if len(l) > 0
-                ]
-                if len(collected_data) > 0:
-                    new_d[k] = np.concatenate(collected_data)
+                if comm.rank == root:
+                    collected_data = [
+                        l for l in comm.gather(v, root=root) if len(l) > 0
+                    ]
+                    if len(collected_data) > 0:
+                        new_d[k] = np.concatenate(collected_data)
+                    else:
+                        new_d[k] = []
                 else:
                     new_d[k] = []
             elif isinstance(v, dict):
