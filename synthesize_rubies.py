@@ -52,6 +52,7 @@ def recursive_gather(data, comm, root=0):
         root (int): The root rank to gather data to.
     """
     # If we don't have a dict, just gather the data straight away
+    print(type(data))
     if not isinstance(data, dict):
         return comm.gather(data, root=root)
 
