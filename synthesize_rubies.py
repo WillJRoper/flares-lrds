@@ -53,7 +53,13 @@ def recursive_gather(data, comm, root=0):
     """
     # If we don't have a dict, just gather the data straight away
     if not isinstance(data, dict):
-        return comm.gather(data, root=root)
+        collected_data = comm.gather(data, root=root)
+        if comm.rank == root:
+            collected_data = [l for l in collected_data if len(l) > 0]
+            if len(collected_data) > 0:
+                return np.concatenate(collected_data)
+            else:
+                return []
 
     # Recurse through the whole dict communicating an lists or
     # arrays we hit along the way
@@ -826,58 +832,35 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         for filt in FILTER_CODES:
             imgs["stellar_attenuated"][filt] = []
 
-    # Collect output data onto rank 0
-    fnu_per_rank = comm.gather(fnus, root=0)
-    flux_per_rank = comm.gather(fluxes, root=0)
-    rf_flux_per_rank = comm.gather(rf_fluxes, root=0)
-    group_per_rank = comm.gather(group_ids, root=0)
-    subgroup_per_rank = comm.gather(subgroup_ids, root=0)
-    gal_ids_per_rank = comm.gather(gal_ids, root=0)
-    index_per_rank = comm.gather(indices, root=0)
-    uv_slope_per_rank = comm.gather(uv_slopes, root=0)
-    ir_slope_per_rank = comm.gather(ir_slopes, root=0)
-    size_per_rank = comm.gather(sizes, root=0)
-    size_95_per_rank = comm.gather(sizes_95, root=0)
-    size_80_per_rank = comm.gather(sizes_80, root=0)
-    size_20_per_rank = comm.gather(sizes_20, root=0)
-    gas_size_per_rank = comm.gather(gas_sizes, root=0)
-    gas_size_80_per_rank = comm.gather(gas_sizes_80, root=0)
-    gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
-    dust_size_per_rank = comm.gather(dust_sizes, root=0)
-    sfzhs_per_rank = comm.gather(sfzhs, root=0)
+    # Collect output data onto rank 0, this is done recursively with the results
+    # of the gather being concatenated at the root
+    fnus = recursive_gather(fnus, comm, root=0)
+    fluxes = recursive_gather(fluxes, comm, root=0)
+    rf_fluxes = recursive_gather(rf_fluxes, comm, root=0)
+    group_ids = recursive_gather(group_ids, comm, root=0)
+    subgroup_ids = recursive_gather(subgroup_ids, comm, root=0)
+    gal_ids = recursive_gather(gal_ids, comm, root=0)
+    indices = recursive_gather(indices, comm, root=0)
+    uv_slopes = recursive_gather(uv_slopes, comm, root=0)
+    ir_slopes = recursive_gather(ir_slopes, comm, root=0)
+    sizes = recursive_gather(sizes, comm, root=0)
+    sizes_95 = recursive_gather(sizes_95, comm, root=0)
+    sizes_80 = recursive_gather(sizes_80, comm, root=0)
+    sizes_20 = recursive_gather(sizes_20, comm, root=0)
+    gas_sizes = recursive_gather(gas_sizes, comm, root=0)
+    gas_sizes_80 = recursive_gather(gas_sizes_80, comm, root=0)
+    gas_sizes_20 = recursive_gather(gas_sizes_20, comm, root=0)
+    dust_sizes = recursive_gather(dust_sizes, comm, root=0)
+    sfzhs = recursive_gather(sfzhs, comm, root=0)
     imgs = recursive_gather(imgs, comm, root=0)
-    apps_per_rank = comm.gather(apps, root=0)
-    img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
-    vel_disp_1d_per_rank = comm.gather(vel_disp_1d, root=0)
-    vel_disp_3d_per_rank = comm.gather(vel_disp_3d, root=0)
+    apps = recursive_gather(apps, comm, root=0)
+    img_fluxes = recursive_gather(img_fluxes, comm, root=0)
+    vel_disp_1d = recursive_gather(vel_disp_1d, comm, root=0)
+    vel_disp_3d = recursive_gather(vel_disp_3d, comm, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
         return
-
-    # Concatenate the data
-    fnus = combine_distributed_data(fnu_per_rank)
-    fluxes = combine_distributed_data(flux_per_rank)
-    rf_fluxes = combine_distributed_data(rf_flux_per_rank)
-    group_ids = combine_distributed_data(group_per_rank)
-    subgroup_ids = combine_distributed_data(subgroup_per_rank)
-    gal_ids = combine_distributed_data(gal_ids_per_rank)
-    indices = combine_distributed_data(index_per_rank)
-    uv_slopes = combine_distributed_data(uv_slope_per_rank)
-    ir_slopes = combine_distributed_data(ir_slope_per_rank)
-    sizes = combine_distributed_data(size_per_rank)
-    sizes_95 = combine_distributed_data(size_95_per_rank)
-    sizes_80 = combine_distributed_data(size_80_per_rank)
-    sizes_20 = combine_distributed_data(size_20_per_rank)
-    gas_sizes = combine_distributed_data(gas_size_per_rank)
-    gas_sizes_80 = combine_distributed_data(gas_size_80_per_rank)
-    gas_sizes_20 = combine_distributed_data(gas_size_20_per_rank)
-    dust_sizes = combine_distributed_data(dust_size_per_rank)
-    sfzhs = combine_distributed_data(sfzhs_per_rank)
-    apps = combine_distributed_data(apps_per_rank)
-    img_fluxes = combine_distributed_data(img_fluxes_per_rank)
-    vel_disp_1d = combine_distributed_data(vel_disp_1d_per_rank)
-    vel_disp_3d = combine_distributed_data(vel_disp_3d_per_rank)
 
     # Get the units for each dataset
     units = {
