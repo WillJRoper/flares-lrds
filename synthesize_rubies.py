@@ -288,7 +288,7 @@ def get_flares_galaxies(
     # Get redshift from the snapshot tag
     z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
     if snap == "008_z007p000":
-        z = 7.3
+        z = 7.29
 
     # How many galaxies are there?
     with h5py.File(master_file_path, "r") as hdf:
