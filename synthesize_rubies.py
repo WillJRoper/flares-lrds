@@ -718,7 +718,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             sizes_80[spec][filt] = []
             sizes_20[spec][filt] = []
             apps["0p2"][spec][filt] = []
+            apps["0p32"][spec][filt] = []
             apps["0p4"][spec][filt] = []
+            apps["0p5"][spec][filt] = []
 
     # Loop over galaxies and unpacking all the data we'll write out
     for gal in galaxies:
