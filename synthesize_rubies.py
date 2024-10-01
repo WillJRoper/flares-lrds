@@ -873,6 +873,29 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     if rank != 0:
         return
 
+    # Remove any empty keys
+    def _remove_empty(d):
+        if isinstance(d, dict):
+            return {
+                k: _remove_empty(v) for k, v in d.items() if _remove_empty(v)
+            }
+        elif isinstance(d, list):
+            return [v for v in d if len(v) > 0]
+        return d
+
+    fnus = _remove_empty(fnus)
+    fluxes = _remove_empty(fluxes)
+    rf_fluxes = _remove_empty(rf_fluxes)
+    uv_slopes = _remove_empty(uv_slopes)
+    ir_slopes = _remove_empty(ir_slopes)
+    sizes = _remove_empty(sizes)
+    sizes_95 = _remove_empty(sizes_95)
+    sizes_80 = _remove_empty(sizes_80)
+    sizes_20 = _remove_empty(sizes_20)
+    apps = _remove_empty(apps)
+    img_fluxes = _remove_empty(img_fluxes)
+    imgs = _remove_empty(imgs)
+
     # Get the units for each dataset
     units = {
         "fnu": "nJy",
