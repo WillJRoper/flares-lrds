@@ -681,6 +681,12 @@ def analyse_galaxy(
 
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
+    # Get the redshift from the first galaxy
+    if len(galaxies) > 0:
+        z = galaxies[0].redshift
+    else:
+        z = None
+
     # Loop over galaxies and unpacking all the data we'll write out
     gal_ids = []
     fluxes = {}
@@ -951,6 +957,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Store the grid used and the Synthesizer version
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
+        hdf.attrs["Redshift"] = z
 
         # Write the group and subgroup ids
         write_dataset_recursive(
