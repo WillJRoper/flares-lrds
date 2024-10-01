@@ -432,22 +432,11 @@ def get_images(
         nthreads=nthreads,
     )
 
-    # Convert imags to float32
-    for key, img in gal.flux_imgs.items():
-        for filt in img.keys():
-            gal.flux_imgs[key][filt].arr = gal.flux_imgs[key][filt].arr.astype(
-                np.float32
-            )
-
     # Apply the PSFs with a super and then down sample to remove any convolution
     # issues due to the resolution.
     imgs.supersample(2)
     psf_imgs = imgs.apply_psfs(psfs)
     psf_imgs.downsample(0.5)
-
-    # Convert the images to float32
-    for key, img in psf_imgs.items():
-        psf_imgs[key].arr = psf_imgs[key][filt].arr.astype(np.float32)
 
     # Apply the 0.2" and 0.4" apertures
     ang_apertures = np.array([0.2, 0.4]) * arcsecond
