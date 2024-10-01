@@ -62,10 +62,9 @@ def recursive_gather(data, comm, root=0):
         for k, v in d.items():
             print(k, v)
             if isinstance(v, (list, np.ndarray)):
+                collected_data = comm.gather(v, root=root)
                 if comm.rank == root:
-                    collected_data = [
-                        l for l in comm.gather(v, root=root) if len(l) > 0
-                    ]
+                    collected_data = [l for l in collected_data if len(l) > 0]
                     if len(collected_data) > 0:
                         print(collected_data)
                         new_d[k] = np.concatenate(collected_data)
