@@ -62,7 +62,13 @@ def recursive_gather(data, comm, root=0):
         new_d = {}
         for k, v in d.items():
             if isinstance(v, (list, np.ndarray)):
-                new_d[k] = comm.gather(v, root=root)
+                collected_data = [
+                    l for l in comm.gather(v, root=root) if len(l) > 0
+                ]
+                if len(collected_data) > 0:
+                    new_d[k] = np.concatenate(collected_data)
+                else:
+                    new_d[k] = []
             elif isinstance(v, dict):
                 new_d[k] = _gather(v, comm, root)
             else:
@@ -838,7 +844,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
     dust_size_per_rank = comm.gather(dust_sizes, root=0)
     sfzhs_per_rank = comm.gather(sfzhs, root=0)
-    imgs_per_rank = recursive_gather(imgs, comm, root=0)
+    imgs = recursive_gather(imgs, comm, root=0)
     apps_per_rank = comm.gather(apps, root=0)
     img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
     vel_disp_1d_per_rank = comm.gather(vel_disp_1d, root=0)
@@ -867,7 +873,6 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     gas_sizes_20 = combine_distributed_data(gas_size_20_per_rank)
     dust_sizes = combine_distributed_data(dust_size_per_rank)
     sfzhs = combine_distributed_data(sfzhs_per_rank)
-    imgs = combine_distributed_data(imgs_per_rank)
     apps = combine_distributed_data(apps_per_rank)
     img_fluxes = combine_distributed_data(img_fluxes_per_rank)
     vel_disp_1d = combine_distributed_data(vel_disp_1d_per_rank)
