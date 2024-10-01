@@ -73,6 +73,16 @@ TOPHATS = {
     "UV1500": {"lam_eff": 1500, "lam_fwhm": 300},
 }
 
+# Define spectra keys
+SPECTRA_KEYS = [
+    "reprocessed",
+    "attenuated",
+    "agn_reprocessed",
+    "stellar_reprocessed",
+    "agn_attenuated",
+    "stellar_attenuated",
+]
+
 
 def _print(*args, **kwargs):
     """Overload print with rank info."""

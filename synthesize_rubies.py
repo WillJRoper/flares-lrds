@@ -14,7 +14,7 @@ from utils import (
     write_dataset_recursive,
     _print,
     sort_data_recursive,
-    combine_distributed_data,
+    SPECTRA_KEYS,
 )
 from utils import RUBIES_FILTER_CODES as FILTER_CODES
 import webbpsf
@@ -683,6 +683,13 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         "stellar_reprocessed",
         "agn_attenuated",
         "stellar_attenuated",
+        "young_reprocessed",
+        "old_reprocessed",
+        "young_attenuated",
+        "old_attenuated",
+        "agn_intrinsic",
+        "combined_intrinsic",
+        "total",
     ]:
         fnus[spec] = []
         fluxes[spec] = {}
