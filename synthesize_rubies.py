@@ -664,7 +664,9 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     sizes_20 = {}
     apps = {}
     apps["0p2"] = {}
+    apps["0p32"] = {}
     apps["0p4"] = {}
+    apps["0p5"] = {}
     gal_ids = []
     gas_sizes = []
     gas_sizes_80 = []
