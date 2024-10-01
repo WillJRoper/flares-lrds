@@ -66,6 +66,7 @@ def recursive_gather(data, comm, root=0):
                         l for l in comm.gather(v, root=root) if len(l) > 0
                     ]
                     if len(collected_data) > 0:
+                        print(collected_data)
                         new_d[k] = np.concatenate(collected_data)
                     else:
                         new_d[k] = []
