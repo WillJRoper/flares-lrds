@@ -455,12 +455,12 @@ def get_images(
     psf_imgs.downsample(0.5)
 
     # Apply the 0.2" and 0.4" apertures
-    ang_apertures = np.array([0.2, 0.4]) * arcsecond
+    ang_apertures = np.array([0.2, 0.32, 0.4, 0.5]) * arcsecond
     kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
     app_flux = {}
     for filt in FILTER_CODES:
         app_flux.setdefault(filt, {})
-        for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
+        for ap, lab in zip(kpc_apertures, ["0p2", "0p32", "0p4", "0p5"]):
             app_flux[filt][lab] = float(
                 psf_imgs[filt]
                 .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
@@ -650,17 +650,22 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     else:
         z = None
 
-    # Loop over galaxies and unpacking all the data we'll write out
-    gal_ids = []
+    # Setup the structure of all output dicts and lists
+    fnus = {}
     fluxes = {}
     rf_fluxes = {}
-    fnus = {}
+    imgs = {}
+    img_fluxes = {}
     uv_slopes = {}
     ir_slopes = {}
     sizes = {}
     sizes_95 = {}
     sizes_80 = {}
     sizes_20 = {}
+    apps = {}
+    apps["0p2"] = {}
+    apps["0p4"] = {}
+    gal_ids = []
     gas_sizes = []
     gas_sizes_80 = []
     gas_sizes_20 = []
@@ -669,11 +674,42 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     subgroup_ids = []
     indices = []
     sfzhs = []
-    imgs = {}
-    apps = {}
-    img_fluxes = {}
     vel_disp_1d = []
     vel_disp_3d = []
+    for spec in [
+        "reprocessed",
+        "attenuated",
+        "agn_reprocessed",
+        "stellar_reprocessed",
+        "agn_attenuated",
+        "stellar_attenuated",
+    ]:
+        fnus[spec] = []
+        fluxes[spec] = {}
+        rf_fluxes[spec] = {}
+        imgs[spec] = {}
+        img_fluxes[spec] = {}
+        uv_slopes[spec] = []
+        ir_slopes[spec] = []
+        sizes[spec] = {}
+        sizes_95[spec] = {}
+        sizes_80[spec] = {}
+        sizes_20[spec] = {}
+        apps["0p2"][spec] = {}
+        apps["0p4"][spec] = {}
+        for filt in FILTER_CODES:
+            imgs[spec][filt] = []
+            img_fluxes[spec][filt] = []
+            fluxes[spec][filt] = []
+            rf_fluxes[spec][filt] = []
+            sizes[spec][filt] = []
+            sizes_95[spec][filt] = []
+            sizes_80[spec][filt] = []
+            sizes_20[spec][filt] = []
+            apps["0p2"][spec][filt] = []
+            apps["0p4"][spec][filt] = []
+
+    # Loop over galaxies and unpacking all the data we'll write out
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -696,11 +732,11 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
         for key, spec in gal.black_holes.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
         for key, spec in gal.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
 
         # Get the images
         for spec in [
@@ -711,74 +747,64 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             "agn_attenuated",
             "stellar_attenuated",
         ]:
-            imgs.setdefault(spec, {})
             for key in FILTER_CODES:
-                imgs[spec].setdefault(key, []).append(
-                    gal.flux_imgs[spec][key].arr
-                )
+                imgs[spec][key].append(gal.flux_imgs[spec][key].arr)
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
         for key, photcol in gal.black_holes.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
         for key, photcol in gal.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
 
         # Get the rest frame photometry
         for key, photcol in gal.stars.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
         for key, photcol in gal.black_holes.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
         for key, photcol in gal.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
 
         # Get slopes
         for key, spectra in gal.stars.spectra.items():
-            uv_slopes.setdefault(key, []).append(
+            uv_slopes[key].append(
                 spectra.measure_beta(window=(1500 * angstrom, 3000 * angstrom))
             )
-            ir_slopes.setdefault(key, []).append(
+            ir_slopes[key].append(
                 spectra.measure_beta(window=(4400 * angstrom, 7500 * angstrom))
             )
 
         # Get the sizes
         for spec in gal.stars.half_light_radii.keys():
             for filt in gal.stars.half_light_radii[spec].keys():
-                sizes.setdefault(spec, {}).setdefault(filt, []).append(
+                sizes[spec][filt].append(
                     gal.stars.half_light_radii[spec][filt]
                 )
         for spec in gal.stars.light_radii_95.keys():
             for filt in gal.stars.light_radii_95[spec].keys():
-                sizes_95.setdefault(spec, {}).setdefault(filt, []).append(
+                sizes_95[spec][filt].append(
                     gal.stars.light_radii_95[spec][filt]
                 )
         for spec in gal.stars.light_radii_80.keys():
             for filt in gal.stars.light_radii_80[spec].keys():
-                sizes_80.setdefault(spec, {}).setdefault(filt, []).append(
+                sizes_80[spec][filt].append(
                     gal.stars.light_radii_80[spec][filt]
                 )
         for spec in gal.stars.light_radii_20.keys():
             for filt in gal.stars.light_radii_20[spec].keys():
-                sizes_20.setdefault(spec, {}).setdefault(filt, []).append(
+                sizes_20[spec][filt].append(
                     gal.stars.light_radii_20[spec][filt]
                 )
 
         # Attach apertures from images
-        for app in ["0p2", "0p4"]:
-            apps.setdefault(app, {})
+        for app in ["0p2", "0p32", "0p4", "0p5"]:
             for spec in [
                 "reprocessed",
                 "attenuated",
@@ -787,9 +813,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 "agn_attenuated",
                 "stellar_attenuated",
             ]:
-                apps[app].setdefault(spec, {})
                 for filt in FILTER_CODES:
-                    apps[app][spec].setdefault(filt, []).append(
+                    apps[app][spec][filt].append(
                         gal.flux_imgs[spec].app_fluxes[filt][app]
                     )
 
@@ -802,37 +827,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             "agn_attenuated",
             "stellar_attenuated",
         ]:
-            img_fluxes.setdefault(spec, {})
             for filt in FILTER_CODES:
-                img_fluxes[spec].setdefault(filt, []).append(
-                    gal.flux_imgs[spec].fluxes[filt]
-                )
-
-    # Need some gymnastics to avoid errors:
-    if "attenuated" not in imgs:
-        imgs["attenuated"] = {}
-        for filt in FILTER_CODES:
-            imgs["attenuated"][filt] = []
-    if "reprocessed" not in imgs:
-        imgs["reprocessed"] = {}
-        for filt in FILTER_CODES:
-            imgs["reprocessed"][filt] = []
-    if "agn_reprocessed" not in imgs:
-        imgs["agn_reprocessed"] = {}
-        for filt in FILTER_CODES:
-            imgs["agn_reprocessed"][filt] = []
-    if "stellar_reprocessed" not in imgs:
-        imgs["stellar_reprocessed"] = {}
-        for filt in FILTER_CODES:
-            imgs["stellar_reprocessed"][filt] = []
-    if "agn_attenuated" not in imgs:
-        imgs["agn_attenuated"] = {}
-        for filt in FILTER_CODES:
-            imgs["agn_attenuated"][filt] = []
-    if "stellar_attenuated" not in imgs:
-        imgs["stellar_attenuated"] = {}
-        for filt in FILTER_CODES:
-            imgs["stellar_attenuated"][filt] = []
+                img_fluxes[spec][filt].append(gal.flux_imgs[spec].fluxes[filt])
 
     # Collect output data onto rank 0, this is done recursively with the results
     # of the gather being concatenated at the root
