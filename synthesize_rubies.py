@@ -876,9 +876,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     # Remove any empty keys
     def _remove_empty(d):
         if isinstance(d, dict):
-            return {
-                k: _remove_empty(v) for k, v in d.items() if _remove_empty(v)
-            }
+            return {k: _remove_empty(v) for k, v in d.items() if len(v) > 0}
         elif isinstance(d, list):
             return [v for v in d if len(v) > 0]
         return d
