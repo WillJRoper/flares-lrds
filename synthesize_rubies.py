@@ -60,6 +60,7 @@ def recursive_gather(data, comm, root=0):
     def _gather(d, comm, root):
         new_d = {}
         for k, v in d.items():
+            print(k, v)
             if isinstance(v, (list, np.ndarray)):
                 if comm.rank == root:
                     collected_data = [
