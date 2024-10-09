@@ -1,11 +1,11 @@
 #!/bin/bash -l
-#SBATCH --ntasks=1
+#SBATCH --ntasks=8
 #SBATCH -J FLARES-SWIFT_31
 #SBATCH --output=out_files/log_%A_%a.txt
 #SBATCH -p cosma7-rp
 #SBATCH -A dp004
 #SBATCH --exclusive
-#SBATCH --cpus-per-task=128
+#SBATCH --cpus-per-task=14
 #SBATCH --time=72:00:00
 #SBATCH --array=0-239  # 240 total tasks for 40 regions and 6 snapshots
 
