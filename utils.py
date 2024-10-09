@@ -1,14 +1,13 @@
 """A module containing the definition of helpful functions."""
+
 import os
+
 import h5py
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from mpi4py import MPI as mpi
-
-from unyt import unyt_array, nJy, kpc
-
 from synthesizer.conversions import apparent_mag_to_fnu
-
+from unyt import kpc, nJy, unyt_array
 
 # Define the flux limit in F444W (this is an apparent AB magnitude)
 FLUX_LIMIT = 28.3
@@ -75,12 +74,14 @@ TOPHATS = {
 
 # Define spectra keys
 SPECTRA_KEYS = [
-    "reprocessed",
-    "attenuated",
-    "agn_reprocessed",
-    "stellar_reprocessed",
-    "agn_attenuated",
+    "stellar_intrinsic",
+    "agn_intrinsic",
     "stellar_attenuated",
+    "agn_attenuated",
+    "stellar_total",
+    "combined_intrinsic",
+    "total_dust_free_agn",
+    "total",
 ]
 
 
@@ -152,9 +153,7 @@ def get_sizes_mdot(master_file_path):
                     if end - start == 0:
                         continue
                     mdot[i] = (
-                        np.max(
-                            hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end]
-                        )
+                        np.max(hdf[f"{reg}/{snap}/Particle/BH_Mdot"][start:end])
                         * 10**10
                         / 0.6777
                     )
@@ -197,9 +196,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
     # If requested, get the weights
     if get_weights:
-        region_weights = np.loadtxt(
-            "data/weights.txt", usecols=8, delimiter=","
-        )
+        region_weights = np.loadtxt("data/weights.txt", usecols=8, delimiter=",")
 
     # Lood over regions
     for reg in REGIONS:
@@ -217,13 +214,11 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
             # Skip files that don't exist
             if not os.path.exists(
-                synth_data_path.replace("<region>", reg).replace(
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
                     "<snap>", snap
                 )
-            ):
-                missing_path = synth_data_path.replace(
-                    "<region>", reg
-                ).replace("<snap>", snap)
                 print(f"File {missing_path} does not exist.")
                 continue
 
@@ -232,9 +227,7 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
 
             # Get the fluxes we need
             with h5py.File(
-                synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                ),
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
                 "r",
             ) as hdf:
                 try:
@@ -258,39 +251,27 @@ def get_synth_data(synth_data_path, spec, size_thresh=1, get_weights=False):
                     # Get the indices
                     inds = hdf["Indices"][mask]
                     f115w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
@@ -447,13 +428,11 @@ def get_synth_data_with_imgs(synth_data_path, spec):
 
             # Skip files that don't exist
             if not os.path.exists(
-                synth_data_path.replace("<region>", reg).replace(
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
                     "<snap>", snap
                 )
-            ):
-                missing_path = synth_data_path.replace(
-                    "<region>", reg
-                ).replace("<snap>", snap)
                 print(f"File {missing_path} does not exist.")
                 continue
 
@@ -462,9 +441,7 @@ def get_synth_data_with_imgs(synth_data_path, spec):
 
             # Get the fluxes we need
             with h5py.File(
-                synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                ),
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
                 "r",
             ) as hdf:
                 try:
@@ -488,48 +465,34 @@ def get_synth_data_with_imgs(synth_data_path, spec):
                     # Get the indices
                     inds = hdf["Indices"][mask]
                     f115w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F115W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f150w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F150W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f200w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F200W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f277w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F277W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f356w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F356W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     f444w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"
-                        ][mask],
+                        hdf[f"ImageObservedPhotometry/{spec}/JWST/NIRCam.F444W"][mask],
                         "erg/s/cm**2/Hz",
                     ).to("nJy")
                     for filt in FILTER_CODES:
-                        sizes[snap].setdefault(filt.split(".")[-1], []).extend(
-                            []
+                        sizes[snap].setdefault(filt.split(".")[-1], []).extend([])
+                        images[snap].setdefault(filt.split(".")[-1], []).extend(
+                            hdf[f"Images/{spec}/{filt}"][mask]
                         )
-                        images[snap].setdefault(
-                            filt.split(".")[-1], []
-                        ).extend(hdf[f"Images/{spec}/{filt}"][mask])
                     comp = (
                         hdf[f"Apertures/0p4/{spec}/JWST/NIRCam.F444W"][mask]
                         / hdf[f"Apertures/0p2/{spec}/JWST/NIRCam.F444W"][mask]
@@ -654,13 +617,11 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
 
             # Skip files that don't exist
             if not os.path.exists(
-                synth_data_path.replace("<region>", reg).replace(
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap)
+            ):
+                missing_path = synth_data_path.replace("<region>", reg).replace(
                     "<snap>", snap
                 )
-            ):
-                missing_path = synth_data_path.replace(
-                    "<region>", reg
-                ).replace("<snap>", snap)
                 print(f"File {missing_path} does not exist.")
                 continue
 
@@ -669,19 +630,16 @@ def get_synth_spectra(synth_data_path, spec, cut_on=None):
 
             # Get the fluxes we need
             with h5py.File(
-                synth_data_path.replace("<region>", reg).replace(
-                    "<snap>", snap
-                ),
+                synth_data_path.replace("<region>", reg).replace("<snap>", snap),
                 "r",
             ) as hdf:
                 try:
                     # Get f444w fluxes first so we can apply the flux limit,
                     # we always apply this cut to the combined emission
                     f444w = unyt_array(
-                        hdf[
-                            f"ImageObservedPhotometry/{cut_on}"
-                            "/JWST/NIRCam.F444W"
-                        ][...],
+                        hdf[f"ImageObservedPhotometry/{cut_on}" "/JWST/NIRCam.F444W"][
+                            ...
+                        ],
                         "erg/s/cm**2/Hz",
                     )
                     mask = f444w > flux_limit
@@ -751,9 +709,7 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
         return data
     else:
         # Load the weights
-        region_weights = np.loadtxt(
-            "data/weights.txt", usecols=8, delimiter=","
-        )
+        region_weights = np.loadtxt("data/weights.txt", usecols=8, delimiter=",")
 
         # Open the file
         with h5py.File(master_file_path, "r") as hdf:
@@ -770,9 +726,7 @@ def get_master_data(master_file_path, indices, key, get_weights=False):
                     weights.setdefault(snap, [])
 
                     # Get the data we need
-                    reg_data = hdf[f"{reg}/{snap}/Galaxy/{key}"][
-                        indices[snap][reg]
-                    ]
+                    reg_data = hdf[f"{reg}/{snap}/Galaxy/{key}"][indices[snap][reg]]
                     data[snap].extend(reg_data)
 
                     # Get the weights
@@ -849,9 +803,7 @@ def get_galaxy_identifiers(master_file_path, indices):
                 # Ensure a key exists for this snapshot
                 gal_ids.setdefault(snap, [])
 
-                grp_nums = hdf[f"{reg}/{snap}/Galaxy/GroupNumber"][
-                    indices[snap][reg]
-                ]
+                grp_nums = hdf[f"{reg}/{snap}/Galaxy/GroupNumber"][indices[snap][reg]]
                 subgrp_nums = hdf[f"{reg}/{snap}/Galaxy/SubGroupNumber"][
                     indices[snap][reg]
                 ]
@@ -928,9 +880,7 @@ def plot_masked_unmasked_hexbins(
         transform=axs[0].transAxes,
         fontsize=8,
         color="k",
-        bbox=dict(
-            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
-        ),
+        bbox=dict(boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7),
     )
 
     # Plot the size-luminosity relation with the mask
@@ -955,9 +905,7 @@ def plot_masked_unmasked_hexbins(
         transform=axs[1].transAxes,
         fontsize=8,
         color="k",
-        bbox=dict(
-            boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7
-        ),
+        bbox=dict(boxstyle="round,pad=0.3", fc="grey", ec="w", lw=1, alpha=0.7),
     )
 
     # Set the labels
@@ -1161,3 +1109,52 @@ def combine_distributed_data(distributed_data):
         out_dict = _combine_data_recursive(rank_data, out_dict)
 
     return out_dict
+
+
+def recursive_gather(data, comm, root=0):
+    """
+    Recursively collect data from all ranks onto the root.
+
+    This function is effectively just comm.gather but will ensure the
+    gather is performed at the root of any passed dictionaries to avoid
+    overflows and any later recursive concatenation issues.
+
+    Args:
+        data (any): The data to gather.
+        comm (mpi.Comm): The MPI communicator.
+        root (int): The root rank to gather data to.
+    """
+    # If we don't have a dict, just gather the data straight away
+    if not isinstance(data, dict):
+        collected_data = comm.gather(data, root=root)
+        if comm.rank == root:
+            collected_data = [l for l in collected_data if len(l) > 0]
+            if len(collected_data) > 0:
+                return np.concatenate(collected_data)
+            else:
+                return []
+        else:
+            return []
+
+    # Recurse through the whole dict communicating an lists or
+    # arrays we hit along the way
+    def _gather(d, comm, root):
+        new_d = {}
+        for k, v in d.items():
+            if isinstance(v, (list, np.ndarray)):
+                collected_data = comm.gather(v, root=root)
+                if comm.rank == root:
+                    collected_data = [l for l in collected_data if len(l) > 0]
+                    if len(collected_data) > 0:
+                        new_d[k] = np.concatenate(collected_data)
+                    else:
+                        new_d[k] = []
+                else:
+                    new_d[k] = []
+            elif isinstance(v, dict):
+                new_d[k] = _gather(v, comm, root)
+            else:
+                raise ValueError(f"Unexpected type {type(v)}")
+        return new_d
+
+    return _gather(data, comm, root)
