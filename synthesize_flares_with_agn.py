@@ -293,8 +293,8 @@ def get_emission_model(
         fesc_ly_alpha=fesc_ly_alpha,
     )
 
-    # Limit the spectra to be saved
-    model.save_spectra(*save_spectra)
+    # # Limit the spectra to be saved
+    # model.save_spectra(*save_spectra)
 
     return model
 
