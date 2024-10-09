@@ -364,7 +364,7 @@ def get_images(
     )
 
     # Loop over image collections in the images dict on the galaxy
-    for key in gal.images_fnu.keys():
+    for key in SPECTRA_KEYS:
         # Get the images
         imgs = gal.images_fnu[key]
 
@@ -589,76 +589,81 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
         # Get the SFZH arrays
         sfzhs.append(gal.stars.sfzh)
 
-        # Get the integrated observed spectra
-        for key, spec in gal.stars.spectra.items():
-            fnus[key].append(spec._fnu)
-        for key, spec in gal.black_holes.spectra.items():
-            fnus[key].append(spec._fnu)
-        for key, spec in gal.spectra.items():
-            fnus[key].append(spec._fnu)
+        # Loop over the spectra keys we will write out and collect the
+        # data from each galaxy
+        for key in SPECTRA_KEYS:
+            # Handle stellar emission
+            if key in gal.stars.spectra.keys():
+                fnus[key].append(gal.stars.spectra[key]._fnu)
+                uv_slopes[key].append(
+                    gal.stars.spectra[key].measure_beta(
+                        window=(1500 * angstrom, 3000 * angstrom)
+                    )
+                )
+                ir_slopes[key].append(
+                    gal.stars.spectra[key].measure_beta(
+                        window=(4400 * angstrom, 7500 * angstrom)
+                    )
+                )
 
-        # Get the images
-        for spec in SPECTRA_KEYS:
-            for key in FILTER_CODES:
-                imgs[spec][key].append(gal.flux_imgs[spec][key].arr)
+            # Handle black hole emission
+            if key in gal.black_holes.spectra.keys():
+                fnus[key].append(gal.black_holes.spectra[key]._fnu)
+                uv_slopes[key].append(
+                    gal.black_holes.spectra[key].measure_beta(
+                        window=(1500 * angstrom, 3000 * angstrom)
+                    )
+                )
+                ir_slopes[key].append(
+                    gal.black_holes.spectra[key].measure_beta(
+                        window=(4400 * angstrom, 7500 * angstrom)
+                    )
+                )
 
-        # Get the photometry
-        for key, photcol in gal.stars.photo_fluxes.items():
-            for filt, phot in photcol.items():
-                fluxes[key][filt].append(phot)
-        for key, photcol in gal.black_holes.photo_fluxes.items():
-            for filt, phot in photcol.items():
-                fluxes[key][filt].append(phot)
-        for key, photcol in gal.photo_fluxes.items():
-            for filt, phot in photcol.items():
-                fluxes[key][filt].append(phot)
+            # Handle galaxy emission
+            if key in gal.spectra.keys():
+                fnus[key].append(gal.spectra[key]._fnu)
+                uv_slopes[key].append(
+                    gal.stars.spectra[key].measure_beta(
+                        window=(1500 * angstrom, 3000 * angstrom)
+                    )
+                )
+                ir_slopes[key].append(
+                    gal.stars.spectra[key].measure_beta(
+                        window=(4400 * angstrom, 7500 * angstrom)
+                    )
+                )
 
-        # Get the rest frame photometry
-        for key, photcol in gal.stars.photo_luminosities.items():
-            for filt, phot in photcol.items():
-                rf_fluxes[key][filt].append(phot)
-        for key, photcol in gal.black_holes.photo_luminosities.items():
-            for filt, phot in photcol.items():
-                rf_fluxes[key][filt].append(phot)
-        for key, photcol in gal.photo_luminosities.items():
-            for filt, phot in photcol.items():
-                rf_fluxes[key][filt].append(phot)
+            # Loop over all the filters and collect the data
+            for filt in FILTER_CODES:
+                # Images are at the galaxy level regardless
+                imgs[key][filt].append(gal.flux_imgs[key][filt].arr)
+                img_fluxes[key][filt].append(gal.flux_imgs[key].fluxes[filt])
 
-        # Get slopes
-        for key, spectra in gal.stars.spectra.items():
-            uv_slopes[key].append(
-                spectra.measure_beta(window=(1500 * angstrom, 3000 * angstrom))
-            )
-            ir_slopes[key].append(
-                spectra.measure_beta(window=(4400 * angstrom, 7500 * angstrom))
-            )
-
-        # Get the sizes
-        for spec in gal.stars.half_light_radii.keys():
-            for filt in gal.stars.half_light_radii[spec].keys():
-                sizes[spec][filt].append(gal.stars.half_light_radii[spec][filt])
-        for spec in gal.stars.light_radii_95.keys():
-            for filt in gal.stars.light_radii_95[spec].keys():
-                sizes_95[spec][filt].append(gal.stars.light_radii_95[spec][filt])
-        for spec in gal.stars.light_radii_80.keys():
-            for filt in gal.stars.light_radii_80[spec].keys():
-                sizes_80[spec][filt].append(gal.stars.light_radii_80[spec][filt])
-        for spec in gal.stars.light_radii_20.keys():
-            for filt in gal.stars.light_radii_20[spec].keys():
-                sizes_20[spec][filt].append(gal.stars.light_radii_20[spec][filt])
-
-        # Attach apertures from images
-        for app in ["0p2", "0p32", "0p4", "0p5"]:
-            for spec in SPECTRA_KEYS:
-                for filt in FILTER_CODES:
-                    apps[app][spec][filt].append(
-                        gal.flux_imgs[spec].app_fluxes[filt][app]
+                # Loop over the apertures
+                for app in ["0p2", "0p4"]:
+                    apps[app][key][filt].append(
+                        gal.flux_imgs[key].app_fluxes[filt][app]
                     )
 
-        # Get the fluxes from the images
-        for spec in SPECTRA_KEYS:
-            for filt in FILTER_CODES:
-                img_fluxes[spec][filt].append(gal.flux_imgs[spec].fluxes[filt])
+                # Handle stellar emission
+                if key in gal.stars.spectra.keys():
+                    fluxes[key][filt].append(gal.stars.photo_fnu[key][filt])
+                    rf_fluxes[key][filt].append(gal.stars.photo_lnu[key][filt])
+                    sizes[key][filt].append(gal.stars.half_light_radii[key][filt])
+                    sizes_95[key][filt].append(gal.stars.light_radii_95[key][filt])
+                    sizes_80[key][filt].append(gal.stars.light_radii_80[key][filt])
+                    sizes_20[key][filt].append(gal.stars.light_radii_20[key][filt])
+
+                # Handle black hole emission
+                if key in gal.black_holes.spectra.keys():
+                    fluxes[key][filt].append(gal.black_holes.photo_fnu[key][filt])
+                    rf_fluxes[key][filt].append(gal.black_holes.photo_lnu[key][filt])
+
+                # Handle galaxy emission
+                if key in gal.spectra.keys():
+                    fluxes[key][filt].append(gal.photo_fnu[key][filt])
+                    rf_fluxes[key][filt].append(gal.photo_lnu[key][filt])
 
     # Collect output data onto rank 0, this is done recursively with the results
     # of the gather being concatenated at the root
