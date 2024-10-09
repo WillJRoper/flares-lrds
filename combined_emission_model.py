@@ -1,20 +1,20 @@
 """A script defining the pure stellar emission model used for LRDs in FLARES."""
-import numpy as np
-from unyt import Myr, angstrom, erg, s, Hz
 
-from synthesizer.emission_models.attenuation.dust import PowerLaw
+import numpy as np
 from synthesizer.emission_models import (
-    EmissionModel,
-    StellarEmissionModel,
     BlackHoleEmissionModel,
-    TemplateEmission,
+    EmissionModel,
+    EscapedEmission,
     GalaxyEmissionModel,
     NebularEmission,
-    TransmittedEmission,
     ReprocessedEmission,
-    EscapedEmission,
+    StellarEmissionModel,
+    TemplateEmission,
+    TransmittedEmission,
 )
+from synthesizer.emission_models.attenuation.dust import PowerLaw
 from synthesizer.grid import Template
+from unyt import Hz, Myr, angstrom, erg, s
 
 
 class AGNTemplateEmission(BlackHoleEmissionModel):
@@ -35,9 +35,7 @@ class AGNTemplateEmission(BlackHoleEmissionModel):
         """
 
         # Load the AGN template
-        agn_template = np.loadtxt(
-            agn_template_file, usecols=(0, 1), skiprows=23
-        )
+        agn_template = np.loadtxt(agn_template_file, usecols=(0, 1), skiprows=23)
 
         # Create the Template
         temp = Template(
@@ -246,14 +244,14 @@ class FLARESLOSCombinedEmission(EmissionModel):
         )
         intrinsic = StellarEmissionModel(
             grid=grid,
-            label="intrinsic",
+            label="stellar_intrinsic",
             combine=[young_intrinsic, old_intrinsic],
         )
 
         # Define the attenuated
         attenuated = StellarEmissionModel(
             grid=grid,
-            label="attenuated",
+            label="stellar_attenuated",
             combine=[young_attenuated, old_attenuated],
         )
 
@@ -273,9 +271,7 @@ class FLARESLOSCombinedEmission(EmissionModel):
         )
 
         # Load the AGN template
-        agn_template = np.loadtxt(
-            agn_template_file, usecols=(0, 1), skiprows=23
-        )
+        agn_template = np.loadtxt(agn_template_file, usecols=(0, 1), skiprows=23)
 
         # Create the Template
         temp = Template(
@@ -306,13 +302,21 @@ class FLARESLOSCombinedEmission(EmissionModel):
             combine=(agn_intrinsic, intrinsic),
         )
 
+        # Make model with dust free AGN but dust attenuated stellar emission
+        gal_dust_free_agn = GalaxyEmissionModel(
+            grid=grid,
+            label="total_dust_free_agn",
+            combine=(agn_intrinsic, total_stellar),
+            emitter="galaxy",
+        )
+
         # Make the combined total
         EmissionModel.__init__(
             self,
             grid=grid,
             label="total",
             combine=(agn_attenuated, total_stellar),
-            related_models=[gal_intrinsic],
+            related_models=[gal_intrinsic, gal_dust_free_agn],
             emitter="galaxy",
         )
 
