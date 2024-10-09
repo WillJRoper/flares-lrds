@@ -522,7 +522,7 @@ def analyse_galaxy(
     return gal
 
 
-def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
+def write_results(galaxies, path, grid_name, filters, comm, rank, size, z, grid):
     """Write the results to a file."""
     # Setup the structure of all output dicts and lists
     fnus = {}
@@ -742,6 +742,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
         hdf.attrs["Redshift"] = z
+
+        # Write the wavelengths
+        write_dataset_recursive(
+            hdf,
+            grid.lam.to("angstrom").value,
+            "wavelengths",
+            units="angstrom",
+        )
 
         # Write the group and subgroup ids
         write_dataset_recursive(
@@ -1064,6 +1072,7 @@ if __name__ == "__main__":
         rank,
         size,
         redshift,
+        grid,
     )
 
     comm.barrier()
