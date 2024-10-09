@@ -95,6 +95,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         bh_mdot = (
             part_grp["BH_Mdot"][start_bh:end_bh]
             * (6.445909132449984 * 10**23)  # Unit conversion issue, need this
+            / 0.6777  # divide by magic extra h (its really there!)
             * Msun
             / yr
         )
