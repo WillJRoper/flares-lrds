@@ -631,12 +631,12 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
             if key in gal.spectra.keys():
                 fnus[key].append(gal.spectra[key]._fnu)
                 uv_slopes[key].append(
-                    gal.stars.spectra[key].measure_beta(
+                    gal.spectra[key].measure_beta(
                         window=(1500 * angstrom, 3000 * angstrom)
                     )
                 )
                 ir_slopes[key].append(
-                    gal.stars.spectra[key].measure_beta(
+                    gal.spectra[key].measure_beta(
                         window=(4400 * angstrom, 7500 * angstrom)
                     )
                 )
