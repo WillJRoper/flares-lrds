@@ -1,35 +1,35 @@
 """A script to derive synthetic observations for FLARES."""
 
 import argparse
-import time
-import os
 import multiprocessing as mp
-import numpy as np
-import h5py
-from unyt import Gyr, yr, Mpc, Msun, arcsecond, angstrom, kpc, km, s
-from astropy.cosmology import Planck15 as cosmo
-from mpi4py import MPI as mpi
-from utils import (
-    FILTER_CODES,
-    write_dataset_recursive,
-    _print,
-    sort_data_recursive,
-    combine_distributed_data,
-)
-import webbpsf
-
-from synthesizer.particle import Stars, Gas, BlackHoles
-from synthesizer.particle import Galaxy
-from synthesizer.filters import FilterCollection
-from synthesizer import Grid
-from synthesizer.kernel_functions import Kernel
-from synthesizer._version import __version__
-from synthesizer.conversions import angular_to_spatial_at_z
-
-from combined_emission_model import FLARESLOSCombinedEmission
+import os
+import time
 
 # Silence warnings (only because we now what we're doing)
 import warnings
+
+import h5py
+import numpy as np
+import webbpsf
+from astropy.cosmology import Planck15 as cosmo
+from mpi4py import MPI as mpi
+from synthesizer import Grid
+from synthesizer._version import __version__
+from synthesizer.conversions import angular_to_spatial_at_z
+from synthesizer.filters import FilterCollection
+from synthesizer.kernel_functions import Kernel
+from synthesizer.particle import BlackHoles, Galaxy, Gas, Stars
+from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
+
+from combined_emission_model import FLARESLOSCombinedEmission
+from utils import (
+    FILTER_CODES,
+    SPECTRA_KEYS,
+    _print,
+    recursive_gather,
+    sort_data_recursive,
+    write_dataset_recursive,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -84,23 +84,17 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
         star_vel = part_grp["S_Vel"][:, start:end].T * km / s
 
         # Get the gas data
-        gas_pos = (
-            part_grp["G_Coordinates"][:, start_gas:end_gas].T / (1 + z) * Mpc
-        )
+        gas_pos = part_grp["G_Coordinates"][:, start_gas:end_gas].T / (1 + z) * Mpc
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
 
         # Get the black hole data
-        bh_pos = (
-            part_grp["BH_Coordinates"][:, start_bh:end_bh].T / (1 + z) * Mpc
-        )
+        bh_pos = part_grp["BH_Coordinates"][:, start_bh:end_bh].T / (1 + z) * Mpc
         bh_mass = part_grp["BH_Mass"][start_bh:end_bh] * Msun * 10**10
         bh_mdot = (
             part_grp["BH_Mdot"][start_bh:end_bh]
-            * (
-                6.445909132449984 * 10**23
-            )  # Unit conversion issue, need this
+            * (6.445909132449984 * 10**23)  # Unit conversion issue, need this
             * Msun
             / yr
         )
@@ -110,9 +104,7 @@ def _get_galaxy(gal_ind, master_file_path, reg, snap, z):
 
         # Compute the angular radii of each star in arcseconds
         radii = (np.linalg.norm(star_pos - centre, axis=1)).to("kpc")
-        star_ang_rad = (
-            radii.value * cosmo.arcsec_per_kpc_proper(z).value * arcsecond
-        )
+        star_ang_rad = radii.value * cosmo.arcsec_per_kpc_proper(z).value * arcsecond
 
     # Define a mask to get a 30 kpc aperture
     mask = radii < 30 * kpc
@@ -239,10 +231,7 @@ def get_flares_galaxies(
         parts_per_rank[select] += s_lens[i]
 
     # Prepare the arguments for each galaxy on this rank
-    args = [
-        (gal_ind, master_file_path, reg, snap, z)
-        for gal_ind in gals_on_rank[rank]
-    ]
+    args = [(gal_ind, master_file_path, reg, snap, z) for gal_ind in gals_on_rank[rank]]
 
     # Get all the galaxies using multiprocessing
     with mp.Pool(nthreads) as pool:
@@ -294,18 +283,7 @@ def get_emission_model(
     fesc=0.0,
     fesc_ly_alpha=1.0,
     agn_template_file="vandenberk_agn_template.txt",
-    save_spectra=(
-        "reprocessed",
-        "attenuated",
-        "young_reprocessed",
-        "old_reprocessed",
-        "young_attenuated",
-        "old_attenuated",
-        "agn_intrinsic",
-        "agn_attenuated",
-        "combined_intrinsic",
-        "total",
-    ),
+    save_spectra=SPECTRA_KEYS,
 ):
     """Get a StellarEmissionModel."""
     model = FLARESLOSCombinedEmission(
@@ -363,8 +341,7 @@ def get_psfs(filter_codes, filepath):
 
 def get_images(
     gal,
-    spec_key,
-    agn_spec_key,
+    emission_model,
     kernel,
     nthreads,
     psfs,
@@ -373,51 +350,56 @@ def get_images(
     """Get an image of the galaxy in an array of filters."""
     # Setup the image properties
     ang_res = 0.031 * arcsecond
-    kpc_res = (
-        ang_res.value / cosmo.arcsec_per_kpc_proper(gal.redshift).value
-    ) * kpc
+    kpc_res = (ang_res.value / cosmo.arcsec_per_kpc_proper(gal.redshift).value) * kpc
     fov = 30 * kpc
 
     # Get the image
-    imgs = gal.get_images_flux(
+    gal.get_images_flux(
         resolution=kpc_res,
         fov=fov,
+        emission_model=emission_model,
         img_type="smoothed",
-        stellar_photometry=spec_key,
-        blackhole_photometry=agn_spec_key,
         kernel=kernel,
         nthreads=nthreads,
     )
 
-    # Apply the PSFs with a super and then down sample to remove any convolution
-    # issues due to the resolution.
-    imgs.supersample(2)
-    psf_imgs = imgs.apply_psfs(psfs)
-    psf_imgs.downsample(0.5)
+    # Loop over image collections in the images dict on the galaxy
+    for key in gal.images_fnu.keys():
+        # Get the images
+        imgs = gal.images_fnu[key]
 
-    # Apply the 0.2" and 0.4" apertures
-    ang_apertures = np.array([0.2, 0.4]) * arcsecond
-    kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
-    app_flux = {}
-    for filt in FILTER_CODES:
-        app_flux.setdefault(filt, {})
-        for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
-            app_flux[filt][lab] = float(
-                psf_imgs[filt]
-                .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
-                .value
-            )
+        # Apply the PSFs with a super and then down sample to remove
+        # any convolution issues due to the resolution.
+        imgs.supersample(2)
+        psf_imgs = imgs.apply_psfs(psfs)
+        psf_imgs.downsample(0.5)
 
-    # Attach apertures to image
-    psf_imgs.app_fluxes = app_flux
+        # Apply the 0.2" and 0.4" apertures
+        ang_apertures = np.array([0.2, 0.4]) * arcsecond
+        kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
+        app_flux = {}
+        for filt in FILTER_CODES:
+            app_flux.setdefault(filt, {})
+            for ap, lab in zip(kpc_apertures, ["0p2", "0p4"]):
+                app_flux[filt][lab] = float(
+                    psf_imgs[filt]
+                    .get_signal_in_aperture(ap.to(Mpc), nthreads=nthreads)
+                    .value
+                )
 
-    # Compute and store the fluxes based on the images
-    img_fluxes = {}
-    for filt in FILTER_CODES:
-        img_fluxes[filt] = np.sum(psf_imgs[filt].arr)
+        # Attach apertures to image
+        psf_imgs.app_fluxes = app_flux
 
-    # Attach the fluxes to the images
-    psf_imgs.fluxes = img_fluxes
+        # Compute and store the fluxes based on the images
+        img_fluxes = {}
+        for filt in FILTER_CODES:
+            img_fluxes[filt] = np.sum(psf_imgs[filt].arr)
+
+        # Attach the fluxes to the images
+        psf_imgs.fluxes = img_fluxes
+
+        # Replace the images stored on the galaxy with the PSF convolved ones
+        gal.images_fnu[key] = psf_imgs
 
     return psf_imgs
 
@@ -440,9 +422,12 @@ def analyse_galaxy(
     Args:
         gal (Galaxy): The galaxy to analyse.
         emission_model (StellarEmissionModel): The emission model to use.
+        grid (Grid): The grid to use.
         kern (Kernel): The kernel to use.
+        nthreads (int): The number of threads to use.
         filters (FilterCollection): The filter collection to use.
         cosmo (astropy.cosmology): The cosmology to use.
+        psfs (dict): The PSFs to use.
     """
     # Get the los tau_v
     if gal.stars.tau_v is None:
@@ -483,9 +468,9 @@ def analyse_galaxy(
         gal.stars.half_light_radii[spec] = {}
         for filt in filters.filter_codes:
             # Get the half light radius
-            gal.stars.half_light_radii[spec][
-                filt
-            ] = gal.stars.get_half_flux_radius(spec, filt)
+            gal.stars.half_light_radii[spec][filt] = gal.stars.get_half_flux_radius(
+                spec, filt
+            )
 
     # Get the 95% light radius
     gal.stars.light_radii_95 = {}
@@ -518,84 +503,41 @@ def analyse_galaxy(
             )
 
     # Get the images
-    gal.flux_imgs = {}
-    imgs = get_images(
+    get_images(
         gal,
-        "reprocessed",
-        "agn_intrinsic",
+        emission_model,
         kernel=kern.get_kernel(),
         nthreads=nthreads,
         psfs=psfs,
         cosmo=cosmo,
     )
-    gal.flux_imgs["reprocessed"] = imgs
-    imgs = get_images(
-        gal,
-        None,
-        "agn_intrinsic",
-        kernel=kern.get_kernel(),
-        nthreads=nthreads,
-        psfs=psfs,
-        cosmo=cosmo,
-    )
-    gal.flux_imgs["agn_reprocessed"] = imgs
-    imgs = get_images(
-        gal,
-        "reprocessed",
-        None,
-        kernel=kern.get_kernel(),
-        nthreads=nthreads,
-        psfs=psfs,
-        cosmo=cosmo,
-    )
-    gal.flux_imgs["stellar_reprocessed"] = imgs
-    imgs = get_images(
-        gal,
-        "attenuated",
-        "agn_attenuated",
-        kernel=kern.get_kernel(),
-        nthreads=nthreads,
-        psfs=psfs,
-        cosmo=cosmo,
-    )
-    gal.flux_imgs["attenuated"] = imgs
-    imgs = get_images(
-        gal,
-        None,
-        "agn_attenuated",
-        kernel=kern.get_kernel(),
-        nthreads=nthreads,
-        psfs=psfs,
-        cosmo=cosmo,
-    )
-    gal.flux_imgs["agn_attenuated"] = imgs
-    imgs = get_images(
-        gal,
-        "attenuated",
-        None,
-        kernel=kern.get_kernel(),
-        nthreads=nthreads,
-        psfs=psfs,
-        cosmo=cosmo,
-    )
-    gal.flux_imgs["stellar_attenuated"] = imgs
-
     return gal
 
 
 def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     """Write the results to a file."""
-    # Loop over galaxies and unpacking all the data we'll write out
-    gal_ids = []
+    # Get the redshift from the first galaxy
+    if len(galaxies) > 0:
+        z = galaxies[0].redshift
+    else:
+        z = None
+
+    # Setup the structure of all output dicts and lists
+    fnus = {}
     fluxes = {}
     rf_fluxes = {}
-    fnus = {}
+    imgs = {}
+    img_fluxes = {}
     uv_slopes = {}
     ir_slopes = {}
     sizes = {}
     sizes_95 = {}
     sizes_80 = {}
     sizes_20 = {}
+    apps = {}
+    apps["0p2"] = {}
+    apps["0p4"] = {}
+    gal_ids = []
     gas_sizes = []
     gas_sizes_80 = []
     gas_sizes_20 = []
@@ -604,11 +546,37 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
     subgroup_ids = []
     indices = []
     sfzhs = []
-    imgs = {}
-    apps = {}
-    img_fluxes = {}
     vel_disp_1d = []
     vel_disp_3d = []
+    for spec in SPECTRA_KEYS:
+        fnus[spec] = []
+        fluxes[spec] = {}
+        rf_fluxes[spec] = {}
+        imgs[spec] = {}
+        img_fluxes[spec] = {}
+        uv_slopes[spec] = []
+        ir_slopes[spec] = []
+        sizes[spec] = {}
+        sizes_95[spec] = {}
+        sizes_80[spec] = {}
+        sizes_20[spec] = {}
+        apps["0p2"][spec] = {}
+        apps["0p4"][spec] = {}
+        for filt in FILTER_CODES:
+            imgs[spec][filt] = []
+            img_fluxes[spec][filt] = []
+            fluxes[spec][filt] = []
+            rf_fluxes[spec][filt] = []
+            sizes[spec][filt] = []
+            sizes_95[spec][filt] = []
+            sizes_80[spec][filt] = []
+            sizes_20[spec][filt] = []
+            apps["0p2"][spec][filt] = []
+            apps["0p32"][spec][filt] = []
+            apps["0p4"][spec][filt] = []
+            apps["0p5"][spec][filt] = []
+
+    # Loop over galaxies and unpacking all the data we'll write out
     for gal in galaxies:
         # Get the group and subgroup ids
         indices.append(int(gal.name.split("_")[3]))
@@ -631,11 +599,11 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Get the integrated observed spectra
         for key, spec in gal.stars.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
         for key, spec in gal.black_holes.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
         for key, spec in gal.spectra.items():
-            fnus.setdefault(key, []).append(spec._fnu)
+            fnus[key].append(spec._fnu)
 
         # Get the images
         for spec in [
@@ -646,74 +614,56 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             "agn_attenuated",
             "stellar_attenuated",
         ]:
-            imgs.setdefault(spec, {})
             for key in FILTER_CODES:
-                imgs[spec].setdefault(key, []).append(
-                    gal.flux_imgs[spec][key].arr
-                )
+                imgs[spec][key].append(gal.flux_imgs[spec][key].arr)
 
         # Get the photometry
         for key, photcol in gal.stars.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
         for key, photcol in gal.black_holes.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
         for key, photcol in gal.photo_fluxes.items():
-            fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                fluxes[key].setdefault(filt, []).append(phot)
+                fluxes[key][filt].append(phot)
 
         # Get the rest frame photometry
         for key, photcol in gal.stars.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
         for key, photcol in gal.black_holes.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
         for key, photcol in gal.photo_luminosities.items():
-            rf_fluxes.setdefault(key, {})
             for filt, phot in photcol.items():
-                rf_fluxes[key].setdefault(filt, []).append(phot)
+                rf_fluxes[key][filt].append(phot)
 
         # Get slopes
         for key, spectra in gal.stars.spectra.items():
-            uv_slopes.setdefault(key, []).append(
+            uv_slopes[key].append(
                 spectra.measure_beta(window=(1500 * angstrom, 3000 * angstrom))
             )
-            ir_slopes.setdefault(key, []).append(
+            ir_slopes[key].append(
                 spectra.measure_beta(window=(4400 * angstrom, 7500 * angstrom))
             )
 
         # Get the sizes
         for spec in gal.stars.half_light_radii.keys():
             for filt in gal.stars.half_light_radii[spec].keys():
-                sizes.setdefault(spec, {}).setdefault(filt, []).append(
-                    gal.stars.half_light_radii[spec][filt]
-                )
+                sizes[spec][filt].append(gal.stars.half_light_radii[spec][filt])
         for spec in gal.stars.light_radii_95.keys():
             for filt in gal.stars.light_radii_95[spec].keys():
-                sizes_95.setdefault(spec, {}).setdefault(filt, []).append(
-                    gal.stars.light_radii_95[spec][filt]
-                )
+                sizes_95[spec][filt].append(gal.stars.light_radii_95[spec][filt])
         for spec in gal.stars.light_radii_80.keys():
             for filt in gal.stars.light_radii_80[spec].keys():
-                sizes_80.setdefault(spec, {}).setdefault(filt, []).append(
-                    gal.stars.light_radii_80[spec][filt]
-                )
+                sizes_80[spec][filt].append(gal.stars.light_radii_80[spec][filt])
         for spec in gal.stars.light_radii_20.keys():
             for filt in gal.stars.light_radii_20[spec].keys():
-                sizes_20.setdefault(spec, {}).setdefault(filt, []).append(
-                    gal.stars.light_radii_20[spec][filt]
-                )
+                sizes_20[spec][filt].append(gal.stars.light_radii_20[spec][filt])
 
         # Attach apertures from images
-        for app in ["0p2", "0p4"]:
-            apps.setdefault(app, {})
+        for app in ["0p2", "0p32", "0p4", "0p5"]:
             for spec in [
                 "reprocessed",
                 "attenuated",
@@ -722,9 +672,8 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
                 "agn_attenuated",
                 "stellar_attenuated",
             ]:
-                apps[app].setdefault(spec, {})
                 for filt in FILTER_CODES:
-                    apps[app][spec].setdefault(filt, []).append(
+                    apps[app][spec][filt].append(
                         gal.flux_imgs[spec].app_fluxes[filt][app]
                     )
 
@@ -737,96 +686,59 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             "agn_attenuated",
             "stellar_attenuated",
         ]:
-            img_fluxes.setdefault(spec, {})
             for filt in FILTER_CODES:
-                img_fluxes[spec].setdefault(filt, []).append(
-                    gal.flux_imgs[spec].fluxes[filt]
-                )
+                img_fluxes[spec][filt].append(gal.flux_imgs[spec].fluxes[filt])
 
-    # Need some gymnastics to avoid errors:
-    if "attenuated" not in imgs:
-        imgs["attenuated"] = {}
-    if "reprocessed" not in imgs:
-        imgs["reprocessed"] = {}
-    if "agn_reprocessed" not in imgs:
-        imgs["agn_reprocessed"] = {}
-    if "stellar_reprocessed" not in imgs:
-        imgs["stellar_reprocessed"] = {}
-    if "agn_attenuated" not in imgs:
-        imgs["agn_attenuated"] = {}
-    if "stellar_attenuated" not in imgs:
-        imgs["stellar_attenuated"] = {}
-
-    # Collect output data onto rank 0
-    fnu_per_rank = comm.gather(fnus, root=0)
-    flux_per_rank = comm.gather(fluxes, root=0)
-    rf_flux_per_rank = comm.gather(rf_fluxes, root=0)
-    group_per_rank = comm.gather(group_ids, root=0)
-    subgroup_per_rank = comm.gather(subgroup_ids, root=0)
-    gal_ids_per_rank = comm.gather(gal_ids, root=0)
-    index_per_rank = comm.gather(indices, root=0)
-    uv_slope_per_rank = comm.gather(uv_slopes, root=0)
-    ir_slope_per_rank = comm.gather(ir_slopes, root=0)
-    size_per_rank = comm.gather(sizes, root=0)
-    size_95_per_rank = comm.gather(sizes_95, root=0)
-    size_80_per_rank = comm.gather(sizes_80, root=0)
-    size_20_per_rank = comm.gather(sizes_20, root=0)
-    gas_size_per_rank = comm.gather(gas_sizes, root=0)
-    gas_size_80_per_rank = comm.gather(gas_sizes_80, root=0)
-    gas_size_20_per_rank = comm.gather(gas_sizes_20, root=0)
-    dust_size_per_rank = comm.gather(dust_sizes, root=0)
-    sfzhs_per_rank = comm.gather(sfzhs, root=0)
-    imgs_att_per_rank = comm.gather(imgs["attenuated"], root=0)
-    imgs_rep_per_rank = comm.gather(imgs["reprocessed"], root=0)
-    imgs_agn_rep_per_rank = comm.gather(imgs["agn_reprocessed"], root=0)
-    imgs_stellar_rep_per_rank = comm.gather(
-        imgs["stellar_reprocessed"], root=0
-    )
-    imgs_agn_att_per_rank = comm.gather(imgs["agn_attenuated"], root=0)
-    imgs_stellar_att_per_rank = comm.gather(imgs["stellar_attenuated"], root=0)
-    apps_per_rank = comm.gather(apps, root=0)
-    img_fluxes_per_rank = comm.gather(img_fluxes, root=0)
-    vel_disp_1d_per_rank = comm.gather(vel_disp_1d, root=0)
-    vel_disp_3d_per_rank = comm.gather(vel_disp_3d, root=0)
+    # Collect output data onto rank 0, this is done recursively with the results
+    # of the gather being concatenated at the root
+    fnus = recursive_gather(fnus, comm, root=0)
+    fluxes = recursive_gather(fluxes, comm, root=0)
+    rf_fluxes = recursive_gather(rf_fluxes, comm, root=0)
+    group_ids = recursive_gather(group_ids, comm, root=0)
+    subgroup_ids = recursive_gather(subgroup_ids, comm, root=0)
+    gal_ids = recursive_gather(gal_ids, comm, root=0)
+    indices = recursive_gather(indices, comm, root=0)
+    uv_slopes = recursive_gather(uv_slopes, comm, root=0)
+    ir_slopes = recursive_gather(ir_slopes, comm, root=0)
+    sizes = recursive_gather(sizes, comm, root=0)
+    sizes_95 = recursive_gather(sizes_95, comm, root=0)
+    sizes_80 = recursive_gather(sizes_80, comm, root=0)
+    sizes_20 = recursive_gather(sizes_20, comm, root=0)
+    gas_sizes = recursive_gather(gas_sizes, comm, root=0)
+    gas_sizes_80 = recursive_gather(gas_sizes_80, comm, root=0)
+    gas_sizes_20 = recursive_gather(gas_sizes_20, comm, root=0)
+    dust_sizes = recursive_gather(dust_sizes, comm, root=0)
+    sfzhs = recursive_gather(sfzhs, comm, root=0)
+    apps = recursive_gather(apps, comm, root=0)
+    img_fluxes = recursive_gather(img_fluxes, comm, root=0)
+    vel_disp_1d = recursive_gather(vel_disp_1d, comm, root=0)
+    vel_disp_3d = recursive_gather(vel_disp_3d, comm, root=0)
+    imgs = recursive_gather(imgs, comm, root=0)
 
     # Early exit if we're not rank 0
     if rank != 0:
         return
 
-    # Concatenate the data
-    fnus = combine_distributed_data(fnu_per_rank)
-    fluxes = combine_distributed_data(flux_per_rank)
-    rf_fluxes = combine_distributed_data(rf_flux_per_rank)
-    group_ids = combine_distributed_data(group_per_rank)
-    subgroup_ids = combine_distributed_data(subgroup_per_rank)
-    gal_ids = combine_distributed_data(gal_ids_per_rank)
-    indices = combine_distributed_data(index_per_rank)
-    uv_slopes = combine_distributed_data(uv_slope_per_rank)
-    ir_slopes = combine_distributed_data(ir_slope_per_rank)
-    sizes = combine_distributed_data(size_per_rank)
-    sizes_95 = combine_distributed_data(size_95_per_rank)
-    sizes_80 = combine_distributed_data(size_80_per_rank)
-    sizes_20 = combine_distributed_data(size_20_per_rank)
-    gas_sizes = combine_distributed_data(gas_size_per_rank)
-    gas_sizes_80 = combine_distributed_data(gas_size_80_per_rank)
-    gas_sizes_20 = combine_distributed_data(gas_size_20_per_rank)
-    dust_sizes = combine_distributed_data(dust_size_per_rank)
-    sfzhs = combine_distributed_data(sfzhs_per_rank)
-    imgs = {}
-    imgs["attenuated"] = combine_distributed_data(imgs_att_per_rank)
-    imgs["reprocessed"] = combine_distributed_data(imgs_rep_per_rank)
-    imgs["agn_reprocessed"] = combine_distributed_data(imgs_agn_rep_per_rank)
-    imgs["stellar_reprocessed"] = combine_distributed_data(
-        imgs_stellar_rep_per_rank
-    )
-    imgs["agn_attenuated"] = combine_distributed_data(imgs_agn_att_per_rank)
-    imgs["stellar_attenuated"] = combine_distributed_data(
-        imgs_stellar_att_per_rank
-    )
-    apps = combine_distributed_data(apps_per_rank)
-    img_fluxes = combine_distributed_data(img_fluxes_per_rank)
-    vel_disp_1d = combine_distributed_data(vel_disp_1d_per_rank)
-    vel_disp_3d = combine_distributed_data(vel_disp_3d_per_rank)
+    # Remove any empty keys
+    def _remove_empty(d):
+        if isinstance(d, dict):
+            return {k: _remove_empty(v) for k, v in d.items() if len(v) > 0}
+        elif isinstance(d, list):
+            return [v for v in d if len(v) > 0]
+        return d
+
+    fnus = _remove_empty(fnus)
+    fluxes = _remove_empty(fluxes)
+    rf_fluxes = _remove_empty(rf_fluxes)
+    uv_slopes = _remove_empty(uv_slopes)
+    ir_slopes = _remove_empty(ir_slopes)
+    sizes = _remove_empty(sizes)
+    sizes_95 = _remove_empty(sizes_95)
+    sizes_80 = _remove_empty(sizes_80)
+    sizes_20 = _remove_empty(sizes_20)
+    apps = _remove_empty(apps)
+    img_fluxes = _remove_empty(img_fluxes)
+    imgs = _remove_empty(imgs)
 
     # Get the units for each dataset
     units = {
@@ -845,6 +757,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         # Store the grid used and the Synthesizer version
         hdf.attrs["Grid"] = grid_name
         hdf.attrs["SynthesizerVersion"] = __version__
+        hdf.attrs["Redshift"] = z
 
         # Write the group and subgroup ids
         write_dataset_recursive(
@@ -859,10 +772,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
         )
         write_dataset_recursive(
             hdf,
-            [
-                s.encode("utf-8")
-                for s in sort_data_recursive(gal_ids, sort_indices)
-            ],
+            [s.encode("utf-8") for s in sort_data_recursive(gal_ids, sort_indices)],
             "GalaxyID",
         )
 
