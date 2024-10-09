@@ -514,14 +514,8 @@ def analyse_galaxy(
     return gal
 
 
-def write_results(galaxies, path, grid_name, filters, comm, rank, size):
+def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
     """Write the results to a file."""
-    # Get the redshift from the first galaxy
-    if len(galaxies) > 0:
-        z = galaxies[0].redshift
-    else:
-        z = None
-
     # Setup the structure of all output dicts and lists
     fnus = {}
     fluxes = {}
@@ -958,6 +952,7 @@ if __name__ == "__main__":
     region = args.region
     snap = snapshots[args.snap]
     nthreads = args.nthreads
+    redshift = float(snap.split("z")[-1].replace("p", "."))
 
     # Define the output path
     outpath = f"data/combined_{str(region).zfill(2)}_{snap}.hdf5"
@@ -1055,6 +1050,7 @@ if __name__ == "__main__":
         comm,
         rank,
         size,
+        redshift,
     )
 
     comm.barrier()
