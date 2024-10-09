@@ -1111,7 +1111,7 @@ def write_dataset_recursive(hdf, data, key, units="dimensionless"):
 
     # Loop over the data
     for k, v in data.items():
-        write_dataset_recursive(hdf, v, f"{key}/{k}")
+        write_dataset_recursive(hdf, v, f"{key}/{k}", units=units)
 
 
 def _combine_data_recursive(rank_data, out_dict, key=None):
