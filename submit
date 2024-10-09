@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --ntasks=8
 #SBATCH -J FLARES-SWIFT_31
-#SBATCH --output=out_files/log_%A_%a.txt
+#SBATCH --output=logs/log_%A_%a.txt
 #SBATCH -p cosma7-rp
 #SBATCH -A dp004
 #SBATCH --exclusive
