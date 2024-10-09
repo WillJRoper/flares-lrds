@@ -644,13 +644,13 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size, z):
             # Loop over all the filters and collect the data
             for filt in FILTER_CODES:
                 # Images are at the galaxy level regardless
-                imgs[key][filt].append(gal.flux_imgs[key][filt].arr)
-                img_fluxes[key][filt].append(gal.flux_imgs[key].fluxes[filt])
+                imgs[key][filt].append(gal.images_fnu[key][filt].arr)
+                img_fluxes[key][filt].append(gal.images_fnu[key].fluxes[filt])
 
                 # Loop over the apertures
                 for app in ["0p2", "0p4"]:
                     apps[app][key][filt].append(
-                        gal.flux_imgs[key].app_fluxes[filt][app]
+                        gal.images_fnu[key].app_fluxes[filt][app]
                     )
 
                 # Handle stellar emission
