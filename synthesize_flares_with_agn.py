@@ -801,7 +801,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size, z, grid)
             hdf,
             sort_data_recursive(rf_fluxes, sort_indices),
             key="RestFramePhotometry",
-            units=units["flux"],
+            units="erg / s / Hz",
         )
 
         # Write the UV slopes
