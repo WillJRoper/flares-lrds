@@ -6,7 +6,7 @@
 #SBATCH -A dp004
 #SBATCH --exclusive
 #SBATCH --cpus-per-task=14
-#SBATCH --time=72:00:00
+#SBATCH --time=08:00:00
 #SBATCH --array=0-239  # 240 total tasks for 40 regions and 6 snapshots
 
 module purge
