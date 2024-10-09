@@ -366,7 +366,14 @@ def get_images(
     # Loop over image collections in the images dict on the galaxy
     for key in SPECTRA_KEYS:
         # Get the images
-        imgs = gal.images_fnu[key]
+        if key in gal.images_fnu.keys():
+            imgs = gal.images_fnu[key]
+        elif key in gal.stars.images_fnu.keys():
+            imgs = gal.stars.images_fnu[key]
+        elif key in gal.black_holes.images_fnu.keys():
+            imgs = gal.black_holes.images_fnu[key]
+        else:
+            raise ValueError(f"Key {key} not found in galaxy.")
 
         # Apply the PSFs with a super and then down sample to remove
         # any convolution issues due to the resolution.
