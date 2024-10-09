@@ -572,9 +572,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             sizes_80[spec][filt] = []
             sizes_20[spec][filt] = []
             apps["0p2"][spec][filt] = []
-            apps["0p32"][spec][filt] = []
             apps["0p4"][spec][filt] = []
-            apps["0p5"][spec][filt] = []
 
     # Loop over galaxies and unpacking all the data we'll write out
     for gal in galaxies:
@@ -606,14 +604,7 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
             fnus[key].append(spec._fnu)
 
         # Get the images
-        for spec in [
-            "reprocessed",
-            "attenuated",
-            "agn_reprocessed",
-            "stellar_reprocessed",
-            "agn_attenuated",
-            "stellar_attenuated",
-        ]:
+        for spec in SPECTRA_KEYS:
             for key in FILTER_CODES:
                 imgs[spec][key].append(gal.flux_imgs[spec][key].arr)
 
@@ -664,28 +655,14 @@ def write_results(galaxies, path, grid_name, filters, comm, rank, size):
 
         # Attach apertures from images
         for app in ["0p2", "0p32", "0p4", "0p5"]:
-            for spec in [
-                "reprocessed",
-                "attenuated",
-                "agn_reprocessed",
-                "stellar_reprocessed",
-                "agn_attenuated",
-                "stellar_attenuated",
-            ]:
+            for spec in SPECTRA_KEYS:
                 for filt in FILTER_CODES:
                     apps[app][spec][filt].append(
                         gal.flux_imgs[spec].app_fluxes[filt][app]
                     )
 
         # Get the fluxes from the images
-        for spec in [
-            "reprocessed",
-            "attenuated",
-            "agn_reprocessed",
-            "stellar_reprocessed",
-            "agn_attenuated",
-            "stellar_attenuated",
-        ]:
+        for spec in SPECTRA_KEYS:
             for filt in FILTER_CODES:
                 img_fluxes[spec][filt].append(gal.flux_imgs[spec].fluxes[filt])
 
