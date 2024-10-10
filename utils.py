@@ -76,6 +76,8 @@ TOPHATS = {
 SPECTRA_KEYS = [
     "young_attenuated",
     "old_attenuated",
+    "young_intrinsic",
+    "old_intrinsic",
     "stellar_intrinsic",
     "agn_intrinsic",
     "stellar_attenuated",
