@@ -74,6 +74,10 @@ TOPHATS = {
 
 # Define spectra keys
 SPECTRA_KEYS = [
+    "old_reprocessed",
+    "young_reprocessed",
+    "old_escaped",
+    "young_escaped",
     "young_attenuated",
     "old_attenuated",
     "young_intrinsic",
