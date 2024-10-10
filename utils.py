@@ -74,6 +74,10 @@ TOPHATS = {
 
 # Define spectra keys
 SPECTRA_KEYS = [
+    "old_transmitted",
+    "young_transmitted",
+    "old_nebular",
+    "young_nebular",
     "old_reprocessed",
     "young_reprocessed",
     "old_escaped",
