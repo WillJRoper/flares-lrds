@@ -88,6 +88,7 @@ SPECTRA_KEYS = [
     "old_intrinsic",
     "stellar_intrinsic",
     "agn_intrinsic",
+    "escaped",
     "stellar_attenuated",
     "agn_attenuated",
     "stellar_total",
