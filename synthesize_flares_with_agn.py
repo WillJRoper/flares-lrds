@@ -271,7 +271,7 @@ def get_grid(grid_name, grid_dir, filters):
     grid = Grid(
         grid_name,
         grid_dir,
-        lam_lims=(1000 * angstrom, 10**6 * angstrom),
+        lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
     )
 
     filters.resample_filters(new_lam=grid.lam)
@@ -294,8 +294,8 @@ def get_emission_model(
         fesc_ly_alpha=fesc_ly_alpha,
     )
 
-    # # Limit the spectra to be saved
-    # model.save_spectra(*save_spectra)
+    # Limit the spectra to be saved
+    model.save_spectra(*save_spectra)
 
     return model
 
