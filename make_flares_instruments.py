@@ -95,13 +95,13 @@ if __name__ == "__main__":
 
         # Set up the instruments
         nircam = Instrument(
-            "JWST/NIRCam",
+            "JWST.NIRCam",
             filters=nircam_fs,
             psfs=nircam_psfs,
             resolution=arcsec_to_kpc * nircam_res,
         )
         miri = Instrument(
-            "JWST/MIRI",
+            "JWST.MIRI",
             filters=miri_fs,
             psfs=miri_psfs,
             resolution=arcsec_to_kpc * miri_res,
