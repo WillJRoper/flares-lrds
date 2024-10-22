@@ -4,7 +4,7 @@ import webbpsf
 from astropy.cosmology import Planck15 as cosmo
 from synthesizer.instruments import FilterCollection
 from synthesizer.instruments.instrument import Instrument
-from unyt import arcsecond, kpc
+from unyt import angstrom, arcsecond, kpc
 
 snapshots = [
     "005_z010p000",
@@ -52,7 +52,9 @@ miri_fs = FilterCollection(
     ]
 )
 top_hat = FilterCollection(
-    tophat_dict={"UV1500": {"lam_eff": 1500, "lam_fwhm": 300}},
+    tophat_dict={
+        "UV1500": {"lam_eff": 1500 * angstrom, "lam_fwhm": 300 * angstrom},
+    },
 )
 
 
