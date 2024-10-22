@@ -8,11 +8,12 @@ import h5py
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
+from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
 from synthesizer.particle import BlackHoles, Galaxy, Gas, Stars
 from synthesizer.survey import Survey
-from unyt import Gyr, Mpc, Msun, arcsecond, km, kpc, s, yr
+from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
 
 from combined_emission_model import FLARESLOSCombinedEmission
 from utils import (
@@ -173,12 +174,19 @@ def _get_galaxy(gal_index, master_file_path, snap):
 
 
 def get_emission_model(
+    grid_name,
+    grid_dir,
     fesc=0.0,
     fesc_ly_alpha=1.0,
     agn_template_file="vandenberk_agn_template.txt",
     save_spectra=SPECTRA_KEYS,
 ):
     """Get the emission model to use for the observations."""
+    grid = Grid(
+        grid_name,
+        grid_dir,
+        lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
+    )
     model = FLARESLOSCombinedEmission(
         agn_template_file,
         grid,
@@ -293,6 +301,10 @@ if __name__ == "__main__":
     gal_weights = []
     with h5py.File(path, "r") as hdf:
         for reg in hdf.keys():
+            print(
+                f"Getting weights for region {reg} "
+                f"({len(gal_weights)} galaxies so far)"
+            )
             gal_weights.extend(
                 hdf[reg][snap]["Galaxy"]["S_Length"][:]
                 + hdf[reg][snap]["Galaxy"]["G_Length"][:]
