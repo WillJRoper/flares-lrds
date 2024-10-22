@@ -192,36 +192,9 @@ def get_emission_model(
     return model
 
 
-def get_gas_mass_radii(gal):
-    """Get the mass radii of the gas in the galaxy."""
-    gal.gas.mass_radii = {
-        "0p2": gal.gas.get_attr_radius("masses", frac=0.2),
-        "0p5": gal.gas.get_attr_radius("masses", frac=0.5),
-        "0p8": gal.gas.get_attr_radius("masses", frac=0.8),
-    }
-
-
-def get_stars_mass_radii(gal):
-    """Get the mass radii of the stars in the galaxy."""
-    gal.stars.mass_radii = {
-        "0p2": gal.stars.get_attr_radius("current_masses", frac=0.2),
-        "0p5": gal.stars.get_attr_radius("current_masses", frac=0.5),
-        "0p8": gal.stars.get_attr_radius("current_masses", frac=0.8),
-    }
-
-
-def get_dust_mass_radii(gal):
-    """Get the mass radii of the dust in the galaxy."""
-    gal.gas.dust_mass_radii = {
-        "0p2": gal.gas.get_attr_radius("dust_masses", frac=0.2),
-        "0p5": gal.gas.get_attr_radius("dust_masses", frac=0.5),
-        "0p8": gal.gas.get_attr_radius("dust_masses", frac=0.8),
-    }
-
-
 def get_stars_1d_velocity_dispersion(gal):
     """Get the 1D velocity dispersion of the stars in the galaxy."""
-    gal.stars.vel_disp1d = np.array(
+    return np.array(
         [
             np.std(gal.stars.velocities[:, 0], ddof=0),
             np.std(gal.stars.velocities[:, 1], ddof=0),
@@ -232,7 +205,7 @@ def get_stars_1d_velocity_dispersion(gal):
 
 def get_gas_1d_velocity_dispersion(gal):
     """Get the 1D velocity dispersion of the gas in the galaxy."""
-    gal.gas.vel_disp1d = np.array(
+    return np.array(
         [
             np.std(gal.gas.velocities[:, 0], ddof=0),
             np.std(gal.gas.velocities[:, 1], ddof=0),
@@ -243,14 +216,12 @@ def get_gas_1d_velocity_dispersion(gal):
 
 def get_stars_3d_velocity_dispersion(gal):
     """Get the 3D velocity dispersion of the stars in the galaxy."""
-    gal.stars.vel_disp3d = np.std(
-        np.sqrt(np.sum(gal.stars.velocities**2, axis=1)), ddof=0
-    )
+    return np.std(np.sqrt(np.sum(gal.stars.velocities**2, axis=1)), ddof=0)
 
 
 def get_gas_3d_velocity_dispersion(gal):
     """Get the 3D velocity dispersion of the gas in the galaxy."""
-    gal.gas.vel_disp3d = np.std(np.sqrt(np.sum(gal.gas.velocities**2, axis=1)), ddof=0)
+    return np.std(np.sqrt(np.sum(gal.gas.velocities**2, axis=1)), ddof=0)
 
 
 # Define the snapshot tags
@@ -345,9 +316,22 @@ if __name__ == "__main__":
     )
 
     # Add the extra analysis functions we want
-    survey.add_analysis_function(get_gas_mass_radii, "Gas/MassRadii")
-    survey.add_analysis_function(get_stars_mass_radii, "Stars/MassRadii")
-    survey.add_analysis_function(get_dust_mass_radii, "Gas/DustMassRadii")
+    for frac in [0.2, 0.5, 0.8]:
+        frac_key = f"{frac}".replace(".", "p")
+        survey.add_analysis_function(
+            lambda gal, frac=frac: gal.stars.get_attr_radius(
+                "current_masses", frac=frac
+            ),
+            f"Stars/MassRadii/{frac_key}",
+        )
+        survey.add_analysis_function(
+            lambda gal, frac=frac: gal.gas.get_attr_radius("masses", frac=frac),
+            f"Gas/MassRadii/{frac_key}",
+        )
+        survey.add_analysis_function(
+            lambda gal, frac=frac: gal.gas.get_attr_radius("dust_masses", frac=frac),
+            f"Gas/DustMassRadii/{frac_key}",
+        )
     survey.add_analysis_function(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     survey.add_analysis_function(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
     survey.add_analysis_function(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
