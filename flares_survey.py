@@ -312,6 +312,10 @@ if __name__ == "__main__":
     ngals = len(gal_weights)
     gal_weights = np.array(gal_weights)
 
+    # Sanitise out the galaxies with fewer than 100 baryons, we'll remove these
+    # anyway
+    gal_weights[gal_weights < 100] = 0
+
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
 
