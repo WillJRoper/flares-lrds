@@ -366,6 +366,9 @@ if __name__ == "__main__":
         snap=snap,
     )
 
+    # Get the LOS optical depths
+    survey.get_los_optical_depths(kernel=kernel_data)
+
     # Run the survey
     survey.get_spectra(cosmo=cosmo)
     survey.get_photometry_luminosities()
