@@ -69,13 +69,13 @@ if __name__ == "__main__":
     for nc_filt in nircam_fs.filter_codes:
         nc.filter = nc_filt.split(".")[-1]
         psf = nc.calc_psf(oversample=2)
-        nircam_psfs[nc_filt] = psf[0].data
+        nircam_psfs[nc_filt.replace("/", ".")] = psf[0].data
 
     # Get miri psfs
     for miri_filt in miri_fs.filter_codes:
         miri.filter = miri_filt.split(".")[-1]
         psf = miri.calc_psf(oversample=2)
-        miri_psfs[miri_filt] = psf[0].data
+        miri_psfs[miri_filt.replace("/", ".")] = psf[0].data
 
     # Define the angular resoltions
     nircam_res = 0.031 * arcsecond
