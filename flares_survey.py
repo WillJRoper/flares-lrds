@@ -349,15 +349,15 @@ if __name__ == "__main__":
             lambda gal, frac=frac: gal.gas.get_attr_radius("dust_masses", frac=frac),
             f"Gas/DustMassRadii/{frac_key}",
         )
-    survey.add_analysis_function(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
-    survey.add_analysis_function(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
-    survey.add_analysis_function(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
-    survey.add_analysis_function(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
-    survey.add_analysis_function(lambda gal: gal.region, "Region")
-    survey.add_analysis_function(lambda gal: gal.grp_id, "GroupID")
-    survey.add_analysis_function(lambda gal: gal.subgrp_id, "SubGroupID")
-    survey.add_analysis_function(lambda gal: gal.weight, "RegionWeight")
-    survey.add_analysis_function(lambda gal: gal.master_index, "MasterRegionIndex")
+    survey.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
+    survey.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
+    survey.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
+    survey.add_analysis_func(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
+    survey.add_analysis_func(lambda gal: gal.region, "Region")
+    survey.add_analysis_func(lambda gal: gal.grp_id, "GroupID")
+    survey.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
+    survey.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
+    survey.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
 
     # Partition and load the galaxies
     survey.partition_galaxies(galaxy_weights=gal_weights)
