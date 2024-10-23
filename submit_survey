@@ -1,0 +1,23 @@
+#!/bin/bash -l
+#SBATCH --ntasks=8
+#SBATCH -J FLARES-SWIFT_31
+#SBATCH --output=logs/survey_log_%A_%a.txt
+#SBATCH -p cosma7-rp
+#SBATCH -A dp004
+#SBATCH --exclusive
+#SBATCH --cpus-per-task=28
+#SBATCH --time=24:00:00
+#SBATCH --array=0-5
+
+module purge
+module load gnu_comp/11.1.0 openmpi
+module load rockport-settings
+
+# Calculate region and snap based on task ID
+snap=$((SLURM_ARRAY_TASK_ID))
+
+mpirun $RP_OPENMPI_ARGS -np $SLURM_NTASKS python flares_survey.py /cosma7/data/dp004/dc-payy1/my_files//flares_pipeline/data/flares.hdf5 --grid bpass-2.2.1-bin_chabrier03-0.1,300.0_cloudy-c17.03.hdf5 --grid-dir /cosma7/data/dp004/dc-seey1/modules/synthesizer-sam/grids --snap $snap --nthreads $SLURM_CPUS_PER_TASK
+
+echo "Job done, info follows..."
+sacct -j $SLURM_JOBID --format=JobID,JobName,Partition,AveRSS,MaxRSS,AveVMSize,MaxVMSize,Elapsed,ExitCode
+exit
