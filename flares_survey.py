@@ -43,14 +43,14 @@ def _get_galaxy(gal_index, master_file_path, snap):
     with h5py.File(master_file_path, "r") as hdf:
         # What region are we in? We'll find this by looping over regions until
         # we find the one that contains the galaxy index
-        current_ngal = 0
-        reg = None
-        for _reg in hdf.keys():
-            reg_ngal = hdf[_reg][snap]["Galaxy"]["S_Length"].shape[0]
-            if current_ngal + reg_ngal >= gal_index:
-                break
-            reg = _reg
-            current_ngal += reg_ngal
+        regions = list(hdf.keys())
+        reg_ind = 0
+        reg_ngal = len(hdf[regions[reg_ind]][snap]["Galaxy"]["S_Length"])
+        while gal_index > reg_ngal:
+            gal_index -= reg_ngal
+            reg_ind += 1
+            reg_ngal = len(hdf[regions[reg_ind]][snap]["Galaxy"]["S_Length"])
+        reg = regions[reg_ind]
 
         # Get the weight for this region
         region_weight = np.loadtxt(
@@ -58,9 +58,6 @@ def _get_galaxy(gal_index, master_file_path, snap):
             usecols=8,
             delimiter=",",
         )[int(reg)]
-
-        # Shift the index to be relative to the region
-        gal_index -= current_ngal
 
         # Unpack the groups
         reg_grp = hdf[reg]
