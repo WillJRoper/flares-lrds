@@ -335,17 +335,17 @@ if __name__ == "__main__":
     # Add the extra analysis functions we want
     for frac in [0.2, 0.5, 0.8]:
         frac_key = f"{frac}".replace(".", "p")
-        survey.add_analysis_function(
+        survey.add_analysis_func(
             lambda gal, frac=frac: gal.stars.get_attr_radius(
                 "current_masses", frac=frac
             ),
             f"Stars/MassRadii/{frac_key}",
         )
-        survey.add_analysis_function(
+        survey.add_analysis_func(
             lambda gal, frac=frac: gal.gas.get_attr_radius("masses", frac=frac),
             f"Gas/MassRadii/{frac_key}",
         )
-        survey.add_analysis_function(
+        survey.add_analysis_func(
             lambda gal, frac=frac: gal.gas.get_attr_radius("dust_masses", frac=frac),
             f"Gas/DustMassRadii/{frac_key}",
         )
