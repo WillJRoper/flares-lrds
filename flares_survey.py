@@ -46,7 +46,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
         regions = list(hdf.keys())
         reg_ind = 0
         reg_ngal = len(hdf[regions[reg_ind]][snap]["Galaxy"]["S_Length"])
-        while gal_index > reg_ngal:
+        while gal_index >= reg_ngal:
             gal_index -= reg_ngal
             reg_ind += 1
             reg_ngal = len(hdf[regions[reg_ind]][snap]["Galaxy"]["S_Length"])
