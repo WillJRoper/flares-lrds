@@ -195,7 +195,7 @@ def get_emission_model(
     )
 
     # Limit the spectra to be saved
-    model.save_spectra(*save_spectra)
+    # model.save_spectra(*save_spectra)
 
     return model
 
