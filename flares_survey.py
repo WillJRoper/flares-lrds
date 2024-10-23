@@ -59,6 +59,9 @@ def _get_galaxy(gal_index, master_file_path, snap):
             delimiter=",",
         )[int(reg)]
 
+        # Shift the index to be relative to the region
+        gal_index -= current_ngal
+
         # Unpack the groups
         reg_grp = hdf[reg]
         snap_grp = reg_grp[snap]
@@ -131,7 +134,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
     gal = Galaxy(
         name=f"{reg}_{snap}_{group_id}_{subgrp_id}",
         redshift=z,
-        master_index=gal_index - current_ngal,
+        master_index=gal_index,
         region=reg,
         grp_id=group_id,
         subgrp_id=subgrp_id,
