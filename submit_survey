@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --ntasks=8
+#SBATCH --ntasks=16
 #SBATCH -J FLARES-SWIFT_31
 #SBATCH --output=logs/survey_log_%A_%a.txt
 #SBATCH -p cosma7-rp
