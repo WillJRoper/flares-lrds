@@ -380,8 +380,8 @@ if __name__ == "__main__":
     survey.get_spectra(cosmo=cosmo)
     survey.get_photometry_luminosities()
     survey.get_photometry_fluxes()
-    survey.get_images_luminosity(fov=60 * kpc, kernel=kernel_data)
-    survey.get_images_fluxes(fov=60 * kpc, kernel=kernel_data)
+    survey.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    survey.get_images_fluxes(fov=61 * kpc, kernel=kernel_data)
 
     # Save the survey
     survey.write(outpath)
