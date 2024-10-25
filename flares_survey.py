@@ -98,6 +98,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
         gas_mass = part_grp["G_Mass"][start_gas:end_gas] * Msun * 10**10
         gas_met = part_grp["G_Z_smooth"][start_gas:end_gas]
         gas_sml = part_grp["G_sml"][start_gas:end_gas] * Mpc
+        gas_vel = part_grp["G_Vel"][:, start_gas:end_gas].T * km / s
 
         # Get the black hole data
         bh_pos = part_grp["BH_Coordinates"][:, start_bh:end_bh].T / (1 + z) * Mpc
@@ -157,6 +158,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
             coordinates=gas_pos[gmask, :],
             smoothing_lengths=gas_sml[gmask],
             centre=centre,
+            velocities=gas_vel[gmask, :],
         ),
         black_holes=BlackHoles(
             masses=bh_mass[bhmask],
