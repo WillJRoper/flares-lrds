@@ -125,7 +125,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
     bhmask = bhradii < 30 * kpc
 
     # Early exist if there are fewer than 100 stars
-    if np.sum(mask) + np.sum(gmask) < 100:
+    if np.sum(mask) < 100:
         return None
 
     gal = Galaxy(
@@ -307,7 +307,7 @@ if __name__ == "__main__":
             )
             gal_weights.extend(
                 hdf[reg][snap]["Galaxy"]["S_Length"][:]
-                + hdf[reg][snap]["Galaxy"]["G_Length"][:]
+                # + hdf[reg][snap]["Galaxy"]["G_Length"][:]
             )
     ngals = len(gal_weights)
     gal_weights = np.array(gal_weights)
