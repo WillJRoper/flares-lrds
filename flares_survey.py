@@ -363,6 +363,9 @@ if __name__ == "__main__":
     survey.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
     survey.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
 
+    for inst in survey.instruments:
+        print(inst.psfs)
+
     # Partition and load the galaxies
     survey.partition_galaxies(galaxy_weights=gal_weights)
     survey.load_galaxies(
