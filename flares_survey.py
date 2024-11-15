@@ -354,10 +354,6 @@ if __name__ == "__main__":
     gal_weights = []
     with h5py.File(path, "r") as hdf:
         for reg in hdf.keys():
-            print(
-                f"Getting weights for region {reg} "
-                f"({len(gal_weights)} galaxies so far)"
-            )
             gal_weights.extend(
                 hdf[reg][snap]["Galaxy"]["S_Length"][:]
                 # + hdf[reg][snap]["Galaxy"]["G_Length"][:]
