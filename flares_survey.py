@@ -370,7 +370,6 @@ if __name__ == "__main__":
 
     # Set up the survey
     survey = Survey(
-        gal_loader_func=_get_galaxy,
         emission_model=get_emission_model(
             grid_name,
             grid_dir,
@@ -380,7 +379,6 @@ if __name__ == "__main__":
         instruments=InstrumentCollection(
             filepath=f"flares_lrd_instruments_{snap}.hdf5"
         ),
-        n_galaxies=ngals,
         nthreads=nthreads,
         comm=comm,
     )
