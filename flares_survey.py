@@ -219,7 +219,6 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
     else:
         galaxies = []
         for i, gal_index in enumerate(indices):
-            print(f"Loading galaxy {i + 1}/{ngals}")
             gal = _get_galaxy(gal_index, master_file_path, snap)
             galaxies.append(gal)
 
@@ -416,6 +415,7 @@ if __name__ == "__main__":
         master_file_path=path,
         snap=snap,
         indices=indices,
+        nthreads=nthreads,
     )
 
     # Add them to the survey
