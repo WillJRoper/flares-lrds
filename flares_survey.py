@@ -3,11 +3,13 @@
 import argparse
 import os
 import warnings
+from functools import partial
 
 import h5py
 import numpy as np
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
+from pathos.multiprocessing import ProcessingPool as Pool
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
@@ -173,6 +175,55 @@ def _get_galaxy(gal_index, master_file_path, snap):
     gal.dust_to_metal_vijayan19()
 
     return gal
+
+
+def partition_galaxies(galaxy_weights):
+    """Partition the galaxies between the MPI processes."""
+    # Get the number of galaxies and the number of processes
+    ngals = len(galaxy_weights)
+    nranks = mpi.COMM_WORLD.Get_size()
+    rank = mpi.COMM_WORLD.Get_rank()
+
+    # Create and index array
+    indices = np.arange(ngals)
+
+    # Randomly shuffle the indices and weights
+    inds = np.random.permutation(ngals)
+    galaxy_weights = galaxy_weights[inds]
+    indices = indices[inds]
+
+    # Assign the galaxies to balance the weights
+    weight_on_rank = np.zeros(nranks)
+    inds_on_rank = {i: [] for i in range(nranks)}
+    for i in range(ngals):
+        # Find the rank with the smallest weight
+        min_rank = np.argmin(weight_on_rank)
+        weight_on_rank[min_rank] += galaxy_weights[i]
+        inds_on_rank[min_rank].append(indices[i])
+
+    return inds_on_rank[rank]
+
+
+def load_galaxies(master_file_path, snap, indices, nthreads=1):
+    """Load the galaxies into memory."""
+    # Get the number of galaxies
+    ngals = len(indices)
+
+    # Load the galaxies
+    if nthreads > 1:
+        with Pool(nthreads) as pool:
+            galaxies = pool.map(
+                partial(_get_galaxy, master_file_path=master_file_path, snap=snap),
+                indices,
+            )
+    else:
+        galaxies = []
+        for i, gal_index in enumerate(indices):
+            print(f"Loading galaxy {i + 1}/{ngals}")
+            gal = _get_galaxy(gal_index, master_file_path, snap)
+            galaxies.append(gal)
+
+    return galaxies
 
 
 def get_emission_model(
@@ -366,11 +417,15 @@ if __name__ == "__main__":
     survey.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
 
     # Partition and load the galaxies
-    survey.partition_galaxies(galaxy_weights=gal_weights)
-    survey.load_galaxies(
+    indices = partition_galaxies(galaxy_weights=gal_weights)
+    galaxies = load_galaxies(
         master_file_path=path,
         snap=snap,
+        indices=indices,
     )
+
+    # Add them to the survey
+    survey.add_galaxies(galaxies, galaxy_indices=indices)
 
     # Get the LOS optical depths
     survey.get_los_optical_depths(kernel=kernel_data)
