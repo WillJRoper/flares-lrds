@@ -206,14 +206,15 @@ def partition_galaxies(galaxy_weights):
 
 def load_galaxies(master_file_path, snap, indices, nthreads=1):
     """Load the galaxies into memory."""
-    # Get the number of galaxies
-    ngals = len(indices)
-
     # Load the galaxies
     if nthreads > 1:
         with Pool(nthreads) as pool:
             galaxies = pool.map(
-                partial(_get_galaxy, master_file_path=master_file_path, snap=snap),
+                partial(
+                    _get_galaxy,
+                    master_file_path=master_file_path,
+                    snap=snap,
+                ),
                 indices,
             )
     else:
@@ -221,6 +222,9 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
         for i, gal_index in enumerate(indices):
             gal = _get_galaxy(gal_index, master_file_path, snap)
             galaxies.append(gal)
+
+    # Remove all Nones
+    galaxies = [gal for gal in galaxies if gal is not None]
 
     return galaxies
 
