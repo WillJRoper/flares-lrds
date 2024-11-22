@@ -224,9 +224,14 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
             galaxies.append(gal)
 
     # Remove all Nones
-    galaxies = [gal for gal in galaxies if gal is not None]
+    galaxies = []
+    for gal, ind in zip(galaxies, indices):
+        if gal is None:
+            indices.remove(ind)
+            continue
+        galaxies.append(gal)
 
-    return galaxies
+    return galaxies, indices
 
 
 def get_emission_model(
