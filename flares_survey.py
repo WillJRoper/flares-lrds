@@ -235,7 +235,7 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
     n_gals = mpi.COMM_WORLD.allgather(len(galaxies))
 
     # Get continuous indices unique on each rank
-    indices = list(range(galaxies))
+    indices = list(range(len(galaxies)))
     indices = [i + sum(n_gals[: mpi.COMM_WORLD.rank]) for i in indices]
 
     return galaxies, np.array(indices)
