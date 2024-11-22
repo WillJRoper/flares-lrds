@@ -438,7 +438,7 @@ if __name__ == "__main__":
     # Add them to the survey
     survey.add_galaxies(
         galaxies,
-        galaxy_indices=indices,
+        # galaxy_indices=indices,
     )
 
     # Get the LOS optical depths
