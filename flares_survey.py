@@ -428,7 +428,7 @@ if __name__ == "__main__":
 
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
-    galaxies = load_galaxies(
+    galaxies, indices = load_galaxies(
         master_file_path=path,
         snap=snap,
         indices=indices,
@@ -438,7 +438,7 @@ if __name__ == "__main__":
     # Add them to the survey
     survey.add_galaxies(
         galaxies,
-        # galaxy_indices=indices,
+        galaxy_indices=indices,
     )
 
     # Get the LOS optical depths
