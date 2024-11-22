@@ -231,7 +231,14 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
             continue
         galaxies.append(gal)
 
-    return galaxies, indices
+    # Count galaxies on each rank
+    n_gals = mpi.COMM_WORLD.allgather(len(galaxies))
+
+    # Get continuous indices unique on each rank
+    indices = list(range(galaxies))
+    indices = [i + sum(n_gals[: mpi.COMM_WORLD.rank]) for i in indices]
+
+    return galaxies, np.array(indices)
 
 
 def get_emission_model(
