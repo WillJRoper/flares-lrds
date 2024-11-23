@@ -329,39 +329,42 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     results["AperturePhotometry"] = {}
     results["Stars"]["AperturePhotometry"] = {}
     results["BlackHoles"]["AperturePhotometry"] = {}
-    for spec_type, imgs in gal.images_psf_fnu.items():
-        results["AperturePhotometry"][spec_type] = {}
-        for filt, img in imgs.items():
-            results["AperturePhotometry"][spec_type][filt] = {}
-            for i, ang_ap in enumerate(ang_apertures):
-                results["AperturePhotometry"][spec_type][filt][
-                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
-                ] = img.get_signal_in_aperture(
-                    kpc_apertures[i].to("Mpc"),
-                    nthreads=nthreads,
-                )
-    for spec_type, imgs in gal.stars.images_psf_fnu.items():
-        results["Stars"]["AperturePhotometry"][spec_type] = {}
-        for filt, img in imgs.items():
-            results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
-            for i, ang_ap in enumerate(ang_apertures):
-                results["Stars"]["AperturePhotometry"][spec_type][filt][
-                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
-                ] = img.get_signal_in_aperture(
-                    kpc_apertures[i].to("Mpc"),
-                    nthreads=nthreads,
-                )
-    for spec_type, imgs in gal.black_holes.images_psf_fnu.items():
-        results["BlackHoles"]["AperturePhotometry"][spec_type] = {}
-        for filt, img in imgs.items():
-            results["BlackHoles"]["AperturePhotometry"][spec_type][filt] = {}
-            for i, ang_ap in enumerate(ang_apertures):
-                results["BlackHoles"]["AperturePhotometry"][spec_type][filt][
-                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
-                ] = img.get_signal_in_aperture(
-                    kpc_apertures[i].to("Mpc"),
-                    nthreads=nthreads,
-                )
+    for inst, d in gal.images_psf_fnu.items():
+        for spec_type, imgs in d.items():
+            results["AperturePhotometry"][spec_type] = {}
+            for filt, img in imgs.items():
+                results["AperturePhotometry"][spec_type][filt] = {}
+                for i, ang_ap in enumerate(ang_apertures):
+                    results["AperturePhotometry"][spec_type][filt][
+                        f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                    ] = img.get_signal_in_aperture(
+                        kpc_apertures[i].to("Mpc"),
+                        nthreads=nthreads,
+                    )
+    for inst, d in gal.stars.images_psf_fnu.items():
+        for spec_type, imgs in d.items():
+            results["Stars"]["AperturePhotometry"][spec_type] = {}
+            for filt, img in imgs.items():
+                results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
+                for i, ang_ap in enumerate(ang_apertures):
+                    results["Stars"]["AperturePhotometry"][spec_type][filt][
+                        f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                    ] = img.get_signal_in_aperture(
+                        kpc_apertures[i].to("Mpc"),
+                        nthreads=nthreads,
+                    )
+    for inst, d in gal.black_holes.images_psf_fnu.items():
+        for spec_type, imgs in d.items():
+            results["BlackHoles"]["AperturePhotometry"][spec_type] = {}
+            for filt, img in imgs.items():
+                results["BlackHoles"]["AperturePhotometry"][spec_type][filt] = {}
+                for i, ang_ap in enumerate(ang_apertures):
+                    results["BlackHoles"]["AperturePhotometry"][spec_type][filt][
+                        f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                    ] = img.get_signal_in_aperture(
+                        kpc_apertures[i].to("Mpc"),
+                        nthreads=nthreads,
+                    )
 
     # Compute the compactness criterion
     results["Compactness"] = {}
