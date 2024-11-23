@@ -253,34 +253,46 @@ def get_emission_model(
 
 def get_stars_1d_velocity_dispersion(gal):
     """Get the 1D velocity dispersion of the stars in the galaxy."""
-    return np.array(
-        [
-            np.std(gal.stars.velocities[:, 0], ddof=0),
-            np.std(gal.stars.velocities[:, 1], ddof=0),
-            np.std(gal.stars.velocities[:, 2], ddof=0),
-        ]
+    return (
+        np.array(
+            [
+                np.std(gal.stars._velocities[:, 0], ddof=0),
+                np.std(gal.stars._velocities[:, 1], ddof=0),
+                np.std(gal.stars._velocities[:, 2], ddof=0),
+            ]
+        )
+        * gal.stars.velocities.units
     )
 
 
 def get_gas_1d_velocity_dispersion(gal):
     """Get the 1D velocity dispersion of the gas in the galaxy."""
-    return np.array(
-        [
-            np.std(gal.gas.velocities[:, 0], ddof=0),
-            np.std(gal.gas.velocities[:, 1], ddof=0),
-            np.std(gal.gas.velocities[:, 2], ddof=0),
-        ]
+    return (
+        np.array(
+            [
+                np.std(gal.gas._velocities[:, 0], ddof=0),
+                np.std(gal.gas._velocities[:, 1], ddof=0),
+                np.std(gal.gas._velocities[:, 2], ddof=0),
+            ]
+        )
+        * gal.gas.velocities.units
     )
 
 
 def get_stars_3d_velocity_dispersion(gal):
     """Get the 3D velocity dispersion of the stars in the galaxy."""
-    return np.std(np.sqrt(np.sum(gal.stars.velocities**2, axis=1)), ddof=0)
+    return (
+        np.std(np.sqrt(np.sum(gal.stars._velocities**2, axis=1)), ddof=0)
+        * gal.stars.velocities.units
+    )
 
 
 def get_gas_3d_velocity_dispersion(gal):
     """Get the 3D velocity dispersion of the gas in the galaxy."""
-    return np.std(np.sqrt(np.sum(gal.gas.velocities**2, axis=1)), ddof=0)
+    return (
+        np.std(np.sqrt(np.sum(gal.gas._velocities**2, axis=1)), ddof=0)
+        * gal.gas.velocities.units
+    )
 
 
 # Define the snapshot tags
