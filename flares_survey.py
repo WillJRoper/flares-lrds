@@ -128,7 +128,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
     bhmask = bhradii < 30 * kpc
 
     # Early exit if there are fewer than 100 stars
-    if np.sum(mask) <= 100:
+    if np.sum(mask) < 100:
         return None
 
     gal = Galaxy(
