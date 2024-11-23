@@ -679,7 +679,9 @@ if __name__ == "__main__":
     survey.get_photometry_luminosities()
     survey.get_photometry_fluxes()
     survey.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    survey.apply_psfs_luminosity()
     survey.get_images_flux(fov=61 * kpc, kernel=kernel_data)
+    survey.apply_psfs_flux()
 
     # Save the survey
     survey.write(outpath)
