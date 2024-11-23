@@ -223,22 +223,10 @@ def load_galaxies(master_file_path, snap, indices, nthreads=1):
             gal = _get_galaxy(gal_index, master_file_path, snap)
             galaxies.append(gal)
 
-    # Remove all Nones
-    galaxies = []
-    for gal, ind in zip(galaxies, indices):
-        if gal is None:
-            indices.remove(ind)
-            continue
-        galaxies.append(gal)
+    # Remove any galaxies that are None
+    galaxies = [gal for gal in galaxies if gal is not None]
 
-    # Count galaxies on each rank
-    n_gals = mpi.COMM_WORLD.allgather(len(galaxies))
-
-    # Get continuous indices unique on each rank
-    indices = list(range(len(galaxies)))
-    indices = [i + sum(n_gals[: mpi.COMM_WORLD.rank]) for i in indices]
-
-    return galaxies, np.array(indices)
+    return galaxies
 
 
 def get_emission_model(
@@ -428,7 +416,7 @@ if __name__ == "__main__":
 
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
-    galaxies, indices = load_galaxies(
+    galaxies = load_galaxies(
         master_file_path=path,
         snap=snap,
         indices=indices,
