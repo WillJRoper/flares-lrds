@@ -602,8 +602,8 @@ if __name__ == "__main__":
 
     # Sanitise out the galaxies with fewer than 100 baryons, we'll remove these
     # anyway
-    okinds = np.logical_and(gal_weights < 100, gal weights > 105)
     # okinds = gal_weights < 100
+    okinds = np.logical_and(gal_weights < 100, gal_weights > 105)
     gal_weights[okinds] = 0
 
     # Get the SPH kernel
