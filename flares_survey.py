@@ -10,6 +10,7 @@ import numpy as np
 from astropy.cosmology import Planck15 as cosmo
 from mpi4py import MPI as mpi
 from pathos.multiprocessing import ProcessingPool as Pool
+from synthesizer.conversions import angular_to_spatial_at_z
 from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
@@ -295,6 +296,230 @@ def get_gas_3d_velocity_dispersion(gal):
     )
 
 
+def get_colors_and_lrd_flags(gal, cosmo, nthreads):
+    """
+    Get the colors and LRD flags for the galaxy and it's components.
+
+    The LRD status is defined by a set of colors and a compactification metric
+    drived from a 0.2" and 0.4" aperture in the F444W filter. The colors are
+    defined as:
+
+        F115W - F150W < 0.8
+        F200W - F277W > 0.7
+        F200W - F356W > 1.0
+
+        or
+
+        F150W - F200W < 0.8
+        F277W - F356W > 0.6
+        F277W - F444W > 0.7
+
+    Args:
+        gal (Galaxy): The galaxy to get the colors and LRD flags for.
+    """
+    # Define a dictionary to store the results in (galaxy level results are
+    # stored in the "Galaxy" key)
+    results = {"Stars": {}, "BlackHoles": {}}
+
+    # Compute spatial apertures
+    ang_apertures = np.array([0.2, 0.4]) * arcsecond
+    kpc_apertures = angular_to_spatial_at_z(ang_apertures, cosmo, gal.redshift)
+
+    # Compute aperture photometry
+    results["AperturePhotometry"] = {}
+    results["Stars"]["AperturePhotometry"] = {}
+    results["BlackHoles"]["AperturePhotometry"] = {}
+    for spec_type, imgs in gal.images_psf_fnu.items():
+        results["AperturePhotometry"][spec_type] = {}
+        for filt, img in imgs.items():
+            results["AperturePhotometry"][spec_type][filt] = {}
+            for i, ang_ap in enumerate(ang_apertures):
+                results["AperturePhotometry"][spec_type][filt][
+                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                ] = img.get_signal_in_aperture(
+                    kpc_apertures[i].to("Mpc"),
+                    nthreads=nthreads,
+                )
+    for spec_type, imgs in gal.stars.images_psf_fnu.items():
+        results["Stars"]["AperturePhotometry"][spec_type] = {}
+        for filt, img in imgs.items():
+            results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
+            for i, ang_ap in enumerate(ang_apertures):
+                results["Stars"]["AperturePhotometry"][spec_type][filt][
+                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                ] = img.get_signal_in_aperture(
+                    kpc_apertures[i].to("Mpc"),
+                    nthreads=nthreads,
+                )
+    for spec_type, imgs in gal.black_holes.images_psf_fnu.items():
+        results["BlackHoles"]["AperturePhotometry"][spec_type] = {}
+        for filt, img in imgs.items():
+            results["BlackHoles"]["AperturePhotometry"][spec_type][filt] = {}
+            for i, ang_ap in enumerate(ang_apertures):
+                results["BlackHoles"]["AperturePhotometry"][spec_type][filt][
+                    f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                ] = img.get_signal_in_aperture(
+                    kpc_apertures[i].to("Mpc"),
+                    nthreads=nthreads,
+                )
+
+    # Compute the compactness criterion
+    results["Compactness"] = {}
+    results["Stars"]["Compactness"] = {}
+    results["BlackHoles"]["Compactness"] = {}
+    for spec_type in results["AperturePhotometry"].keys():
+        if spec_type == "Stars" or spec_type == "Blackholes":
+            continue
+        results["Compactness"][spec_type] = (
+            results["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+                "Aperture_0p4"
+            ]
+            / results["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+                "Aperture_0p2"
+            ]
+        )
+    for spec_type in results["Stars"]["AperturePhotometry"].keys():
+        results["Stars"]["Compactness"][spec_type] = (
+            results["Stars"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+                "Aperture_0p4"
+            ]
+            / results["Stars"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+                "Aperture_0p2"
+            ]
+        )
+    for spec_type in results["BlackHoles"]["AperturePhotometry"].keys():
+        results["BlackHoles"]["Compactness"][spec_type] = (
+            results["BlackHoles"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+                "Aperture_0p4"
+            ]
+            / results["BlackHoles"]["AperturePhotometry"][spec_type][
+                "JWST/NIRCam.F444W"
+            ]["Aperture_0p2"]
+        )
+
+    # Do the galaxy level colors
+    results["Colors"] = {}
+    results["Stars"]["Colors"] = {}
+    results["BlackHoles"]["Colors"] = {}
+    for spec_type, phot in gal.photo_fnu.items():
+        results["Colors"]["F115W_F150W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+        )
+        results["Colors"]["F150W_F200W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+        )
+        results["Colors"]["F200W_F277W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+        )
+        results["Colors"]["F200W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["Colors"]["F277W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["Colors"]["F277W_F444W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+        )
+    for spec_type, phot in gal.stars.photo_fnu.items():
+        results["Stars"]["Colors"]["F115W_F150W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+        )
+        results["Stars"]["Colors"]["F150W_F200W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+        )
+        results["Stars"]["Colors"]["F200W_F277W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+        )
+        results["Stars"]["Colors"]["F200W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["Stars"]["Colors"]["F277W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["Stars"]["Colors"]["F277W_F444W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+        )
+    for spec_type, phot in gal.black_holes.photo_fnu.items():
+        results["BlackHoles"]["Colors"]["F115W_F150W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+        )
+        results["BlackHoles"]["Colors"]["F150W_F200W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+        )
+        results["BlackHoles"]["Colors"]["F200W_F277W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+        )
+        results["BlackHoles"]["Colors"]["F200W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["BlackHoles"]["Colors"]["F277W_F356W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+        )
+        results["BlackHoles"]["Colors"]["F277W_F444W"] = -2.5 * np.log10(
+            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+        )
+
+    # Define the LRD flags
+    results["LRDFlag"] = {}
+    results["Stars"]["LRDFlag"] = {}
+    results["BlackHoles"]["LRDFlag"] = {}
+    for spec_type in results["Compactness"].keys():
+        comp_mask = results["Compactness"][spec_type] < 1.7
+        mask1 = np.logical_and(
+            results["Colors"][spec_type]["F115W_F150W"] < 0.8,
+            results["Colors"][spec_type]["F200W_F277W"] > 0.7,
+        )
+        mask1 = np.logical_and(mask1, results["Colors"][spec_type]["F200W_F356W"] > 1.0)
+        mask2 = np.logical_and(
+            results["Colors"][spec_type]["F150W_F200W"] < 0.8,
+            results["Colors"][spec_type]["F277W_F356W"] > 0.6,
+        )
+        mask2 = np.logical_and(mask2, results["Colors"][spec_type]["F277W_F444W"] > 0.7)
+        results["LRDFlag"][spec_type] = np.logical_and(
+            comp_mask, np.logical_or(mask1, mask2)
+        )
+    for spec_type in results["Stars"]["Compactness"].keys():
+        comp_mask = results["Stars"]["Compactness"][spec_type] < 1.7
+        mask1 = np.logical_and(
+            results["Stars"]["Colors"][spec_type]["F115W_F150W"] < 0.8,
+            results["Stars"]["Colors"][spec_type]["F200W_F277W"] > 0.7,
+        )
+        mask1 = np.logical_and(
+            mask1, results["Stars"]["Colors"][spec_type]["F200W_F356W"] > 1.0
+        )
+        mask2 = np.logical_and(
+            results["Stars"]["Colors"][spec_type]["F150W_F200W"] < 0.8,
+            results["Stars"]["Colors"][spec_type]["F277W_F356W"] > 0.6,
+        )
+        mask2 = np.logical_and(
+            mask2, results["Stars"]["Colors"][spec_type]["F277W_F444W"] > 0.7
+        )
+        results["Stars"]["LRDFlag"][spec_type] = np.logical_and(
+            comp_mask, np.logical_or(mask1, mask2)
+        )
+    for spec_type in results["BlackHoles"]["Compactness"].keys():
+        comp_mask = results["BlackHoles"]["Compactness"][spec_type] < 1.7
+        mask1 = np.logical_and(
+            results["BlackHoles"]["Colors"][spec_type]["F115W_F150W"] < 0.8,
+            results["BlackHoles"]["Colors"][spec_type]["F200W_F277W"] > 0.7,
+        )
+        mask1 = np.logical_and(
+            mask1, results["BlackHoles"]["Colors"][spec_type]["F200W_F356W"] > 1.0
+        )
+        mask2 = np.logical_and(
+            results["BlackHoles"]["Colors"][spec_type]["F150W_F200W"] < 0.8,
+            results["BlackHoles"]["Colors"][spec_type]["F277W_F356W"] > 0.6,
+        )
+        mask2 = np.logical_and(
+            mask2, results["BlackHoles"]["Colors"][spec_type]["F277W_F444W"] > 0.7
+        )
+        results["BlackHoles"]["LRDFlag"][spec_type] = np.logical_and(
+            comp_mask, np.logical_or(mask1, mask2)
+        )
+
+    return results
+
+
 # Define the snapshot tags
 snapshots = [
     "005_z010p000",
@@ -395,20 +620,33 @@ if __name__ == "__main__":
     )
 
     # Add the extra analysis functions we want
+    survey.add_analysis_func(
+        get_colors_and_lrd_flags,
+        "",
+        cosmo=cosmo,
+        nthreads=nthreads,
+    )
     for frac in [0.2, 0.5, 0.8]:
         frac_key = f"{frac}".replace(".", "p")
         survey.add_analysis_func(
             lambda gal, frac=frac: gal.stars.get_attr_radius(
-                "current_masses", frac=frac
+                "current_masses",
+                frac=frac,
             ),
             f"Stars/MassRadii/{frac_key}",
         )
         survey.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius("masses", frac=frac),
+            lambda gal, frac=frac: gal.gas.get_attr_radius(
+                "masses",
+                frac=frac,
+            ),
             f"Gas/MassRadii/{frac_key}",
         )
         survey.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius("dust_masses", frac=frac),
+            lambda gal, frac=frac: gal.gas.get_attr_radius(
+                "dust_masses",
+                frac=frac,
+            ),
             f"Gas/DustMassRadii/{frac_key}",
         )
     survey.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
