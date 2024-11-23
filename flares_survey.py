@@ -187,11 +187,6 @@ def partition_galaxies(galaxy_weights):
     # Create and index array
     indices = np.arange(ngals)
 
-    # Randomly shuffle the indices and weights
-    inds = np.random.permutation(ngals)
-    galaxy_weights = galaxy_weights[inds]
-    indices = indices[inds]
-
     # Assign the galaxies to balance the weights
     weight_on_rank = np.zeros(nranks)
     inds_on_rank = {i: [] for i in range(nranks)}
@@ -424,10 +419,7 @@ if __name__ == "__main__":
     )
 
     # Add them to the survey
-    survey.add_galaxies(
-        galaxies,
-        # galaxy_indices=indices,
-    )
+    survey.add_galaxies(galaxies)
 
     # Get the LOS optical depths
     survey.get_los_optical_depths(kernel=kernel_data)
