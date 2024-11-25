@@ -376,29 +376,29 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
         if spec_type == "Stars" or spec_type == "Blackholes":
             continue
         results["Compactness"][spec_type] = (
-            results["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+            results["AperturePhotometry"][spec_type]["JWST_NIRCam.F444W"][
                 "Aperture_0p4"
             ]
-            / results["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+            / results["AperturePhotometry"][spec_type]["JWST_NIRCam.F444W"][
                 "Aperture_0p2"
             ]
         )
     for spec_type in results["Stars"]["AperturePhotometry"].keys():
         results["Stars"]["Compactness"][spec_type] = (
-            results["Stars"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+            results["Stars"]["AperturePhotometry"][spec_type]["JWST_NIRCam.F444W"][
                 "Aperture_0p4"
             ]
-            / results["Stars"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+            / results["Stars"]["AperturePhotometry"][spec_type]["JWST_NIRCam.F444W"][
                 "Aperture_0p2"
             ]
         )
     for spec_type in results["BlackHoles"]["AperturePhotometry"].keys():
         results["BlackHoles"]["Compactness"][spec_type] = (
-            results["BlackHoles"]["AperturePhotometry"][spec_type]["JWST/NIRCam.F444W"][
+            results["BlackHoles"]["AperturePhotometry"][spec_type]["JWST_NIRCam.F444W"][
                 "Aperture_0p4"
             ]
             / results["BlackHoles"]["AperturePhotometry"][spec_type][
-                "JWST/NIRCam.F444W"
+                "JWST_NIRCam.F444W"
             ]["Aperture_0p2"]
         )
 
@@ -408,60 +408,60 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     results["BlackHoles"]["Colors"] = {}
     for spec_type, phot in gal.photo_fnu.items():
         results["Colors"]["F115W_F150W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+            phot["JWST_NIRCam.F115W"] / phot["JWST_NIRCam.F150W"]
         )
         results["Colors"]["F150W_F200W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+            phot["JWST_NIRCam.F150W"] / phot["JWST_NIRCam.F200W"]
         )
         results["Colors"]["F200W_F277W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F277W"]
         )
         results["Colors"]["F200W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F356W"]
         )
         results["Colors"]["F277W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F356W"]
         )
         results["Colors"]["F277W_F444W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F444W"]
         )
     for spec_type, phot in gal.stars.photo_fnu.items():
         results["Stars"]["Colors"]["F115W_F150W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+            phot["JWST_NIRCam.F115W"] / phot["JWST_NIRCam.F150W"]
         )
         results["Stars"]["Colors"]["F150W_F200W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+            phot["JWST_NIRCam.F150W"] / phot["JWST_NIRCam.F200W"]
         )
         results["Stars"]["Colors"]["F200W_F277W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F277W"]
         )
         results["Stars"]["Colors"]["F200W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F356W"]
         )
         results["Stars"]["Colors"]["F277W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F356W"]
         )
         results["Stars"]["Colors"]["F277W_F444W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F444W"]
         )
     for spec_type, phot in gal.black_holes.photo_fnu.items():
         results["BlackHoles"]["Colors"]["F115W_F150W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F115W"] / phot["JWST/NIRCam.F150W"]
+            phot["JWST_NIRCam.F115W"] / phot["JWST_NIRCam.F150W"]
         )
         results["BlackHoles"]["Colors"]["F150W_F200W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F150W"] / phot["JWST/NIRCam.F200W"]
+            phot["JWST_NIRCam.F150W"] / phot["JWST_NIRCam.F200W"]
         )
         results["BlackHoles"]["Colors"]["F200W_F277W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F277W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F277W"]
         )
         results["BlackHoles"]["Colors"]["F200W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F200W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F200W"] / phot["JWST_NIRCam.F356W"]
         )
         results["BlackHoles"]["Colors"]["F277W_F356W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F356W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F356W"]
         )
         results["BlackHoles"]["Colors"]["F277W_F444W"] = -2.5 * np.log10(
-            phot["JWST/NIRCam.F277W"] / phot["JWST/NIRCam.F444W"]
+            phot["JWST_NIRCam.F277W"] / phot["JWST_NIRCam.F444W"]
         )
 
     # Define the LRD flags
