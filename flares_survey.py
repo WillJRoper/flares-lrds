@@ -405,10 +405,10 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     # Do the galaxy level colors
     results["Colors"] = {spec_type: {} for spec_type in results["Compactness"].keys()}
     results["Stars"]["Colors"] = {
-        spec_type: {} for spec_type in results["Compactness"]["Stars"].keys()
+        spec_type: {} for spec_type in results["Stars"]["Compactness"].keys()
     }
     results["BlackHoles"]["Colors"] = {
-        spec_type: {} for spec_type in results["Compactness"]["BlackHoles"].keys()
+        spec_type: {} for spec_type in results["BlackHoles"]["Compactness"].keys()
     }
     for spec_type, phot in gal.photo_fnu.items():
         results["Colors"][spec_type]["F115W_F150W"] = -2.5 * np.log10(
