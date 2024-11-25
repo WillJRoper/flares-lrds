@@ -346,7 +346,6 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
         for spec_type, imgs in d.items():
             results["Stars"]["AperturePhotometry"][spec_type] = {}
             for filt, img in imgs.items():
-                print(filt)
                 results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
                 for i, ang_ap in enumerate(ang_apertures):
                     results["Stars"]["AperturePhotometry"][spec_type][filt][
@@ -361,6 +360,7 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
             for filt, img in imgs.items():
                 results["BlackHoles"]["AperturePhotometry"][spec_type][filt] = {}
                 for i, ang_ap in enumerate(ang_apertures):
+                    print(f"Aperture_{kpc_apertures[i]}".replace(".", "p"))
                     results["BlackHoles"]["AperturePhotometry"][spec_type][filt][
                         f"Aperture_{kpc_apertures[i]}".replace(".", "p")
                     ] = img.get_signal_in_aperture(
