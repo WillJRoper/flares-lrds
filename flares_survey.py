@@ -346,6 +346,7 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
         for spec_type, imgs in d.items():
             results["Stars"]["AperturePhotometry"][spec_type] = {}
             for filt, img in imgs.items():
+                print(filt)
                 results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
                 for i, ang_ap in enumerate(ang_apertures):
                     results["Stars"]["AperturePhotometry"][spec_type][filt][
