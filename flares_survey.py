@@ -349,7 +349,7 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
                 results["Stars"]["AperturePhotometry"][spec_type][filt] = {}
                 for i, ang_ap in enumerate(ang_apertures):
                     results["Stars"]["AperturePhotometry"][spec_type][filt][
-                        f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                        f"Aperture_{ang_apertures[i]}".replace(".", "p")
                     ] = img.get_signal_in_aperture(
                         kpc_apertures[i].to("Mpc"),
                         nthreads=nthreads,
@@ -360,9 +360,9 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
             for filt, img in imgs.items():
                 results["BlackHoles"]["AperturePhotometry"][spec_type][filt] = {}
                 for i, ang_ap in enumerate(ang_apertures):
-                    print(f"Aperture_{kpc_apertures[i]}".replace(".", "p"))
+                    print(f"Aperture_{ang_apertures[i]}".replace(".", "p"))
                     results["BlackHoles"]["AperturePhotometry"][spec_type][filt][
-                        f"Aperture_{kpc_apertures[i]}".replace(".", "p")
+                        f"Aperture_{ang_apertures[i]}".replace(".", "p")
                     ] = img.get_signal_in_aperture(
                         kpc_apertures[i].to("Mpc"),
                         nthreads=nthreads,
