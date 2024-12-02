@@ -631,7 +631,7 @@ if __name__ == "__main__":
     # Add the extra analysis functions we want
     survey.add_analysis_func(
         get_colors_and_lrd_flags,
-        "",
+        "LRDData",
         cosmo=cosmo,
         nthreads=nthreads,
     )
