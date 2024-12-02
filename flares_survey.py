@@ -183,21 +183,25 @@ def partition_galaxies(galaxy_weights):
     # Get the number of galaxies and the number of processes
     ngals = len(galaxy_weights)
     nranks = mpi.COMM_WORLD.Get_size()
-    rank = mpi.COMM_WORLD.Get_rank()
+    this_rank = mpi.COMM_WORLD.Get_rank()
 
     # Create and index array
     indices = np.arange(ngals)
 
-    # Assign the galaxies to balance the weights
-    weight_on_rank = np.zeros(nranks)
+    # Assign the galaxies in chunks of equal weight to each rank
+    total_weight = np.sum(galaxy_weights)
+    weight_per_rank = total_weight / nranks
+    weight_so_far = 0
     inds_on_rank = {i: [] for i in range(nranks)}
-    for i in range(ngals):
-        # Find the rank with the smallest weight
-        min_rank = np.argmin(weight_on_rank)
-        weight_on_rank[min_rank] += galaxy_weights[i]
-        inds_on_rank[min_rank].append(indices[i])
+    rank = 0
+    for i, weight in zip(indices, galaxy_weights):
+        if weight_so_far + weight > weight_per_rank:
+            weight_so_far = 0
+            rank += 1
+        weight_so_far += weight
+        inds_on_rank[rank].append(i)
 
-    return inds_on_rank[rank]
+    return inds_on_rank[this_rank]
 
 
 def load_galaxies(master_file_path, snap, indices, nthreads=1):
