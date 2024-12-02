@@ -197,7 +197,8 @@ def partition_galaxies(galaxy_weights):
     for i, weight in zip(indices, galaxy_weights):
         if weight_so_far + weight > weight_per_rank:
             weight_so_far = 0
-            rank += 1
+            if rank != nranks - 1:
+                rank += 1
         weight_so_far += weight
         inds_on_rank[rank].append(i)
 
