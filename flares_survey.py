@@ -626,7 +626,6 @@ if __name__ == "__main__":
         ),
         nthreads=nthreads,
         comm=comm,
-        verbose=2,
     )
 
     # Add the extra analysis functions we want
