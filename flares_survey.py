@@ -129,8 +129,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
     bhmask = bhradii < 30 * kpc
 
     # Early exit if there are fewer than 100 stars
-    # if np.sum(mask) < 100:
-    if np.sum(mask) > 102 or np.sum(mask) < 100:
+    if np.sum(mask) < 100:
         return None
 
     gal = Galaxy(
@@ -606,8 +605,7 @@ if __name__ == "__main__":
 
     # Sanitise out the galaxies with fewer than 100 baryons, we'll remove these
     # anyway
-    # okinds = gal_weights < 100
-    okinds = np.logical_and(gal_weights < 100, gal_weights > 102)
+    okinds = gal_weights < 100
     gal_weights[okinds] = 0
 
     # Get the SPH kernel
