@@ -15,7 +15,7 @@ from synthesizer.grid import Grid
 from synthesizer.instruments import InstrumentCollection
 from synthesizer.kernel_functions import Kernel
 from synthesizer.particle import BlackHoles, Galaxy, Gas, Stars
-from synthesizer.survey import Survey
+from synthesizer.pipeline import Pipeline
 from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
 
 from combined_emission_model import FLARESLOSCombinedEmission
@@ -618,8 +618,8 @@ if __name__ == "__main__":
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
 
-    # Set up the survey
-    survey = Survey(
+    # Set up the pipeline
+    pipeline = Pipeline(
         emission_model=get_emission_model(
             grid_name,
             grid_dir,
@@ -634,7 +634,7 @@ if __name__ == "__main__":
     )
 
     # Add the extra analysis functions we want
-    survey.add_analysis_func(
+    pipeline.add_analysis_func(
         get_colors_and_lrd_flags,
         "",
         cosmo=cosmo,
@@ -642,36 +642,36 @@ if __name__ == "__main__":
     )
     for frac in [0.2, 0.5, 0.8]:
         frac_key = f"{frac}".replace(".", "p")
-        survey.add_analysis_func(
+        pipeline.add_analysis_func(
             lambda gal, frac=frac: gal.stars.get_attr_radius(
                 "current_masses",
                 frac=frac,
             ),
             f"Stars/MassRadii/{frac_key}",
         )
-        survey.add_analysis_func(
+        pipeline.add_analysis_func(
             lambda gal, frac=frac: gal.gas.get_attr_radius(
                 "masses",
                 frac=frac,
             ),
             f"Gas/MassRadii/{frac_key}",
         )
-        survey.add_analysis_func(
+        pipeline.add_analysis_func(
             lambda gal, frac=frac: gal.gas.get_attr_radius(
                 "dust_masses",
                 frac=frac,
             ),
             f"Gas/DustMassRadii/{frac_key}",
         )
-    survey.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
-    survey.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
-    survey.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
-    survey.add_analysis_func(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
-    survey.add_analysis_func(lambda gal: gal.region, "Region")
-    survey.add_analysis_func(lambda gal: gal.grp_id, "GroupID")
-    survey.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
-    survey.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
-    survey.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
+    pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
+    pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
+    pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
+    pipeline.add_analysis_func(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
+    pipeline.add_analysis_func(lambda gal: gal.region, "Region")
+    pipeline.add_analysis_func(lambda gal: gal.grp_id, "GroupID")
+    pipeline.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
+    pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
+    pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
 
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
@@ -682,20 +682,20 @@ if __name__ == "__main__":
         nthreads=nthreads,
     )
 
-    # Add them to the survey
-    survey.add_galaxies(galaxies)
+    # Add them to the pipeline
+    pipeline.add_galaxies(galaxies)
 
     # Get the LOS optical depths
-    survey.get_los_optical_depths(kernel=kernel_data)
+    pipeline.get_los_optical_depths(kernel=kernel_data)
 
-    # Run the survey
-    survey.get_spectra(cosmo=cosmo)
-    survey.get_photometry_luminosities()
-    survey.get_photometry_fluxes()
-    survey.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
-    survey.apply_psfs_luminosity()
-    survey.get_images_flux(fov=61 * kpc, kernel=kernel_data)
-    survey.apply_psfs_flux()
+    # Run the pipeline
+    pipeline.get_spectra(cosmo=cosmo)
+    pipeline.get_photometry_luminosities()
+    pipeline.get_photometry_fluxes()
+    pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    pipeline.apply_psfs_luminosity()
+    pipeline.get_images_flux(fov=61 * kpc, kernel=kernel_data)
+    pipeline.apply_psfs_flux()
 
-    # Save the survey
-    survey.write(outpath)
+    # Save the pipeline
+    pipeline.write(outpath)
