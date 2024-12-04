@@ -700,4 +700,3 @@ if __name__ == "__main__":
 
     # Save the pipeline
     pipeline.write(outpath)
-    pipeline.combine_rank_files()
