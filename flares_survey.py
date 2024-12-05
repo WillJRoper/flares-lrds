@@ -195,12 +195,16 @@ def partition_galaxies(galaxy_weights):
     inds_on_rank = {i: [] for i in range(nranks)}
     rank = 0
     for i, weight in zip(indices, galaxy_weights):
-        if weight_so_far + weight > weight_per_rank:
-            weight_so_far = 0
-            if rank != nranks - 1:
-                rank += 1
         weight_so_far += weight
         inds_on_rank[rank].append(i)
+        if weight_so_far > weight_per_rank:
+            print(
+                f"Rank {rank} has {len(inds_on_rank[rank])} galaxies "
+                f"with a total weight of {weight_so_far}"
+            )
+            weight_so_far = 0
+            if rank < nranks - 1:
+                rank += 1
 
     return inds_on_rank[this_rank]
 
