@@ -74,10 +74,10 @@ TOPHATS = {
 
 # Define spectra keys
 SPECTRA_KEYS = [
-    # "stellar_intrinsic",
-    # "agn_intrinsic",
-    # "stellar_attenuated",
-    # "agn_attenuated",
+    "stellar_intrinsic",
+    "agn_intrinsic",
+    "stellar_attenuated",
+    "agn_attenuated",
     "stellar_total",
     "combined_intrinsic",
     "total_dust_free_agn",
