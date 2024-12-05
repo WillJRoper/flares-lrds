@@ -690,8 +690,8 @@ if __name__ == "__main__":
     pipeline.get_spectra(cosmo=cosmo)
     pipeline.get_photometry_luminosities()
     pipeline.get_photometry_fluxes()
-    pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
-    pipeline.apply_psfs_luminosity()
+    # pipeline.get_images_luminosity(fov=61 * kpc, kernel=kernel_data)
+    # pipeline.apply_psfs_luminosity()
     pipeline.get_images_flux(fov=61 * kpc, kernel=kernel_data)
     pipeline.apply_psfs_flux()
 
