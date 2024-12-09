@@ -199,7 +199,7 @@ def partition_galaxies(galaxy_weights):
             rank += 1
 
     # Make sure no rank has no galaxies, if so we are screwed and throw an error
-    if rank < nranks:
+    if rank < nranks - 1:
         raise ValueError(
             "Not enough galaxies to split between ranks evenly."
             f"Rank={rank}, Nranks={nranks}"
