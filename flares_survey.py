@@ -206,7 +206,7 @@ def partition_galaxies(galaxy_weights):
         return np.array_split(np.arange(ngals), nranks)[this_rank]
     else:
         raise ValueError(
-            f"Too fewer galaxies for partitioning onto {nranks} ranks "
+            f"Too few galaxies for partitioning onto {nranks} ranks "
             f"(ngals={ngals})."
         )
 
