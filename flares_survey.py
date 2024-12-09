@@ -195,6 +195,21 @@ def partition_galaxies(galaxy_weights):
     gal_ranks = np.int32(cum_weights / weight_per_rank)
     gal_ranks[gal_ranks >= nranks] = nranks - 1
 
+    # Communicate the counts on each rank back out to everyone
+    counts = [np.sum(gal_ranks == i) for i in range(nranks)]
+    counts = mpi.COMM_WORLD.allgather(counts)
+
+    # If we have a count of 0 on any rank fall back on to split galaxies evenly
+    # between ranks
+    ngals = len(galaxy_weights)
+    if 0 in counts and ngals > nranks:
+        return np.array_split(np.arange(ngals), nranks)[this_rank]
+    else:
+        raise ValueError(
+            f"Too fewer galaxies for partitioning onto {nranks} ranks "
+            f"(ngals={ngals})."
+        )
+
     return np.where(gal_ranks == this_rank)[0]
 
 
