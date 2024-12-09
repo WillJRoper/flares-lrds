@@ -192,7 +192,9 @@ def partition_galaxies(galaxy_weights):
     weight_on_rank = 0
     rank = 0
     for i, weight in enumerate(galaxy_weights):
-        gal_on_rank[i] = rank
+        if weight < 100:
+            continue
+        gal_on_rank.setdefault(rank, []).append(i)
         weight_on_rank += weight
         if weight_on_rank > weight_per_rank:
             weight_on_rank = 0
@@ -610,11 +612,6 @@ if __name__ == "__main__":
             )
     ngals = len(gal_weights)
     gal_weights = np.array(gal_weights)
-
-    # Sanitise out the galaxies with fewer than 100 baryons, we'll remove these
-    # anyway
-    okinds = gal_weights < 100
-    gal_weights[okinds] = 0
 
     # Get the SPH kernel
     kernel_data = Kernel().get_kernel()
