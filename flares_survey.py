@@ -185,7 +185,7 @@ def partition_galaxies(galaxy_weights):
     this_rank = mpi.COMM_WORLD.Get_rank()
 
     # Just split galaxies evenly and be done with it
-    gals_per_rank = len(galaxy_weights[galaxy_weights > 0]) // nranks
+    gals_per_rank = len(galaxy_weights[galaxy_weights >= 100]) // nranks
 
     # Get the indices for this rank
     gal_on_rank = {r: [] for r in range(nranks)}
