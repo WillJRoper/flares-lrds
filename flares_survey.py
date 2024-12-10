@@ -184,20 +184,16 @@ def partition_galaxies(galaxy_weights):
     nranks = mpi.COMM_WORLD.Get_size()
     this_rank = mpi.COMM_WORLD.Get_rank()
 
-    # Just split galaxies evenly and be done with it
-    gals_per_rank = len(galaxy_weights[galaxy_weights >= 100]) // nranks
+    # Create an array of galaxy indices
+    gal_inds = np.arange(len(galaxy_weights))
 
-    # Get the indices for this rank
-    gal_on_rank = {r: [] for r in range(nranks)}
-    rank = 0
-    for i, weight in enumerate(galaxy_weights):
-        if weight < 100:
-            continue
-        gal_on_rank[rank].append(i)
-        if len(gal_on_rank[rank]) == gals_per_rank:
-            rank += 1
+    # Sanitise away galaxies below the threshold
+    gal_inds = gal_inds[galaxy_weights >= 100]
 
-    return gal_on_rank[this_rank]
+    # Split the galaxies between the processes
+    indices = np.array_split(gal_inds, nranks)
+
+    return indices[this_rank]
 
 
 def load_galaxies(master_file_path, snap, indices, nthreads=1):
