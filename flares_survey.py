@@ -184,28 +184,18 @@ def partition_galaxies(galaxy_weights):
     nranks = mpi.COMM_WORLD.Get_size()
     this_rank = mpi.COMM_WORLD.Get_rank()
 
-    # How much weight should we give each rank on average
-    weight_per_rank = np.sum(galaxy_weights) / nranks
+    # Just split galaxies evenly and be done with it
+    gals_per_rank = len(galaxy_weights[galaxy_weights > 0]) // nranks
 
-    # Split the galaxies between the ranks as evenly as possible
-    gal_on_rank = {}
-    weight_on_rank = 0
+    # Get the indices for this rank
+    gal_on_rank = {r: [] for r in range(nranks)}
     rank = 0
     for i, weight in enumerate(galaxy_weights):
         if weight < 100:
             continue
-        gal_on_rank.setdefault(rank, []).append(i)
-        weight_on_rank += weight
-        if weight_on_rank > weight_per_rank:
-            weight_on_rank = 0
+        gal_on_rank[rank].append(i)
+        if len(gal_on_rank[rank]) == gals_per_rank:
             rank += 1
-
-    # Make sure no rank has no galaxies, if so we are screwed and throw an error
-    if rank < nranks - 1:
-        raise ValueError(
-            "Not enough galaxies to split between ranks evenly."
-            f"Rank={rank}, Nranks={nranks}"
-        )
 
     return gal_on_rank[this_rank]
 
