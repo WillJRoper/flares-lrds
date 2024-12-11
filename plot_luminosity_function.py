@@ -28,7 +28,7 @@ args = parser.parse_args()
 data_file = "data/combined_<snap>.hdf5"
 
 # Define magnitude bins
-bins = np.arange(-25, -15.5, 1)
+bins = np.arange(-27, -16, 1)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
