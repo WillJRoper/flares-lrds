@@ -6,6 +6,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 from synthesizer.conversions import lnu_to_absolute_mag
+from unyt import unyt_array
 
 from utils import SNAPSHOTS, savefig
 
@@ -43,7 +44,8 @@ for snap in SNAPSHOTS:
     # Read the UV1500 luminosities, weights and LRD mask
     try:
         with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
-            lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
+            lnu_dset = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"]
+            lnu = unyt_array(lnu_dset[...], lnu_dset.attrs["Units"])
             weights = hdf["Galaxies/RegionWeight"][...]
             mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
     except OSError as e:
@@ -122,7 +124,8 @@ for snap in SNAPSHOTS:
     # Read the UV1500 luminosities, weights and LRD mask
     try:
         with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
-            lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
+            lnu_dset = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"]
+            lnu = unyt_array(lnu_dset[...], lnu_dset.attrs["Units"])
             weights = hdf["Galaxies/RegionWeight"][...]
             mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
     except OSError as e:
