@@ -108,7 +108,7 @@ for snap in SNAPSHOTS:
 
     savefig(
         fig,
-        f"UVLF/luminosity_function_{args.spec_type}_{snap}",
+        f"UVLF/mag_luminosity_function_{args.spec_type}_{snap}",
     )
 
 
@@ -183,5 +183,5 @@ for snap in SNAPSHOTS:
 
     savefig(
         fig,
-        f"UVLF/luminosity_function_nomag_{args.spec_type}_{snap}",
+        f"UVLF/luminosity_function_{args.spec_type}_{snap}",
     )
