@@ -41,10 +41,14 @@ for snap in SNAPSHOTS:
     z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
 
     # Read the UV1500 luminosities, weights and LRD mask
-    with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
-        lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
-        weights = hdf["Galaxies/RegionWeight"][...]
-        mask = hdf[f"Galaxieis/LRDFlag/{args.spec_type}"][...]
+    try:
+        with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
+            lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
+            weights = hdf["Galaxies/RegionWeight"][...]
+            mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
+    except OSError as e:
+        print(e)
+        continue
 
     # Convert flux to absolute magnitude
     mags = lnu_to_absolute_mag(lnu)
@@ -116,10 +120,14 @@ for snap in SNAPSHOTS:
     z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
 
     # Read the UV1500 luminosities, weights and LRD mask
-    with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
-        lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
-        weights = hdf["Galaxies/RegionWeight"][...]
-        mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
+    try:
+        with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
+            lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
+            weights = hdf["Galaxies/RegionWeight"][...]
+            mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
+    except OSError as e:
+        print(e)
+        continue
 
     # Compute the luminosity function full
     hist, _ = np.histogram(lnu, bins=bins)
