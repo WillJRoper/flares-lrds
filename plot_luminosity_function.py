@@ -59,20 +59,12 @@ for snap in SNAPSHOTS:
     mags = lnu_to_absolute_mag(lnu)
 
     # Compute the luminosity function full
-    hist, _ = np.histogram(mags, bins=bins)
     whist, _ = np.histogram(mags, bins=bins, weights=weights)
-    hist = hist.astype(float)
-    whist = whist.astype(float)
-    hist *= whist
-    phi = hist / volume / np.diff(bins)
+    phi = whist / volume / np.diff(bins)
 
     # Compute the LRD luminosity function (masked LF)
-    hist, _ = np.histogram(mags[mask], bins=bins)
     whist, _ = np.histogram(mags[mask], bins=bins, weights=weights[mask])
-    hist = hist.astype(float)
-    whist = whist.astype(float)
-    hist *= whist
-    lrd_phi = hist / volume / np.diff(bins)
+    lrd_phi = whist / volume / np.diff(bins)
 
     # Plot the luminosity function
     fig, ax = plt.subplots()
@@ -100,7 +92,7 @@ for snap in SNAPSHOTS:
     ax.set_xlim(ax.get_xlim()[::-1])
 
     ax.set_yscale("log")
-    ax.set_xlabel("$M_{2000}$")
+    ax.set_xlabel("$M_{1500}$")
 
     ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]")
 
@@ -115,6 +107,7 @@ for snap in SNAPSHOTS:
 # Define magnitude bins
 bins = np.logspace(27, 31, 20)
 bin_cents = (bins[:-1] + bins[1:]) / 2
+bin_widths_dex = np.diff(np.log10(bins))
 
 # Define the volume
 volume = 3200**3  # Mpc^3
@@ -136,20 +129,12 @@ for snap in SNAPSHOTS:
         continue
 
     # Compute the luminosity function full
-    hist, _ = np.histogram(lnu, bins=bins)
     whist, _ = np.histogram(lnu, bins=bins, weights=weights)
-    hist = hist.astype(float)
-    whist = whist.astype(float)
-    hist *= whist
-    phi = hist / volume / np.diff(bins)
+    phi = whist / volume / bin_widths_dex
 
     # Compute the LRD luminosity function (masked LF)
-    hist, _ = np.histogram(lnu[mask], bins=bins)
     whist, _ = np.histogram(lnu[mask], bins=bins, weights=weights[mask])
-    hist = hist.astype(float)
-    whist = whist.astype(float)
-    hist *= whist
-    lrd_phi = hist / volume / np.diff(bins)
+    lrd_phi = whist / volume / bin_widths_dex
 
     # Plot the luminosity function
     fig, ax = plt.subplots()
@@ -175,7 +160,7 @@ for snap in SNAPSHOTS:
     )
 
     ax.set_yscale("log")
-    ax.set_xlabel("$L_{2000} / [erg / s / Hz]$")
+    ax.set_xlabel("$L_{1500} / [erg / s / Hz]$")
 
     ax.set_ylabel(r"$\phi$ / [Mpc$^{-3}$ dex$^{-1}$]")
 
