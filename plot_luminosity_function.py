@@ -32,7 +32,7 @@ bins = np.arange(-27, -16, 1)
 bin_cents = (bins[:-1] + bins[1:]) / 2
 
 # Define the volume
-volume = 3200**3  # Mpc^3
+volume = vol = (4 / 3) * np.pi * (14 / 0.6777) ** 3  # Mpc^3
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
@@ -110,7 +110,7 @@ bin_cents = (bins[:-1] + bins[1:]) / 2
 bin_widths_dex = np.diff(np.log10(bins))
 
 # Define the volume
-volume = 3200**3  # Mpc^3
+volume = vol = (4 / 3) * np.pi * (14 / 0.6777) ** 3  # Mpc^3
 
 # Loop over snapshots
 for snap in SNAPSHOTS:
