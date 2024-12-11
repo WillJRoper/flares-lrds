@@ -41,7 +41,7 @@ for snap in SNAPSHOTS:
     z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
 
     # Read the UV1500 luminosities, weights and LRD mask
-    with h5py.File(data_file, "r") as hdf:
+    with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
         lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
         weights = hdf["Galaxies/RegionWeight"][...]
         mask = hdf[f"Galaxieis/LRDFlag/{args.spec_type}"][...]
@@ -116,7 +116,7 @@ for snap in SNAPSHOTS:
     z = float(snap.split("_")[-1].replace("z", "").replace("p", "."))
 
     # Read the UV1500 luminosities, weights and LRD mask
-    with h5py.File(data_file, "r") as hdf:
+    with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
         lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
         weights = hdf["Galaxies/RegionWeight"][...]
         mask = hdf[f"Galaxieis/LRDFlag/{args.spec_type}"][...]
