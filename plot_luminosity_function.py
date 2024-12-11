@@ -5,7 +5,6 @@ import argparse
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
-from synthesize_flares import get_flares_filters
 from synthesizer.conversions import lnu_to_absolute_mag
 
 from utils import SNAPSHOTS, savefig
@@ -26,9 +25,6 @@ args = parser.parse_args()
 
 # Define the data file
 data_file = "data/combined_<snap>.hdf5"
-
-# Define the filters we'll use
-filters = get_flares_filters("lrd_filters.hdf5")
 
 # Define magnitude bins
 bins = np.arange(-25, -15.5, 1)
