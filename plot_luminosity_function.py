@@ -52,6 +52,9 @@ for snap in SNAPSHOTS:
         print(e)
         continue
 
+    print(f"Number of galaxies: {len(lnu)}")
+    print(f"Number of LRDs: {len(lnu[mask])}")
+
     # Convert flux to absolute magnitude
     mags = lnu_to_absolute_mag(lnu)
 
