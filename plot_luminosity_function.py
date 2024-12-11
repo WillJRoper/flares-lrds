@@ -119,7 +119,7 @@ for snap in SNAPSHOTS:
     with h5py.File(data_file.replace("<snap>", snap), "r") as hdf:
         lnu = hdf[f"Galaxies/Photometry/Luminosities/{args.spec_type}/UV1500"][...]
         weights = hdf["Galaxies/RegionWeight"][...]
-        mask = hdf[f"Galaxieis/LRDFlag/{args.spec_type}"][...]
+        mask = hdf[f"Galaxies/LRDFlag/{args.spec_type}"][...]
 
     # Compute the luminosity function full
     hist, _ = np.histogram(lnu, bins=bins)
