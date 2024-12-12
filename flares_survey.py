@@ -292,6 +292,41 @@ def get_gas_3d_velocity_dispersion(gal):
     )
 
 
+def get_pixel_based_hlr(obj, spec_type, filt):
+    """
+    Get the half-light radius of the galaxy using the pixel technique.
+
+    Args:
+        obj (Galaxy/Stars): The galaxy or component to get the half-light radius for.
+        spec_type (str): The type of spectrum to use.
+        filt (str): The filter to use.
+
+    Returns:
+        unyt_quantity: The half-light radius of the galaxy.
+    """
+    # Get the image
+    img = obj.images_psf_fnu[spec_type][filt]
+    img_arr = img.arr
+    pix_area = img._resolution * img._resolution
+
+    # Sort pixel values from brightest to faintest
+    pixels = np.sort(img_arr.flatten())[::-1]
+
+    # Calculate the cumulative sum of the pixels
+    cumsum = np.cumsum(pixels)
+
+    # Find the pixel that corresponds to the half-light radius
+    hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
+
+    # Get the area of pixels containing half the light
+    hlr_area = hlr_ind * pix_area
+
+    # Get the half-light radius
+    hlr = np.sqrt(hlr_area / np.pi)
+
+    return (hlr * img.resolution.units).to("kpc")
+
+
 def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     """
     Get the colors and LRD flags for the galaxy and it's components.
@@ -529,6 +564,98 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     return results
 
 
+def get_black_hole_data(gal):
+    """
+    Return the black hole data for the galaxy.
+
+    Args:
+        gal (Galaxy): The galaxy to get the black hole data for.
+
+    Returns:
+        dict: The black hole data.
+    """
+    # Set up the dictionary to store the data in
+    data = {}
+
+    # Do we even have black holes?
+    if gal.black_holes is None:
+        data["CentralBHMass"] = 0 * Msun
+        data["CentralBHAccretionRate"] = 0 * Msun / yr
+        data["TotalBHMass"] = 0 * Msun
+        data["AverageAccretionRate"] = 0 * Msun / yr
+        data["NumberOfBHs"] = 0
+
+    # Do we have 0 black holes?
+    elif gal.black_holes.nbh == 0:
+        data["CentralBHMass"] = 0 * Msun
+        data["CentralBHAccretionRate"] = 0 * Msun / yr
+        data["TotalBHMass"] = 0 * Msun
+        data["AverageAccretionRate"] = 0 * Msun / yr
+        data["NumberOfBHs"] = 0
+
+    # Ok, we have black holes, if there's only one we'll just use that one
+    elif gal.black_holes.nbh == 1:
+        data["CentralBHMass"] = gal.black_holes.masses[0]
+        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[0]
+        data["TotalBHMass"] = gal.black_holes.masses[0]
+        data["AverageAccretionRate"] = gal.black_holes.accretion_rates[0]
+
+    # Ok, we have multiple black holes
+    else:
+        central_bh = np.argmax(gal.black_holes.masses)
+        data["CentralBHMass"] = gal.black_holes.masses[central_bh]
+        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[central_bh]
+        data["TotalBHMass"] = np.sum(gal.black_holes.masses)
+        data["AverageAccretionRate"] = np.mean(gal.black_holes.accretion_rates)
+        data["NumberOfBHs"] = gal.black_holes.nbh
+
+    return data
+
+
+def get_UV_slope(obj):
+    """
+    Get the UV slope of the galaxy.
+
+    Args:
+        obj (Galaxy/Stars/BlackHoles): The object to get the UV slope for.
+
+    Returns:
+        float: The UV slope.
+    """
+    # Dictionary to hold the slopes
+    slopes = {}
+
+    # Loop over the spectra
+    for spec_type, d in obj.spectra.items():
+        slopes[spec_type] = obj.spectra[spec_type].measure_beta(
+            window=(1500 * angstrom, 3000 * angstrom)
+        )
+
+    return slopes
+
+
+def get_IR_slopes(obj):
+    """
+    Get the IR slopes of the galaxy.
+
+    Args:
+        obj (Galaxy/Stars/BlackHoles): The object to get the IR slopes for.
+
+    Returns:
+        float: The IR slopes.
+    """
+    # Dictionary to hold the slopes
+    slopes = {}
+
+    # Loop over the spectra
+    for spec_type, d in obj.spectra.items():
+        slopes[spec_type] = obj.spectra[spec_type].measure_beta(
+            window=(4400 * angstrom, 7500 * angstrom)
+        )
+
+    return slopes
+
+
 # Define the snapshot tags
 snapshots = [
     "005_z010p000",
@@ -653,6 +780,31 @@ if __name__ == "__main__":
             ),
             f"Gas/DustMassRadii/{frac_key}",
         )
+    for filt in pipeline.instruments.filters:
+        pipeline.add_analysis_func(
+            get_pixel_based_hlr,
+            f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
+            "combined_intrinsic",
+            filt.filter_code,
+        )
+        pipeline.add_analysis_func(
+            get_pixel_based_hlr,
+            f"HalfLightRadii/total/{filt.filter_code}",
+            "total",
+            filt.filter_code,
+        )
+        pipeline.add_analysis_func(
+            get_pixel_based_hlr,
+            f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
+            "total_dust_free_agn",
+            filt.filter_code,
+        )
+        pipeline.add_analysis_func(
+            lambda gal, spec_type, f: get_pixel_based_hlr(gal.stars, spec_type, f),
+            f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
+            "stellar_attenuated",
+            filt.filter_code,
+        )
     pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
     pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
@@ -662,6 +814,22 @@ if __name__ == "__main__":
     pipeline.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
     pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
     pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
+    pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
+    pipeline.add_analysis_func(get_black_hole_data, "BlackHoles")
+    pipeline.add_analysis_func(lambda gal: gal.stars.tau_v, "Stars/VBandOpticalDepth")
+    pipeline.add_analysis_func(
+        lambda gal: gal.black_holes.tau_v, "BlackHoles/VBandOpticalDepth"
+    )
+    pipeline.add_analysis_func(get_UV_slope, "UVSlope")
+    pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
+    pipeline.add_analysis_func(lambda gal: get_UV_slope(gal.stars), "Stars/UVSlope")
+    pipeline.add_analysis_func(lambda gal: get_IR_slopes(gal.stars), "Stars/IRSlope")
+    pipeline.add_analysis_func(
+        lambda gal: get_UV_slope(gal.black_holes), "BlackHoles/UVSlope"
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"
+    )
 
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
