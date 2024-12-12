@@ -478,6 +478,8 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
             results["Colors"][spec_type]["F277W_F356W"] > 0.6,
         )
         mask2 = np.logical_and(mask2, results["Colors"][spec_type]["F277W_F444W"] > 0.7)
+        results["CompactnessFlag"][spec_type] = comp_mask
+        results["ColorFlag"][spec_type] = np.logical_or(mask1, mask2)
         results["LRDFlag"][spec_type] = np.logical_and(
             comp_mask, np.logical_or(mask1, mask2)
         )
@@ -497,6 +499,8 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
         mask2 = np.logical_and(
             mask2, results["Stars"]["Colors"][spec_type]["F277W_F444W"] > 0.7
         )
+        results["Stars"]["CompactnessFlag"][spec_type] = comp_mask
+        results["Stars"]["ColorFlag"][spec_type] = np.logical_or(mask1, mask2)
         results["Stars"]["LRDFlag"][spec_type] = np.logical_and(
             comp_mask, np.logical_or(mask1, mask2)
         )
@@ -516,6 +520,8 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
         mask2 = np.logical_and(
             mask2, results["BlackHoles"]["Colors"][spec_type]["F277W_F444W"] > 0.7
         )
+        results["BlackHoles"]["CompactnessFlag"][spec_type] = comp_mask
+        results["BlackHoles"]["ColorFlag"][spec_type] = np.logical_or(mask1, mask2)
         results["BlackHoles"]["LRDFlag"][spec_type] = np.logical_and(
             comp_mask, np.logical_or(mask1, mask2)
         )
@@ -687,5 +693,11 @@ if __name__ == "__main__":
     pipeline.apply_psfs_flux()
 
     # Save the pipeline
-    pipeline.write(outpath)
+    pipeline.write(
+        outpath,
+        output_lnu=False,
+        output_fnu=False,
+        output_images_fnu=False,
+        output_images_fnu_psf=False,
+    )
     pipeline.combine_files_virtual()
