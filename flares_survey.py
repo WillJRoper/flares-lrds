@@ -811,7 +811,9 @@ if __name__ == "__main__":
                 filt.filter_code,
             )
             pipeline.add_analysis_func(
-                lambda gal, spec_type, f: get_pixel_based_hlr(gal.stars, spec_type, f),
+                lambda gal, inst_name, spec_type, f: get_pixel_based_hlr(
+                    gal.stars, inst_name, spec_type, f
+                ),
                 f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
                 inst.label,
                 "stellar_attenuated",
