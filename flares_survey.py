@@ -780,31 +780,32 @@ if __name__ == "__main__":
             ),
             f"Gas/DustMassRadii/{frac_key}",
         )
-    for filt in pipeline.instruments.filters:
-        pipeline.add_analysis_func(
-            get_pixel_based_hlr,
-            f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
-            "combined_intrinsic",
-            filt.filter_code,
-        )
-        pipeline.add_analysis_func(
-            get_pixel_based_hlr,
-            f"HalfLightRadii/total/{filt.filter_code}",
-            "total",
-            filt.filter_code,
-        )
-        pipeline.add_analysis_func(
-            get_pixel_based_hlr,
-            f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
-            "total_dust_free_agn",
-            filt.filter_code,
-        )
-        pipeline.add_analysis_func(
-            lambda gal, spec_type, f: get_pixel_based_hlr(gal.stars, spec_type, f),
-            f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
-            "stellar_attenuated",
-            filt.filter_code,
-        )
+    for inst in pipeline.instruments:
+        for filt in inst.filters:
+            pipeline.add_analysis_func(
+                get_pixel_based_hlr,
+                f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
+                "combined_intrinsic",
+                filt.filter_code,
+            )
+            pipeline.add_analysis_func(
+                get_pixel_based_hlr,
+                f"HalfLightRadii/total/{filt.filter_code}",
+                "total",
+                filt.filter_code,
+            )
+            pipeline.add_analysis_func(
+                get_pixel_based_hlr,
+                f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
+                "total_dust_free_agn",
+                filt.filter_code,
+            )
+            pipeline.add_analysis_func(
+                lambda gal, spec_type, f: get_pixel_based_hlr(gal.stars, spec_type, f),
+                f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
+                "stellar_attenuated",
+                filt.filter_code,
+            )
     pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
     pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
