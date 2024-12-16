@@ -292,12 +292,13 @@ def get_gas_3d_velocity_dispersion(gal):
     )
 
 
-def get_pixel_based_hlr(obj, spec_type, filt):
+def get_pixel_based_hlr(obj, inst_name, spec_type, filt):
     """
     Get the half-light radius of the galaxy using the pixel technique.
 
     Args:
         obj (Galaxy/Stars): The galaxy or component to get the half-light radius for.
+        inst_name (str): The name of the instrument to use.
         spec_type (str): The type of spectrum to use.
         filt (str): The filter to use.
 
@@ -305,8 +306,7 @@ def get_pixel_based_hlr(obj, spec_type, filt):
         unyt_quantity: The half-light radius of the galaxy.
     """
     # Get the image
-    print(obj.images_psf_fnu.keys())
-    img = obj.images_psf_fnu[spec_type][filt]
+    img = obj.images_psf_fnu[inst_name][spec_type][filt]
     img_arr = img.arr
     pix_area = img._resolution * img._resolution
 
@@ -792,24 +792,28 @@ if __name__ == "__main__":
             pipeline.add_analysis_func(
                 get_pixel_based_hlr,
                 f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
+                inst.label,
                 "combined_intrinsic",
                 filt.filter_code,
             )
             pipeline.add_analysis_func(
                 get_pixel_based_hlr,
                 f"HalfLightRadii/total/{filt.filter_code}",
+                inst.label,
                 "total",
                 filt.filter_code,
             )
             pipeline.add_analysis_func(
                 get_pixel_based_hlr,
                 f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
+                inst.label,
                 "total_dust_free_agn",
                 filt.filter_code,
             )
             pipeline.add_analysis_func(
                 lambda gal, spec_type, f: get_pixel_based_hlr(gal.stars, spec_type, f),
                 f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
+                inst.label,
                 "stellar_attenuated",
                 filt.filter_code,
             )
