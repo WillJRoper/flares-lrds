@@ -606,6 +606,7 @@ def get_black_hole_data(gal):
         data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[0]
         data["TotalBHMass"] = gal.black_holes.masses[0]
         data["AverageAccretionRate"] = gal.black_holes.accretion_rates[0]
+        data["NumberOfBHs"] = 1
 
     # Ok, we have multiple black holes
     else:
