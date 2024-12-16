@@ -504,6 +504,9 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     results["CompactnessFlag"] = {}
     results["Stars"]["CompactnessFlag"] = {}
     results["BlackHoles"]["CompactnessFlag"] = {}
+    results["ColorFlag"] = {}
+    results["Stars"]["ColorFlag"] = {}
+    results["BlackHoles"]["ColorFlag"] = {}
     for spec_type in results["Compactness"].keys():
         comp_mask = results["Compactness"][spec_type] < 1.7
         mask1 = np.logical_and(
