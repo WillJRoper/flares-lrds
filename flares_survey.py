@@ -305,6 +305,7 @@ def get_pixel_based_hlr(obj, spec_type, filt):
         unyt_quantity: The half-light radius of the galaxy.
     """
     # Get the image
+    print(obj.images_psf_fnu.keys())
     img = obj.images_psf_fnu[spec_type][filt]
     img_arr = img.arr
     pix_area = img._resolution * img._resolution
