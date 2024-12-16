@@ -788,6 +788,8 @@ if __name__ == "__main__":
             f"Gas/DustMassRadii/{frac_key}",
         )
     for inst in pipeline.instruments:
+        if inst.label == "UV1500":
+            continue
         for filt in inst.filters:
             pipeline.add_analysis_func(
                 get_pixel_based_hlr,
