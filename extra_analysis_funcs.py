@@ -341,60 +341,38 @@ def get_black_hole_data(gal):
     Returns:
         dict: The black hole data.
     """
-    # Set up the dictionary to store the data in
     data = {}
 
-    # Do we even have black holes?
-    if gal.black_holes is None:
-        data["CentralBHMass"] = unyt_quantity(0, Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(0, Msun)
-        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
+    # No black holes at all
+    if gal.black_holes is None or gal.black_holes.nbh == 0:
+        data["CentralBHMass"] = unyt_quantity(0.0, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(0.0, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(0.0, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(0.0, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
-    # Do we have 0 black holes?
-    elif gal.black_holes.nbh == 0:
-        data["CentralBHMass"] = unyt_quantity(0, Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(0, Msun)
-        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
-
-    # Ok, we have black holes, if there's only one we'll just use that one
+    # Exactly one BH
     elif gal.black_holes.nbh == 1:
-        data["CentralBHMass"] = unyt_quantity(gal.black_holes.masses[0], Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(
-            gal.black_holes.accretion_rates[0], Msun / yr
-        )
-        data["TotalBHMass"] = unyt_quantity(gal.black_holes.masses[0], Msun)
-        data["AverageAccretionRate"] = unyt_quantity(
-            gal.black_holes.accretion_rates[0], Msun / yr
-        )
+        # Indexing a unyt_array returns a unyt_scalar already
+        data["CentralBHMass"] = gal.black_holes.masses[0]
+        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[0]
+        data["TotalBHMass"] = gal.black_holes.masses[0]
+        data["AverageAccretionRate"] = gal.black_holes.accretion_rates[0]
         data["NumberOfBHs"] = unyt_quantity(1, "dimensionless")
 
-    # Ok, we have multiple black holes
-    elif gal.black_holes.nbh > 1:
-        central_bh = np.argmax(gal.black_holes.masses)
-        data["CentralBHMass"] = unyt_quantity(gal.black_holes.masses[central_bh], Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(
-            gal.black_holes.accretion_rates[central_bh], Msun / yr
-        )
-        data["TotalBHMass"] = unyt_quantity(np.sum(gal.black_holes.masses), Msun)
-        data["AverageAccretionRate"] = unyt_quantity(
-            np.mean(gal.black_holes.accretion_rates), Msun / yr
-        )
-        data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
-
     else:
-        raise ValueError("Something went wrong with the black hole data.")
+        # Multiple BHs
+        central_bh = np.argmax(gal.black_holes.masses)
 
-    # We need to have unyt_quantities containing numbers not arrays
-    for key, value in data.items():
-        # Do we have an array inside the unyt_quantity?
-        if hasattr(value, "__len__"):
-            data[key] = value[0]
-        else:
-            data[key] = value
+        # Indexing gives a unyt_scalar (no conversion needed)
+        data["CentralBHMass"] = gal.black_holes.masses[central_bh]
+        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[central_bh]
+
+        # np.sum and np.mean on a unyt_array return unyt_scalars automatically
+        data["TotalBHMass"] = np.sum(gal.black_holes.masses)
+        data["AverageAccretionRate"] = np.mean(gal.black_holes.accretion_rates)
+
+        data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
 
     print(data)
 
