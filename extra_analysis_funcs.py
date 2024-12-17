@@ -2,7 +2,7 @@
 
 import numpy as np
 from synthesizer.conversions import angular_to_spatial_at_z
-from unyt import Msun, angstrom, arcsecond, unyt_array, unyt_quantity, yr
+from unyt import Msun, angstrom, arcsecond, unyt_quantity, yr
 
 
 def get_stars_1d_velocity_dispersion(gal):
@@ -343,35 +343,43 @@ def get_black_hole_data(gal):
 
     # Do we even have black holes?
     if gal.black_holes is None:
-        data["CentralBHMass"] = unyt_array(0, Msun)
-        data["CentralBHAccretionRate"] = unyt_array(0, Msun / yr)
-        data["TotalBHMass"] = unyt_array(0, Msun)
-        data["AverageAccretionRate"] = unyt_array(0, Msun / yr)
+        data["CentralBHMass"] = unyt_quantity(0, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(0, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
     # Do we have 0 black holes?
     elif gal.black_holes.nbh == 0:
-        data["CentralBHMass"] = unyt_array(0, Msun)
-        data["CentralBHAccretionRate"] = unyt_array(0, Msun / yr)
-        data["TotalBHMass"] = unyt_array(0, Msun)
-        data["AverageAccretionRate"] = unyt_array(0, Msun / yr)
+        data["CentralBHMass"] = unyt_quantity(0, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(0, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
     # Ok, we have black holes, if there's only one we'll just use that one
     elif gal.black_holes.nbh == 1:
-        data["CentralBHMass"] = gal.black_holes.masses[0]
-        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[0]
-        data["TotalBHMass"] = gal.black_holes.masses[0]
-        data["AverageAccretionRate"] = gal.black_holes.accretion_rates[0]
+        data["CentralBHMass"] = unyt_quantity(gal.black_holes.masses[0], Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(
+            gal.black_holes.accretion_rates[0], Msun / yr
+        )
+        data["TotalBHMass"] = unyt_quantity(gal.black_holes.masses[0], Msun)
+        data["AverageAccretionRate"] = unyt_quantity(
+            gal.black_holes.accretion_rates[0], Msun / yr
+        )
         data["NumberOfBHs"] = unyt_quantity(1, "dimensionless")
 
     # Ok, we have multiple black holes
     else:
         central_bh = np.argmax(gal.black_holes.masses)
-        data["CentralBHMass"] = gal.black_holes.masses[central_bh]
-        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[central_bh]
-        data["TotalBHMass"] = np.sum(gal.black_holes.masses)
-        data["AverageAccretionRate"] = np.mean(gal.black_holes.accretion_rates)
+        data["CentralBHMass"] = unyt_quantity(gal.black_holes.masses[central_bh], Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(
+            gal.black_holes.accretion_rates[central_bh], Msun / yr
+        )
+        data["TotalBHMass"] = unyt_quantity(np.sum(gal.black_holes.masses), Msun)
+        data["AverageAccretionRate"] = unyt_quantity(
+            np.mean(gal.black_holes.accretion_rates), Msun / yr
+        )
         data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
 
     return data
