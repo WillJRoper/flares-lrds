@@ -387,40 +387,10 @@ if __name__ == "__main__":
             ),
             f"Gas/DustMassRadii/{frac_key}",
         )
-    for inst in pipeline.instruments:
-        if inst.label == "UV1500":
-            continue
-        for filt in inst.filters:
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
-                inst.label,
-                "combined_intrinsic",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total/{filt.filter_code}",
-                inst.label,
-                "total",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
-                inst.label,
-                "total_dust_free_agn",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                lambda gal, inst_name, spec_type, f: get_pixel_based_hlr(
-                    gal.stars, inst_name, spec_type, f
-                ),
-                f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
-                inst.label,
-                "stellar_attenuated",
-                filt.filter_code,
-            )
+    pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
+    pipeline.add_analysis_func(
+        lambda gal: get_pixel_based_hlr(gal.stars), "Stars/HalfLightRadii"
+    )
     pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
     pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")

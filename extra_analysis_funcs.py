@@ -52,40 +52,50 @@ def get_gas_3d_velocity_dispersion(gal):
     )
 
 
-def get_pixel_based_hlr(obj, inst_name, spec_type, filt):
+def get_pixel_based_hlr(obj):
     """
     Get the half-light radius of the galaxy using the pixel technique.
 
     Args:
         obj (Galaxy/Stars): The galaxy or component to get the half-light radius for.
-        inst_name (str): The name of the instrument to use.
-        spec_type (str): The type of spectrum to use.
-        filt (str): The filter to use.
 
     Returns:
-        unyt_quantity: The half-light radius of the galaxy.
+        dict: A dictionary containing the half-light radius for each instrument.
     """
-    # Get the image
-    img = obj.images_psf_fnu[inst_name][spec_type][filt]
-    img_arr = img.arr
-    pix_area = img._resolution * img._resolution
+    results = {}
 
-    # Sort pixel values from brightest to faintest
-    pixels = np.sort(img_arr.flatten())[::-1]
+    # Loop over instruments
+    for inst_name, d in obj.images_psf_fnu.items():
+        # Loop over spectrum types
+        for spec_type, imgs in d.items():
+            # Loop over filters
+            for filt, img in imgs.items():
+                # Get the image
+                img = obj.images_psf_fnu[inst_name][spec_type][filt]
+                img_arr = img.arr
+                pix_area = img._resolution * img._resolution
 
-    # Calculate the cumulative sum of the pixels
-    cumsum = np.cumsum(pixels)
+                # Sort pixel values from brightest to faintest
+                pixels = np.sort(img_arr.flatten())[::-1]
 
-    # Find the pixel that corresponds to the half-light radius
-    hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
+                # Calculate the cumulative sum of the pixels
+                cumsum = np.cumsum(pixels)
 
-    # Get the area of pixels containing half the light
-    hlr_area = hlr_ind * pix_area
+                # Find the pixel that corresponds to the half-light radius
+                hlr_ind = np.argmin(np.abs(cumsum - (cumsum[-1] / 2)))
 
-    # Get the half-light radius
-    hlr = np.sqrt(hlr_area / np.pi)
+                # Get the area of pixels containing half the light
+                hlr_area = hlr_ind * pix_area
 
-    return (hlr * img.resolution.units).to("kpc")
+                # Get the half-light radius
+                hlr = np.sqrt(hlr_area / np.pi)
+
+                # Store the results
+                results.setdefault(spec_type, {})[filt] = (
+                    hlr * img.resolution.units
+                ).to("kpc")
+
+    return results
 
 
 def get_colors_and_lrd_flags(gal, cosmo, nthreads):
