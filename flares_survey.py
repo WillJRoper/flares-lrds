@@ -19,6 +19,22 @@ from synthesizer.pipeline import Pipeline
 from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
 
 from combined_emission_model import FLARESLOSCombinedEmission
+from extra_analysis_funcs import (
+    get_bh_average_accretion_rate,
+    get_bh_central_accretion_rate,
+    get_bh_central_mass,
+    get_bh_number,
+    get_bh_total_mass,
+    get_colors_and_lrd_flags,
+    get_gas_1d_velocity_dispersion,
+    get_gas_3d_velocity_dispersion,
+    get_IR_slopes,
+    get_optical_depth,
+    get_pixel_based_hlr,
+    get_stars_1d_velocity_dispersion,
+    get_stars_3d_velocity_dispersion,
+    get_UV_slopes,
+)
 from utils import (
     SPECTRA_KEYS,
 )
@@ -788,40 +804,11 @@ if __name__ == "__main__":
             ),
             f"Gas/DustMassRadii/{frac_key}",
         )
-    for inst in pipeline.instruments:
-        if inst.label == "UV1500":
-            continue
-        for filt in inst.filters:
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
-                inst.label,
-                "combined_intrinsic",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total/{filt.filter_code}",
-                inst.label,
-                "total",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
-                inst.label,
-                "total_dust_free_agn",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                lambda gal, inst_name, spec_type, f: get_pixel_based_hlr(
-                    gal.stars, inst_name, spec_type, f
-                ),
-                f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
-                inst.label,
-                "stellar_attenuated",
-                filt.filter_code,
-            )
+    pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
+    pipeline.add_analysis_func(
+        lambda gal: get_pixel_based_hlr(gal.stars),
+        "Stars/HalfLightRadii",
+    )
     pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
     pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
@@ -832,17 +819,37 @@ if __name__ == "__main__":
     pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
     pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
     pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
-    pipeline.add_analysis_func(get_black_hole_data, "BlackHoles")
-    pipeline.add_analysis_func(lambda gal: gal.stars.tau_v, "Stars/VBandOpticalDepth")
+    pipeline.add_analysis_func(get_bh_number, "BlackHoles/NBlackHoles")
+    pipeline.add_analysis_func(get_bh_total_mass, "BlackHoles/TotalMass")
+    pipeline.add_analysis_func(get_bh_central_mass, "BlackHoles/CentralMass")
     pipeline.add_analysis_func(
-        lambda gal: gal.black_holes.tau_v, "BlackHoles/VBandOpticalDepth"
+        get_bh_average_accretion_rate,
+        "BlackHoles/AverageAccretionRate",
     )
-    pipeline.add_analysis_func(get_UV_slope, "UVSlope")
-    pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
-    pipeline.add_analysis_func(lambda gal: get_UV_slope(gal.stars), "Stars/UVSlope")
-    pipeline.add_analysis_func(lambda gal: get_IR_slopes(gal.stars), "Stars/IRSlope")
     pipeline.add_analysis_func(
-        lambda gal: get_UV_slope(gal.black_holes), "BlackHoles/UVSlope"
+        get_bh_central_accretion_rate,
+        "BlackHoles/CentralAccretionRate",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_optical_depth(gal.stars),
+        "Stars/VBandOpticalDepth",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_optical_depth(gal.black_holes),
+        "BlackHoles/VBandOpticalDepth",
+    )
+    pipeline.add_analysis_func(get_UV_slopes, "UVSlope")
+    pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
+    pipeline.add_analysis_func(
+        lambda gal: get_UV_slopes(gal.stars),
+        "Stars/UVSlope",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_IR_slopes(gal.stars),
+        "Stars/IRSlope",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_UV_slopes(gal.black_holes), "BlackHoles/UVSlope"
     )
     pipeline.add_analysis_func(
         lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"

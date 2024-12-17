@@ -389,7 +389,8 @@ if __name__ == "__main__":
         )
     pipeline.add_analysis_func(get_pixel_based_hlr, "HalfLightRadii")
     pipeline.add_analysis_func(
-        lambda gal: get_pixel_based_hlr(gal.stars), "Stars/HalfLightRadii"
+        lambda gal: get_pixel_based_hlr(gal.stars),
+        "Stars/HalfLightRadii",
     )
     pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
     pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
@@ -405,21 +406,31 @@ if __name__ == "__main__":
     pipeline.add_analysis_func(get_bh_total_mass, "BlackHoles/TotalMass")
     pipeline.add_analysis_func(get_bh_central_mass, "BlackHoles/CentralMass")
     pipeline.add_analysis_func(
-        get_bh_average_accretion_rate, "BlackHoles/AverageAccretionRate"
+        get_bh_average_accretion_rate,
+        "BlackHoles/AverageAccretionRate",
     )
     pipeline.add_analysis_func(
-        get_bh_central_accretion_rate, "BlackHoles/CentralAccretionRate"
+        get_bh_central_accretion_rate,
+        "BlackHoles/CentralAccretionRate",
     )
     pipeline.add_analysis_func(
-        lambda gal: get_optical_depth(gal.stars), "Stars/VBandOpticalDepth"
+        lambda gal: get_optical_depth(gal.stars),
+        "Stars/VBandOpticalDepth",
     )
     pipeline.add_analysis_func(
-        lambda gal: get_optical_depth(gal.black_holes), "BlackHoles/VBandOpticalDepth"
+        lambda gal: get_optical_depth(gal.black_holes),
+        "BlackHoles/VBandOpticalDepth",
     )
     pipeline.add_analysis_func(get_UV_slopes, "UVSlope")
     pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
-    pipeline.add_analysis_func(lambda gal: get_UV_slopes(gal.stars), "Stars/UVSlope")
-    pipeline.add_analysis_func(lambda gal: get_IR_slopes(gal.stars), "Stars/IRSlope")
+    pipeline.add_analysis_func(
+        lambda gal: get_UV_slopes(gal.stars),
+        "Stars/UVSlope",
+    )
+    pipeline.add_analysis_func(
+        lambda gal: get_IR_slopes(gal.stars),
+        "Stars/IRSlope",
+    )
     pipeline.add_analysis_func(
         lambda gal: get_UV_slopes(gal.black_holes), "BlackHoles/UVSlope"
     )
