@@ -379,14 +379,16 @@ def get_black_hole_data(gal):
         data["CentralBHAccretionRate"] = unyt_quantity(
             gal.black_holes.accretion_rates[central_bh], Msun / yr
         )
-        data["TotalBHMass"] = unyt_quantity(np.sum(gal.black_holes.masses)[0], Msun)
+        data["TotalBHMass"] = unyt_quantity(np.sum(gal.black_holes.masses), Msun)
         data["AverageAccretionRate"] = unyt_quantity(
-            np.mean(gal.black_holes.accretion_rates)[0], Msun / yr
+            np.mean(gal.black_holes.accretion_rates), Msun / yr
         )
         data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
 
     else:
         raise ValueError("Something went wrong with the black hole data.")
+
+    print(data)
 
     return data
 
