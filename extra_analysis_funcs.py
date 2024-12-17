@@ -2,7 +2,7 @@
 
 import numpy as np
 from synthesizer.conversions import angular_to_spatial_at_z
-from unyt import Msun, angstrom, arcsecond, unyt_quantity, yr
+from unyt import Msun, angstrom, arcsecond, yr
 
 # Use galaxtic Msun
 Msun = Msun.in_base("galactic")
@@ -331,58 +331,73 @@ def get_colors_and_lrd_flags(gal, cosmo, nthreads):
     return results
 
 
-def get_black_hole_data(gal):
+def get_bh_total_mass(gal):
     """
-    Return the black hole data for the galaxy.
+    Return the total mass of the black holes in the galaxy.
 
     Args:
         gal (Galaxy): The galaxy to get the black hole data for.
-
-    Returns:
-        dict: The black hole data.
     """
-    data = {}
-
-    # Case: No black holes
     if gal.black_holes is None or gal.black_holes.nbh == 0:
-        data["CentralBHMass"] = unyt_quantity(0.0, Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(0.0, Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(0.0, Msun)
-        data["AverageAccretionRate"] = unyt_quantity(0.0, Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
+        return 0.0 * Msun
 
-    # Case: Exactly one BH
-    elif gal.black_holes.nbh == 1:
-        # Extract values as floats
-        central_bh_mass = gal.black_holes.masses[0].to_value(Msun)
-        central_bh_rate = gal.black_holes.accretion_rates[0].to_value(Msun / yr)
+    return np.sum(gal.black_holes._masses) * Msun
 
-        data["CentralBHMass"] = unyt_quantity(central_bh_mass, Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(central_bh_mass, Msun)
-        data["AverageAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(1, "dimensionless")
 
-    # Case: Multiple BHs
-    else:
-        central_bh = np.argmax(gal.black_holes.masses)
+def get_bh_average_accretion_rate(gal):
+    """
+    Return the average accretion rate of the black holes in the galaxy.
 
-        central_bh_mass = gal.black_holes.masses[central_bh].to_value(Msun)
-        central_bh_rate = gal.black_holes.accretion_rates[central_bh].to_value(
-            Msun / yr
-        )
+    Args:
+        gal (Galaxy): The galaxy to get the black hole data for.
+    """
+    if gal.black_holes is None or gal.black_holes.nbh == 0:
+        return 0.0 * Msun / yr
 
-        total_bh_mass = np.sum(gal.black_holes.masses).to_value(Msun)
-        avg_bh_rate = np.mean(gal.black_holes.accretion_rates).to_value(Msun / yr)
+    return np.mean(gal.black_holes._accretion_rates) * Msun / yr
 
-        data["CentralBHMass"] = unyt_quantity(central_bh_mass, Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(total_bh_mass, Msun)
-        data["AverageAccretionRate"] = unyt_quantity(avg_bh_rate, Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
-    print(data)
 
-    return data
+def get_bh_central_mass(gal):
+    """
+    Return the mass of the central black hole in the galaxy.
+
+    Args:
+        gal (Galaxy): The galaxy to get the black hole data for.
+    """
+    if gal.black_holes is None or gal.black_holes.nbh == 0:
+        return 0.0 * Msun
+
+    central_bh = np.argmax(gal.black_holes._masses)
+
+    return gal.black_holes._masses[central_bh] * Msun
+
+
+def get_bh_central_accretion_rate(gal):
+    """
+    Return the accretion rate of the central black hole in the galaxy.
+
+    Args:
+        gal (Galaxy): The galaxy to get the black hole data for.
+    """
+    if gal.black_holes is None or gal.black_holes.nbh == 0:
+        return 0.0 * Msun / yr
+
+    central_bh = np.argmax(gal.black_holes._masses)
+
+    return gal.black_holes._accretion_rates[central_bh] * Msun / yr
+
+
+def get_bh_number(gal):
+    """
+    Return the number of black holes in the galaxy.
+
+    Args:
+        gal (Galaxy): The galaxy to get the black hole data for.
+    """
+    if gal.black_holes is None or gal.black_holes.nbh == 0:
+        return 0
+
+    return gal.black_holes.nbh
 
 
 def get_UV_slope(obj):

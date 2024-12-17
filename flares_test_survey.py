@@ -19,7 +19,11 @@ from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
 
 from combined_emission_model import FLARESLOSCombinedEmission
 from extra_analysis_funcs import (
-    get_black_hole_data,
+    get_bh_average_accretion_rate,
+    get_bh_central_accretion_rate,
+    get_bh_central_mass,
+    get_bh_number,
+    get_bh_total_mass,
 )
 from utils import (
     SPECTRA_KEYS,
@@ -418,7 +422,15 @@ if __name__ == "__main__":
     # pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
     # pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
     # pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
-    pipeline.add_analysis_func(get_black_hole_data, "BlackHoles")
+    pipeline.add_analysis_func(get_bh_number, "BlackHoles/NBlackHoles")
+    pipeline.add_analysis_func(get_bh_total_mass, "BlackHoles/TotalMass")
+    pipeline.add_analysis_func(get_bh_central_mass, "BlackHoles/CentralMass")
+    pipeline.add_analysis_func(
+        get_bh_average_accretion_rate, "BlackHoles/AverageAccretionRate"
+    )
+    pipeline.add_analysis_func(
+        get_bh_central_accretion_rate, "BlackHoles/CentralAccretionRate"
+    )
     # pipeline.add_analysis_func(
     #     lambda gal: get_optical_depth(gal.stars), "Stars/VBandOpticalDepth"
     # )
