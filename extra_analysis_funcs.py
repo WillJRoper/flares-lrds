@@ -4,6 +4,9 @@ import numpy as np
 from synthesizer.conversions import angular_to_spatial_at_z
 from unyt import Msun, angstrom, arcsecond, unyt_quantity, yr
 
+# Use galaxtic Msun
+Msun = Msun.in_base("galactic")
+
 
 def get_stars_1d_velocity_dispersion(gal):
     """Get the 1D velocity dispersion of the stars in the galaxy."""
