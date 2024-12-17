@@ -27,12 +27,10 @@ from extra_analysis_funcs import (
     get_colors_and_lrd_flags,
     get_gas_1d_velocity_dispersion,
     get_gas_3d_velocity_dispersion,
-    get_IR_slopes,
     get_optical_depth,
     get_pixel_based_hlr,
     get_stars_1d_velocity_dispersion,
     get_stars_3d_velocity_dispersion,
-    get_UV_slopes,
 )
 from utils import (
     SPECTRA_KEYS,
@@ -421,22 +419,22 @@ if __name__ == "__main__":
         lambda gal: get_optical_depth(gal.black_holes),
         "BlackHoles/VBandOpticalDepth",
     )
-    pipeline.add_analysis_func(get_UV_slopes, "UVSlope")
-    pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
-    pipeline.add_analysis_func(
-        lambda gal: get_UV_slopes(gal.stars),
-        "Stars/UVSlope",
-    )
-    pipeline.add_analysis_func(
-        lambda gal: get_IR_slopes(gal.stars),
-        "Stars/IRSlope",
-    )
-    pipeline.add_analysis_func(
-        lambda gal: get_UV_slopes(gal.black_holes), "BlackHoles/UVSlope"
-    )
-    pipeline.add_analysis_func(
-        lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"
-    )
+    # pipeline.add_analysis_func(get_UV_slopes, "UVSlope")
+    # pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_UV_slopes(gal.stars),
+    #     "Stars/UVSlope",
+    # )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_IR_slopes(gal.stars),
+    #     "Stars/IRSlope",
+    # )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_UV_slopes(gal.black_holes), "BlackHoles/UVSlope"
+    # )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"
+    # )
 
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
