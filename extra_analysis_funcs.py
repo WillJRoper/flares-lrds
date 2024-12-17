@@ -374,6 +374,8 @@ def get_black_hole_data(gal):
         data["AverageAccretionRate"] = np.mean(gal.black_holes.accretion_rates)
         data["NumberOfBHs"] = gal.black_holes.nbh
 
+    print(data)
+
     return data
 
 
