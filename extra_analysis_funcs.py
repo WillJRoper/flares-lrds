@@ -400,7 +400,7 @@ def get_bh_number(gal):
     return gal.black_holes.nbh
 
 
-def get_UV_slope(obj):
+def get_UV_slopes(obj):
     """
     Get the UV slope of the galaxy.
 
