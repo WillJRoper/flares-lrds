@@ -373,7 +373,7 @@ def get_black_hole_data(gal):
         data["NumberOfBHs"] = unyt_quantity(1, "dimensionless")
 
     # Ok, we have multiple black holes
-    else:
+    elif gal.black_holes.nbh > 1:
         central_bh = np.argmax(gal.black_holes.masses)
         data["CentralBHMass"] = unyt_quantity(gal.black_holes.masses[central_bh], Msun)
         data["CentralBHAccretionRate"] = unyt_quantity(
@@ -384,6 +384,9 @@ def get_black_hole_data(gal):
             np.mean(gal.black_holes.accretion_rates)[0], Msun / yr
         )
         data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
+
+    else:
+        raise ValueError("Something went wrong with the black hole data.")
 
     return data
 
