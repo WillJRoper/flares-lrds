@@ -346,19 +346,19 @@ def get_black_hole_data(gal):
 
     # Do we even have black holes?
     if gal.black_holes is None:
-        data["CentralBHMass"] = unyt_quantity(np.zeros(1), Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(np.zeros(1), Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(np.zeros(1), Msun)
-        data["AverageAccretionRate"] = unyt_quantity(np.zeros(1), Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(np.zeros(1), "dimensionless")
+        data["CentralBHMass"] = unyt_quantity(0, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(0, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
     # Do we have 0 black holes?
     elif gal.black_holes.nbh == 0:
-        data["CentralBHMass"] = unyt_quantity(np.zeros(1), Msun)
-        data["CentralBHAccretionRate"] = unyt_quantity(np.zeros(1), Msun / yr)
-        data["TotalBHMass"] = unyt_quantity(np.zeros(1), Msun)
-        data["AverageAccretionRate"] = unyt_quantity(np.zeros(1), Msun / yr)
-        data["NumberOfBHs"] = unyt_quantity(np.zeros(1), "dimensionless")
+        data["CentralBHMass"] = unyt_quantity(0, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(0, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(0, Msun / yr)
+        data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
     # Ok, we have black holes, if there's only one we'll just use that one
     elif gal.black_holes.nbh == 1:
@@ -387,6 +387,14 @@ def get_black_hole_data(gal):
 
     else:
         raise ValueError("Something went wrong with the black hole data.")
+
+    # We need to have unyt_quantities containing numbers not arrays
+    for key, value in data.items():
+        # Do we have an array inside the unyt_quantity?
+        if hasattr(value, "__len__"):
+            data[key] = value[0]
+        else:
+            data[key] = value
 
     print(data)
 
