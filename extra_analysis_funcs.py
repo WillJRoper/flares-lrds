@@ -343,7 +343,7 @@ def get_black_hole_data(gal):
     """
     data = {}
 
-    # No black holes at all
+    # Case: No black holes
     if gal.black_holes is None or gal.black_holes.nbh == 0:
         data["CentralBHMass"] = unyt_quantity(0.0, Msun)
         data["CentralBHAccretionRate"] = unyt_quantity(0.0, Msun / yr)
@@ -351,29 +351,35 @@ def get_black_hole_data(gal):
         data["AverageAccretionRate"] = unyt_quantity(0.0, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(0, "dimensionless")
 
-    # Exactly one BH
+    # Case: Exactly one BH
     elif gal.black_holes.nbh == 1:
-        # Indexing a unyt_array returns a unyt_scalar already
-        data["CentralBHMass"] = gal.black_holes.masses[0]
-        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[0]
-        data["TotalBHMass"] = gal.black_holes.masses[0]
-        data["AverageAccretionRate"] = gal.black_holes.accretion_rates[0]
+        # Extract values as floats
+        central_bh_mass = gal.black_holes.masses[0].to_value(Msun)
+        central_bh_rate = gal.black_holes.accretion_rates[0].to_value(Msun / yr)
+
+        data["CentralBHMass"] = unyt_quantity(central_bh_mass, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(central_bh_mass, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(1, "dimensionless")
 
+    # Case: Multiple BHs
     else:
-        # Multiple BHs
         central_bh = np.argmax(gal.black_holes.masses)
 
-        # Indexing gives a unyt_scalar (no conversion needed)
-        data["CentralBHMass"] = gal.black_holes.masses[central_bh]
-        data["CentralBHAccretionRate"] = gal.black_holes.accretion_rates[central_bh]
+        central_bh_mass = gal.black_holes.masses[central_bh].to_value(Msun)
+        central_bh_rate = gal.black_holes.accretion_rates[central_bh].to_value(
+            Msun / yr
+        )
 
-        # np.sum and np.mean on a unyt_array return unyt_scalars automatically
-        data["TotalBHMass"] = np.sum(gal.black_holes.masses)
-        data["AverageAccretionRate"] = np.mean(gal.black_holes.accretion_rates)
+        total_bh_mass = np.sum(gal.black_holes.masses).to_value(Msun)
+        avg_bh_rate = np.mean(gal.black_holes.accretion_rates).to_value(Msun / yr)
 
+        data["CentralBHMass"] = unyt_quantity(central_bh_mass, Msun)
+        data["CentralBHAccretionRate"] = unyt_quantity(central_bh_rate, Msun / yr)
+        data["TotalBHMass"] = unyt_quantity(total_bh_mass, Msun)
+        data["AverageAccretionRate"] = unyt_quantity(avg_bh_rate, Msun / yr)
         data["NumberOfBHs"] = unyt_quantity(gal.black_holes.nbh, "dimensionless")
-
     print(data)
 
     return data
