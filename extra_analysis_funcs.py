@@ -369,7 +369,7 @@ def get_bh_central_mass(gal):
 
     central_bh = np.argmax(gal.black_holes._masses)
 
-    return gal.black_holes._masses[central_bh] * Msun
+    return unyt_array(gal.black_holes._masses[central_bh], Msun)
 
 
 def get_bh_central_accretion_rate(gal):
