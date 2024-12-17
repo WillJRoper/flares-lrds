@@ -20,15 +20,6 @@ from unyt import Gyr, Mpc, Msun, angstrom, arcsecond, km, kpc, s, yr
 from combined_emission_model import FLARESLOSCombinedEmission
 from extra_analysis_funcs import (
     get_black_hole_data,
-    get_colors_and_lrd_flags,
-    get_gas_1d_velocity_dispersion,
-    get_gas_3d_velocity_dispersion,
-    get_IR_slopes,
-    get_optical_depth,
-    get_pixel_based_hlr,
-    get_stars_1d_velocity_dispersion,
-    get_stars_3d_velocity_dispersion,
-    get_UV_slope,
 )
 from utils import (
     SPECTRA_KEYS,
@@ -354,97 +345,97 @@ if __name__ == "__main__":
     )
 
     # Add the extra analysis functions we want
-    pipeline.add_analysis_func(
-        get_colors_and_lrd_flags,
-        "",
-        cosmo=cosmo,
-        nthreads=nthreads,
-    )
-    for frac in [0.2, 0.5, 0.8]:
-        frac_key = f"{frac}".replace(".", "p")
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.stars.get_attr_radius(
-                "current_masses",
-                frac=frac,
-            ),
-            f"Stars/MassRadii/{frac_key}",
-        )
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius(
-                "masses",
-                frac=frac,
-            ),
-            f"Gas/MassRadii/{frac_key}",
-        )
-        pipeline.add_analysis_func(
-            lambda gal, frac=frac: gal.gas.get_attr_radius(
-                "dust_masses",
-                frac=frac,
-            ),
-            f"Gas/DustMassRadii/{frac_key}",
-        )
-    for inst in pipeline.instruments:
-        if inst.label == "UV1500":
-            continue
-        for filt in inst.filters:
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
-                inst.label,
-                "combined_intrinsic",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total/{filt.filter_code}",
-                inst.label,
-                "total",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                get_pixel_based_hlr,
-                f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
-                inst.label,
-                "total_dust_free_agn",
-                filt.filter_code,
-            )
-            pipeline.add_analysis_func(
-                lambda gal, inst_name, spec_type, f: get_pixel_based_hlr(
-                    gal.stars, inst_name, spec_type, f
-                ),
-                f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
-                inst.label,
-                "stellar_attenuated",
-                filt.filter_code,
-            )
-    pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
-    pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
-    pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
-    pipeline.add_analysis_func(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
-    pipeline.add_analysis_func(lambda gal: gal.region, "Region")
-    pipeline.add_analysis_func(lambda gal: gal.grp_id, "GroupID")
-    pipeline.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
-    pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
-    pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
-    pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
+    # pipeline.add_analysis_func(
+    #     get_colors_and_lrd_flags,
+    #     "",
+    #     cosmo=cosmo,
+    #     nthreads=nthreads,
+    # )
+    # for frac in [0.2, 0.5, 0.8]:
+    #     frac_key = f"{frac}".replace(".", "p")
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.stars.get_attr_radius(
+    #             "current_masses",
+    #             frac=frac,
+    #         ),
+    #         f"Stars/MassRadii/{frac_key}",
+    #     )
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
+    #             "masses",
+    #             frac=frac,
+    #         ),
+    #         f"Gas/MassRadii/{frac_key}",
+    #     )
+    #     pipeline.add_analysis_func(
+    #         lambda gal, frac=frac: gal.gas.get_attr_radius(
+    #             "dust_masses",
+    #             frac=frac,
+    #         ),
+    #         f"Gas/DustMassRadii/{frac_key}",
+    #     )
+    # for inst in pipeline.instruments:
+    #     if inst.label == "UV1500":
+    #         continue
+    #     for filt in inst.filters:
+    #         pipeline.add_analysis_func(
+    #             get_pixel_based_hlr,
+    #             f"HalfLightRadii/combined_intrinsic/{filt.filter_code}",
+    #             inst.label,
+    #             "combined_intrinsic",
+    #             filt.filter_code,
+    #         )
+    #         pipeline.add_analysis_func(
+    #             get_pixel_based_hlr,
+    #             f"HalfLightRadii/total/{filt.filter_code}",
+    #             inst.label,
+    #             "total",
+    #             filt.filter_code,
+    #         )
+    #         pipeline.add_analysis_func(
+    #             get_pixel_based_hlr,
+    #             f"HalfLightRadii/total_dust_free_agn/{filt.filter_code}",
+    #             inst.label,
+    #             "total_dust_free_agn",
+    #             filt.filter_code,
+    #         )
+    #         pipeline.add_analysis_func(
+    #             lambda gal, inst_name, spec_type, f: get_pixel_based_hlr(
+    #                 gal.stars, inst_name, spec_type, f
+    #             ),
+    #             f"Stars/HalfLightRadii/stellar_attenuated/{filt.filter_code}",
+    #             inst.label,
+    #             "stellar_attenuated",
+    #             filt.filter_code,
+    #         )
+    # pipeline.add_analysis_func(get_stars_1d_velocity_dispersion, "Stars/VelDisp1d")
+    # pipeline.add_analysis_func(get_gas_1d_velocity_dispersion, "Gas/VelDisp1d")
+    # pipeline.add_analysis_func(get_stars_3d_velocity_dispersion, "Stars/VelDisp3d")
+    # pipeline.add_analysis_func(get_gas_3d_velocity_dispersion, "Gas/VelDisp3d")
+    # pipeline.add_analysis_func(lambda gal: gal.region, "Region")
+    # pipeline.add_analysis_func(lambda gal: gal.grp_id, "GroupID")
+    # pipeline.add_analysis_func(lambda gal: gal.subgrp_id, "SubGroupID")
+    # pipeline.add_analysis_func(lambda gal: gal.weight, "RegionWeight")
+    # pipeline.add_analysis_func(lambda gal: gal.master_index, "MasterRegionIndex")
+    # pipeline.add_analysis_func(lambda gal: gal.redshift, "Redshift")
     pipeline.add_analysis_func(get_black_hole_data, "BlackHoles")
-    pipeline.add_analysis_func(
-        lambda gal: get_optical_depth(gal.stars), "Stars/VBandOpticalDepth"
-    )
-    pipeline.add_analysis_func(
-        lambda gal: get_optical_depth(gal.black_holes), "BlackHoles/VBandOpticalDepth"
-    )
-    pipeline.add_analysis_func(get_UV_slope, "UVSlope")
-    pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
-    pipeline.add_analysis_func(lambda gal: get_UV_slope(gal.stars), "Stars/UVSlope")
-    pipeline.add_analysis_func(lambda gal: get_IR_slopes(gal.stars), "Stars/IRSlope")
-    pipeline.add_analysis_func(
-        lambda gal: get_UV_slope(gal.black_holes), "BlackHoles/UVSlope"
-    )
-    pipeline.add_analysis_func(
-        lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"
-    )
-
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_optical_depth(gal.stars), "Stars/VBandOpticalDepth"
+    # )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_optical_depth(gal.black_holes), "BlackHoles/VBandOpticalDepth"
+    # )
+    # pipeline.add_analysis_func(get_UV_slope, "UVSlope")
+    # pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
+    # pipeline.add_analysis_func(lambda gal: get_UV_slope(gal.stars), "Stars/UVSlope")
+    # pipeline.add_analysis_func(lambda gal: get_IR_slopes(gal.stars), "Stars/IRSlope")
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_UV_slope(gal.black_holes), "BlackHoles/UVSlope"
+    # )
+    # pipeline.add_analysis_func(
+    #     lambda gal: get_IR_slopes(gal.black_holes), "BlackHoles/IRSlope"
+    # )
+    #
     # Partition and load the galaxies
     indices = partition_galaxies(galaxy_weights=gal_weights)
     galaxies = load_galaxies(
