@@ -354,7 +354,7 @@ def get_bh_average_accretion_rate(gal):
     if gal.black_holes is None or gal.black_holes.nbh == 0:
         return 0.0 * Msun / yr
 
-    return np.mean(gal.black_holes._accretion_rates) * Msun / yr
+    return np.mean(gal.black_holes._accretion_rate) * Msun / yr
 
 
 def get_bh_central_mass(gal):
@@ -384,7 +384,7 @@ def get_bh_central_accretion_rate(gal):
 
     central_bh = np.argmax(gal.black_holes._masses)
 
-    return gal.black_holes._accretion_rates[central_bh] * Msun / yr
+    return gal.black_holes._accretion_rate[central_bh] * Msun / yr
 
 
 def get_bh_number(gal):
