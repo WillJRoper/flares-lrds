@@ -129,7 +129,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
     bhmask = bhradii < 30 * kpc
 
     # Early exit if there are fewer than 100 stars
-    if np.sum(mask) != 100:
+    if np.sum(mask) < 100 and np.sum(mask) > 105:
         return None
 
     gal = Galaxy(
@@ -188,7 +188,7 @@ def partition_galaxies(galaxy_weights):
     gal_inds = np.arange(len(galaxy_weights))
 
     # Sanitise away galaxies below the threshold
-    gal_inds = gal_inds[galaxy_weights != 100]
+    gal_inds = gal_inds[np.logical_and(galaxy_weights >= 100, galaxy_weights <= 105)]
 
     # Split the galaxies between the processes
     indices = np.array_split(gal_inds, nranks)
