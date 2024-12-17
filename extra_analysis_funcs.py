@@ -2,7 +2,7 @@
 
 import numpy as np
 from synthesizer.conversions import angular_to_spatial_at_z
-from unyt import Msun, angstrom, arcsecond, yr
+from unyt import Msun, angstrom, arcsecond, unyt_array, yr
 
 # Use galaxtic Msun
 Msun = Msun.in_base("galactic")
@@ -365,7 +365,7 @@ def get_bh_central_mass(gal):
         gal (Galaxy): The galaxy to get the black hole data for.
     """
     if gal.black_holes is None or gal.black_holes.nbh == 0:
-        return 0.0 * Msun
+        return unyt_array(0.0, Msun)
 
     central_bh = np.argmax(gal.black_holes._masses)
 
@@ -380,7 +380,7 @@ def get_bh_central_accretion_rate(gal):
         gal (Galaxy): The galaxy to get the black hole data for.
     """
     if gal.black_holes is None or gal.black_holes.nbh == 0:
-        return 0.0 * Msun / yr
+        return unyt_array(0.0, Msun / yr)
 
     central_bh = np.argmax(gal.black_holes._masses)
 
