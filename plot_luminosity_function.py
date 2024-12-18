@@ -43,9 +43,10 @@ def plot_lf(
     ylabel,
     xscale="linear",
 ):
+    """Plot the luminosity function."""
     # Compute the luminosity function full
     whist, _ = np.histogram(data, bins=bins, weights=weights)
-    phi = whist / volume / bin_widths_dex
+    phi = whist / volume / bin_widths
 
     # Compute the LRD luminosity function (masked LF)
     whist, _ = np.histogram(data[mask], bins=bins, weights=weights[mask])
