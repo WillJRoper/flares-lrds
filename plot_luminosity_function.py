@@ -42,6 +42,7 @@ def plot_lf(
     xlabel,
     ylabel,
     xscale="linear",
+    flip_x=False,
 ):
     """Plot the luminosity function."""
     # Compute the luminosity function full
@@ -74,6 +75,10 @@ def plot_lf(
         alpha=0.8,
         marker="o",
     )
+
+    # Flip x if needed
+    if flip_x:
+        ax.invert_xaxis()
 
     ax.set_yscale("log")
     ax.set_xlabel(xlabel)
@@ -125,6 +130,7 @@ for spec_type, component in zip(
             f"UVLF/mag_luminosity_function_{spec_type}_{snap}",
             "$M_{1500}$",
             r"$\phi$ / [Mpc$^{-3}$ mag$^{-1}$]",
+            flip_x=True,
         )
         plot_lf(
             lnu,
