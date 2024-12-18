@@ -92,7 +92,7 @@ def plot_lf(
 data_file = "data/combined_<snap>.hdf5"
 
 # Define magnitude and luminosity bins
-mag_bins = np.arange(-27, -16, 1)
+mag_bins = np.arange(-26, -16, 1)
 mag_bin_cents = (mag_bins[:-1] + mag_bins[1:]) / 2
 mag_bin_widths = np.diff(mag_bins)
 lum_bins = np.logspace(27, 31, 20)
