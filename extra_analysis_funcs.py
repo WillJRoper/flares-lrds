@@ -468,3 +468,18 @@ def get_optical_depth(obj):
 
     # Return the average optical depth
     return np.mean(obj.tau_v)
+
+
+def get_dust_to_metal_ratio(gal):
+    """
+    Return the dust-to-metal ratio for the object.
+
+    Args:
+        obj (Galaxy/Stars/BlackHoles): The object to get the dust-to-metal ratio for.
+    """
+    # Check we have a dust-to-metal ratio
+    if gal.gas.dust_to_metals is None:
+        return 0.3
+
+    # Return the dust-to-metal ratio
+    return np.mean(gal.gas.dust_to_metal_ratio)
