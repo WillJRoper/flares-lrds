@@ -25,6 +25,7 @@ from extra_analysis_funcs import (
     get_bh_number,
     get_bh_total_mass,
     get_colors_and_lrd_flags,
+    get_dust_to_metal_ratio,
     get_gas_1d_velocity_dispersion,
     get_gas_3d_velocity_dispersion,
     get_optical_depth,
@@ -187,6 +188,7 @@ def _get_galaxy(gal_index, master_file_path, snap):
 
     # Calculate the DTM, we'll need it later
     gal.dust_to_metal_vijayan19()
+    print(gal.gas.dust_to_metal_ratio)
 
     return gal
 
@@ -419,6 +421,7 @@ if __name__ == "__main__":
         lambda gal: get_optical_depth(gal.black_holes),
         "BlackHoles/VBandOpticalDepth",
     )
+    pipeline.add_analysis_func(get_dust_to_metal_ratio, "DustToMetalRatio")
     # pipeline.add_analysis_func(get_UV_slopes, "UVSlope")
     # pipeline.add_analysis_func(get_IR_slopes, "IRSlope")
     # pipeline.add_analysis_func(
