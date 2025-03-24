@@ -76,7 +76,6 @@ TOPHATS = {
 SPECTRA_KEYS = [
     "reprocessed",
     "agn_intrinsic",
-    "stellar_attenuated",
     "agn_attenuated",
     "stellar_total",
     "combined_intrinsic",
