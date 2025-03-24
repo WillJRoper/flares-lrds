@@ -187,7 +187,6 @@ def _get_galaxy(gal_index, master_file_path, snap):
 
     # Calculate the DTM, we'll need it later
     gal.dust_to_metal_vijayan19()
-    print(gal.gas.dust_to_metal_ratio)
 
     return gal
 
