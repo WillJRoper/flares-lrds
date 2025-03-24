@@ -11,7 +11,7 @@ from synthesizer.emission_models import (
     TemplateEmission,
     TransmittedEmission,
 )
-from synthesizer.emission_models.attenuation.dust import PowerLaw
+from synthesizer.emission_models.transformers import PowerLaw
 from synthesizer.grid import Template
 from unyt import Hz, Myr, angstrom, erg, nm, s
 
