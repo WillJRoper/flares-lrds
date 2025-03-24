@@ -249,10 +249,8 @@ def get_emission_model(
         lam_lims=(900 * angstrom, 6 * 10**5 * angstrom),
     )
     model = FLARESLOSCombinedEmission(
-        agn_template_file,
         grid,
-        fesc=fesc,
-        fesc_ly_alpha=fesc_ly_alpha,
+        agn_template_file,
     )
 
     # Limit the spectra to be saved
